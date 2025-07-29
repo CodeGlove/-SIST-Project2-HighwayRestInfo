@@ -10,6 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/register_1.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'PretendardVariable';
+            src: url('fonts/PretendardVariable.woff2') format('woff2-variations');
+            font-weight: 45 920;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
 </head>
 <body>
     <!-- Back to Home Link -->
@@ -18,50 +27,63 @@
         홈으로 돌아가기
     </a>
 
-    <div class="container">
-        <!-- Logo -->
-        <div class="logo">highwayguide</div>
-
-        <!-- Heading -->
-        <h1 class="heading">고속도로와 함께<br>여행의 성공을 시작해 보세요!</h1>
-        <p class="subheading">전국의 고속도로 정보를 한 곳에서<br>쉽고 편리하게 확인하세요</p>
-
-        <!-- Main Buttons -->
-        <div class="main-buttons">
-            <a href="#" class="btn btn-kakao" id="kakaoBtn">
-                <i class="fas fa-comment"></i>
-                카카오로 시작하기
-            </a>
-            <a href="#" class="btn btn-naver" id="naverBtn">
-                <i class="fas fa-n"></i>
-                네이버로 시작하기
-            </a>
-            <a href="register.jsp" class="btn btn-email" id="emailBtn">
-                이메일로 시작하기
-            </a>
+    <!-- Main Container -->
+    <div class="container fade-in-up">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <h1>HighWayGuide</h1>
+                <div class="star-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
         </div>
 
-        <!-- Social Icons -->
-        <div class="social-icons">
-            <a href="#" class="social-icon google" id="googleIcon">
-                <i class="fab fa-google"></i>
-            </a>
-            <a href="#" class="social-icon apple" id="appleIcon">
-                <i class="fab fa-apple"></i>
-            </a>
-            <a href="#" class="social-icon facebook" id="facebookIcon">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-        </div>
+        <!-- Content -->
+        <div class="content">
+            <h2 class="heading">전국휴게소<br>정보를 얻어보세요</h2>
+            <p class="subheading">매력있는 휴게소를 <br>쉽고 편리하게 확인하세요</p>
 
-        <!-- Business Link -->
-        <div class="business-link">
-            사업자 회원 <a href="#" id="businessLink">HighwayGuide Biz로 시작하기</a>
-        </div>
+            <!-- Main Buttons -->
+            <div class="main-buttons">
+                <a href="#" class="btn btn-kakao" id="kakaoBtn">
+                    <i class="fas fa-comment"></i>
+                    카카오로 시작하기
+                </a>
+                <a href="#" class="btn btn-naver" id="naverBtn">
+                    <i class="fas fa-n"></i>
+                    네이버로 시작하기
+                </a>
+                <a href="register.jsp" class="btn btn-email" id="emailBtn">
+                    이메일로 시작하기
+                </a>
+            </div>
 
-        <!-- Login Link -->
-        <div class="login-link">
-            이미 HighwayGuide 회원이신가요? <a href="Controller?type=login" id="loginLink">로그인</a>
+            <!-- Social Icons -->
+            <div class="social-icons">
+                <a href="#" class="social-icon google" id="googleIcon">
+                    <i class="fab fa-google"></i>
+                </a>
+                <a href="#" class="social-icon apple" id="appleIcon">
+                    <i class="fab fa-apple"></i>
+                </a>
+                <a href="#" class="social-icon facebook" id="facebookIcon">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </div>
+
+            <!-- Business Link -->
+            <div class="business-link">
+                사업자 회원 <a href="#" id="businessLink">HighwayGuide Biz로 시작하기</a>
+            </div>
+
+            <!-- Login Link -->
+            <div class="login-link">
+                이미 HighwayGuide 회원이신가요? <a href="Controller?type=login" id="loginLink">로그인</a>
+            </div>
         </div>
     </div>
 
@@ -75,6 +97,29 @@
             const facebookIcon = document.getElementById('facebookIcon');
             const businessLink = document.getElementById('businessLink');
             const loginLink = document.getElementById('loginLink');
+
+            // 스크롤 애니메이션
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 관찰할 요소들
+            document.querySelectorAll('.header, .content, .heading, .subheading, .main-buttons, .social-icons, .business-link, .login-link').forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                element.style.transition = 'all 0.6s ease-out';
+                observer.observe(element);
+            });
 
             // 카카오 로그인
             kakaoBtn.addEventListener('click', function(e) {

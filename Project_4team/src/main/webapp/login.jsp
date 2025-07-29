@@ -31,89 +31,112 @@
     <div class="login-container fade-in-up">
         <!-- Header -->
         <div class="login-header">
+            <div class="language-selector">
+                <i class="fas fa-globe"></i>
+            </div>
             <div class="logo-container">
                 <div class="logo-icon">
-                    <i class="fas fa-road"></i>
+                    <i class="fas fa-cube"></i>
                 </div>
                 <h1>HighwayGuide</h1>
+                <div class="star-icon">
+                    <i class="fas fa-star"></i>
+                </div>
             </div>
-            <h2 class="login-title">로그인</h2>
-            <p class="login-subtitle">고속도로 정보 서비스를 이용하려면 로그인하세요</p>
+        </div>
+
+        <!-- Authentication Tabs -->
+        <div class="auth-tabs">
+            <button class="tab-btn active" data-tab="password">Password</button>
+            <button class="tab-btn" data-tab="webauthn">WebAuthn</button>
         </div>
 
         <!-- Login Form -->
         <form class="login-form" id="loginForm">
             <div class="form-group">
-                <label for="email" class="form-label">이메일</label>
-                <input type="email" id="email" name="email" class="form-input" placeholder="이메일을 입력하세요" required>
+                <div class="input-container">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="username, Email or phone" required>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="password" class="form-label">비밀번호</label>
-                <input type="password" id="password" name="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+                <div class="input-container">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Password" required>
+                    <button type="button" class="password-toggle" id="passwordToggle">
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="remember-forgot">
-                <label class="remember-me">
-                    <input type="checkbox" name="remember" id="remember">
-                    <span>로그인 상태 유지</span>
+            <div class="login-options">
+                <label class="auto-signin">
+                    <input type="checkbox" name="autoSignin" id="autoSignin">
+                    <span class="checkmark"></span>
+                    Auto sign in
                 </label>
-                <a href="#" class="forgot-link">비밀번호 찾기</a>
+                <a href="#" class="forgot-link">Forgot password?</a>
             </div>
 
             <button type="submit" class="login-btn">
-                <i class="fas fa-sign-in-alt"></i>
-                로그인
+                Sign In
             </button>
         </form>
 
-        <!-- Divider -->
-        <div class="divider">
-            <span>또는</span>
+        <!-- Sign Up Link -->
+        <div class="signup-link">
+            No account? <a href="Controller?type=register" id="signupLink">sign up now</a>
         </div>
 
         <!-- Social Login -->
         <div class="social-login">
-            <a href="#" class="social-btn" id="googleLogin">
+            <a href="#" class="social-icon" id="googleLogin">
                 <i class="fab fa-google"></i>
-                Google
             </a>
-            <a href="#" class="social-btn" id="kakaoLogin">
-                <i class="fas fa-comment"></i>
-                Kakao
+            <a href="#" class="social-icon" id="githubLogin">
+                <i class="fab fa-github"></i>
             </a>
-        </div>
-
-        <!-- Sign Up Link -->
-        <div class="signup-link">
-            계정이 없으신가요? <a href="Controller?type=register" id="signupLink">회원가입</a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('loginForm');
-            const emailInput = document.getElementById('email');
+            const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const autoSignin = document.getElementById('autoSignin');
             const googleLogin = document.getElementById('googleLogin');
-            const kakaoLogin = document.getElementById('kakaoLogin');
+            const githubLogin = document.getElementById('githubLogin');
             const signupLink = document.getElementById('signupLink');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+
+            // Tab switching
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Password toggle
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            });
 
             // Form validation and submission
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                const email = emailInput.value.trim();
+                const username = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
                 
                 // Basic validation
-                if (!email) {
-                    showError(emailInput, '이메일을 입력해주세요.');
-                    return;
-                }
-                
-                if (!isValidEmail(email)) {
-                    showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
+                if (!username) {
+                    showError(usernameInput, '사용자명, 이메일 또는 전화번호를 입력해주세요.');
                     return;
                 }
                 
@@ -196,19 +219,18 @@
                 alert('Google 로그인 기능이 구현될 예정입니다.');
             });
 
-            kakaoLogin.addEventListener('click', function(e) {
+            githubLogin.addEventListener('click', function(e) {
                 e.preventDefault();
-                alert('Kakao 로그인 기능이 구현될 예정입니다.');
+                alert('GitHub 로그인 기능이 구현될 예정입니다.');
             });
 
 
 
 
-            // Remember me checkbox
-            const rememberCheckbox = document.getElementById('remember');
-            rememberCheckbox.addEventListener('change', function() {
+            // Auto sign in checkbox
+            autoSignin.addEventListener('change', function() {
                 if (this.checked) {
-                    console.log('로그인 상태 유지가 활성화되었습니다.');
+                    console.log('자동 로그인이 활성화되었습니다.');
                 }
             });
         });
