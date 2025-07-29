@@ -39,8 +39,8 @@
             <div class="auth-buttons">
                 <a href="#" class="btn btn-login">KOR</a>
                 <a href="#" class="btn btn-login">ENG</a>
-                <a href="Login.jsp" class="btn btn-login">로그인</a>
-                <a href="#" class="btn btn-register">회원가입</a>
+                <a href="Controller?type=login" class="btn btn-login">로그인</a>
+                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
             </div>
         </div>
     </header>

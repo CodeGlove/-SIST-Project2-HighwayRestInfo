@@ -22,7 +22,7 @@
 </head>
 <body>
     <!-- Back to Home Link -->
-    <a href="MainPage.jsp" class="back-home">
+    <a href="mainpage.jsp" class="back-home">
         <i class="fas fa-arrow-left"></i>
         홈으로 돌아가기
     </a>
@@ -46,13 +46,11 @@
             <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
                 <input type="email" id="email" name="email" class="form-input" placeholder="이메일을 입력하세요" required>
-                <i class="fas fa-envelope input-icon"></i>
             </div>
 
             <div class="form-group">
                 <label for="password" class="form-label">비밀번호</label>
                 <input type="password" id="password" name="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
-                <i class="fas fa-lock input-icon"></i>
             </div>
 
             <div class="remember-forgot">
@@ -88,7 +86,7 @@
 
         <!-- Sign Up Link -->
         <div class="signup-link">
-            계정이 없으신가요? <a href="#" id="signupLink">회원가입</a>
+            계정이 없으신가요? <a href="Controller?type=register" id="signupLink">회원가입</a>
         </div>
     </div>
 
@@ -133,7 +131,7 @@
                 showSuccess('로그인 중입니다...');
                 setTimeout(() => {
                     alert('로그인이 완료되었습니다!');
-                    window.location.href = 'MainPage.jsp';
+                    window.location.href = 'mainpage.jsp';
                 }, 1500);
             });
 
@@ -203,25 +201,8 @@
                 alert('Kakao 로그인 기능이 구현될 예정입니다.');
             });
 
-            // Sign up link
-            signupLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('회원가입 페이지로 이동합니다.');
-            });
 
-            // Input focus effects
-            const inputs = document.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentNode.querySelector('.input-icon').style.color = '#f39c12';
-                });
-                
-                input.addEventListener('blur', function() {
-                    if (!this.value) {
-                        this.parentNode.querySelector('.input-icon').style.color = '#7f8c8d';
-                    }
-                });
-            });
+
 
             // Remember me checkbox
             const rememberCheckbox = document.getElementById('remember');
