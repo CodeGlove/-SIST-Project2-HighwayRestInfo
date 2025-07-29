@@ -1,0 +1,374 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'PretendardVariable', 'Roboto', sans-serif;
+    background: linear-gradient(180deg, #f8fafc 0%, #e9f1fb 100%);
+    color: #222;
+    min-height: 100vh;
+    font-optical-sizing: auto;
+    font-variation-settings: "wdth" 100;
+}
+
+.header {
+    background: #fff;
+    box-shadow: none;
+    border-bottom: 1px solid #e5e8eb;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 64px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #3182f6;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -1px;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3182f6;
+    font-size: 1.6rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: #222;
+}
+
+.nav-links a {
+    color: #222;
+    text-decoration: none;
+    transition: color 0.2s;
+    font-weight: 400;
+}
+
+.nav-links a:hover {
+    color: #3182f6;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 0.7rem;
+}
+
+.btn {
+    padding: 0.45rem 1.3rem;
+    border: none;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 1rem;
+    background: none;
+    color: #222;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+}
+
+.btn-login {
+    background: none;
+    color: #222;
+    border: 1.5px solid #e5e8eb;
+}
+
+.btn-login:hover {
+    background: #f1f5f9;
+    color: #3182f6;
+    border-color: #bcdffb;
+}
+
+.btn-register {
+    background: #3182f6;
+    color: #fff;
+    border: none;
+}
+
+.btn-register:hover {
+    background: #2563eb;
+}
+
+.hero {
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    padding-top: 100px;
+    padding-bottom: 60px;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+    line-height: 1.18;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    font-weight: 400;
+}
+
+.search-container {
+    display: flex;
+    gap: 0.7rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 2px 16px 0 rgba(49, 130, 246, 0.04);
+    padding: 0.5rem 1rem;
+    max-width: 520px;
+    margin: 0 auto 2.5rem auto;
+    align-items: center;
+    border: 1.5px solid #e5e8eb;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 1.1rem;
+    padding: 0.7rem 0.5rem;
+    outline: none;
+    color: #222;
+    font-family: inherit;
+}
+
+.search-input::placeholder {
+    color: #b0b8c1;
+    font-size: 1.05rem;
+}
+
+.search-btn {
+    background: #3182f6;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    font-size: 1.05rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-btn:hover {
+    background: #2563eb;
+}
+
+.common-searches {
+    margin-top: 2.5rem;
+}
+
+.common-searches h3 {
+    color: #222;
+    font-size: 1.1rem;
+    margin-bottom: 1.1rem;
+    font-weight: 500;
+}
+
+.search-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.search-tag {
+    background: #f1f5f9;
+    color: #3182f6;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-tag:hover {
+    background: #3182f6;
+    color: #fff;
+}
+
+.search-tag i {
+    font-size: 0.95rem;
+    color: #3182f6;
+    transition: color 0.2s;
+}
+
+.search-tag:hover i {
+    color: #fff;
+}
+
+@media (max-width: 900px) {
+    .nav-container {
+        padding: 0 16px;
+    }
+
+    .hero h1 {
+        font-size: 2.1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .nav-container {
+        padding: 0 8px;
+    }
+
+    .hero {
+        min-height: 400px;
+        padding-top: 70px;
+        padding-bottom: 30px;
+    }
+
+    .hero h1 {
+        font-size: 1.3rem;
+    }
+
+    .search-container {
+        flex-direction: column;
+        border-radius: 24px;
+        padding: 0.7rem 0.7rem;
+    }
+
+    .search-btn {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-up {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Highway Theme Enhancements */
+.search-container:hover {
+    box-shadow: 0 15px 40px rgba(44, 62, 80, 0.3);
+    transform: translateY(-2px);
+    border-color: #e67e22;
+}
+
+.search-btn:active {
+    transform: translateY(0);
+}
+
+.search-tag:active {
+    transform: translateY(0);
+}
+
+/* Focus states for accessibility */
+.search-input:focus,
+.search-btn:focus,
+.search-tag:focus {
+    outline: 2px solid #f39c12;
+    outline-offset: 2px;
+}
+
+.btn:focus {
+    outline: 2px solid #ecf0f1;
+    outline-offset: 2px;
+}
+
+/* Road sign inspired elements */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    right: 10%;
+    width: 60px;
+    height: 60px;
+    background: #e74c3c;
+    border-radius: 50%;
+    opacity: 0.1;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.2;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.1;
+    }
+}
