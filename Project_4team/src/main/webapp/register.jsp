@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: tak
-  Date: 25. 7. 28.
-  Time: 오후 3:24
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -28,80 +21,105 @@
     </style>
 </head>
 <body>
-    <a href="MainPage.jsp" class="back-home">
+    <a href="mainpage.jsp" class="back-home">
         <i class="fas fa-arrow-left"></i>
         홈으로 돌아가기
     </a>
     <div class="register-container fade-in-up">
+        <!-- Header -->
         <div class="register-header">
-            <div class="logo-container">
-                <div class="logo-icon"><i class="fas fa-road"></i></div>
-                <h1>HighwayGuide</h1>
+            <div class="logo">highwayguide</div>
+            <h1 class="heading">회원가입하고<br>비즈니스 성공을 시작해 보세요!</h1>
+            <div class="login-link-top">
+                이미 계정이 있으신가요? <a href="login.jsp">로그인하기</a>
             </div>
-            <h2 class="register-title">회원가입</h2>
-            <p class="register-subtitle">고속도로 정보 서비스를 이용하려면 회원가입하세요</p>
         </div>
+
+        <!-- Form -->
         <form class="register-form" id="registerForm">
             <div class="form-group">
-                <label for="name" class="form-label">이름</label>
-                <input type="text" id="name" name="name" class="form-input" placeholder="이름을 입력하세요" required>
-                <i class="fas fa-user input-icon"></i>
-            </div>
-            <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
-                <input type="email" id="email" name="email" class="form-input" placeholder="이메일을 입력하세요" required>
-                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" id="email" name="email" class="form-input" placeholder="이메일을 입력해 주세요" required>
             </div>
+            
             <div class="form-group">
                 <label for="password" class="form-label">비밀번호</label>
-                <input type="password" id="password" name="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
-                <i class="fas fa-lock input-icon"></i>
+                <div class="password-input-container">
+                    <input type="password" id="password" name="password" class="form-input" placeholder="영문, 숫자, 특수문자가 모두 들어간 8자 이상" required>
+                    <button type="button" class="password-toggle" id="passwordToggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
+            
             <div class="form-group">
                 <label for="password2" class="form-label">비밀번호 확인</label>
-                <input type="password" id="password2" name="password2" class="form-input" placeholder="비밀번호를 다시 입력하세요" required>
-                <i class="fas fa-lock input-icon"></i>
+                <div class="password-input-container">
+                    <input type="password" id="password2" name="password2" class="form-input" placeholder="비밀번호를 한번 더 입력해 주세요" required>
+                    <button type="button" class="password-toggle" id="password2Toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
+
+            <!-- Terms Agreement -->
+            <div class="terms-container">
+                <div class="terms-header">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="allAgree" class="checkbox-input">
+                        <span class="checkmark"></span>
+                        모두 동의합니다.
+                    </label>
+                </div>
+                <div class="terms-list">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="ageAgree" class="checkbox-input" required>
+                        <span class="checkmark"></span>
+                        만 14세 이상입니다.
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="serviceAgree" class="checkbox-input" required>
+                        <span class="checkmark"></span>
+                        서비스 이용약관에 동의합니다.
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="privacyAgree" class="checkbox-input" required>
+                        <span class="checkmark"></span>
+                        개인정보 수집 이용에 동의합니다.
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="marketingAgree" class="checkbox-input">
+                        <span class="checkmark"></span>
+                        마케팅 수신 홍보목적의 개인정보 수집 및 이용에 동의합니다.(선택)
+                    </label>
+                </div>
+            </div>
+
             <button type="submit" class="register-btn">
-                <i class="fas fa-user-plus"></i>
-                회원가입
+                가입완료
             </button>
         </form>
-        <div class="divider"><span>또는</span></div>
-        <div class="social-login">
-            <a href="#" class="social-btn" id="googleRegister">
-                <i class="fab fa-google"></i>
-                Google
-            </a>
-            <a href="#" class="social-btn" id="kakaoRegister">
-                <i class="fas fa-comment"></i>
-                Kakao
-            </a>
-        </div>
-        <div class="login-link">
-            이미 계정이 있으신가요? <a href="Login.jsp">로그인</a>
-        </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const registerForm = document.getElementById('registerForm');
-            const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
             const password2Input = document.getElementById('password2');
-            const googleRegister = document.getElementById('googleRegister');
-            const kakaoRegister = document.getElementById('kakaoRegister');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const password2Toggle = document.getElementById('password2Toggle');
+            const allAgree = document.getElementById('allAgree');
+            const ageAgree = document.getElementById('ageAgree');
+            const serviceAgree = document.getElementById('serviceAgree');
+            const privacyAgree = document.getElementById('privacyAgree');
+            const marketingAgree = document.getElementById('marketingAgree');
 
             registerForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
                 const password = passwordInput.value.trim();
                 const password2 = password2Input.value.trim();
-                if (!name) {
-                    showError(nameInput, '이름을 입력해주세요.');
-                    return;
-                }
+                
                 if (!email) {
                     showError(emailInput, '이메일을 입력해주세요.');
                     return;
@@ -114,23 +132,38 @@
                     showError(passwordInput, '비밀번호를 입력해주세요.');
                     return;
                 }
-                if (password.length < 6) {
-                    showError(passwordInput, '비밀번호는 6자 이상이어야 합니다.');
+                if (password.length < 8) {
+                    showError(passwordInput, '비밀번호는 8자 이상이어야 합니다.');
+                    return;
+                }
+                if (!isValidPassword(password)) {
+                    showError(passwordInput, '영문, 숫자, 특수문자가 모두 포함되어야 합니다.');
                     return;
                 }
                 if (password !== password2) {
                     showError(password2Input, '비밀번호가 일치하지 않습니다.');
                     return;
                 }
+                if (!ageAgree.checked || !serviceAgree.checked || !privacyAgree.checked) {
+                    alert('필수 약관에 동의해주세요.');
+                    return;
+                }
                 showSuccess('회원가입 중입니다...');
                 setTimeout(() => {
                     alert('회원가입이 완료되었습니다!');
-                    window.location.href = 'Login.jsp';
+                    window.location.href = 'Controller?type=login';
                 }, 1500);
             });
             function isValidEmail(email) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
+            }
+
+            function isValidPassword(password) {
+                const hasLetter = /[a-zA-Z]/.test(password);
+                const hasNumber = /\d/.test(password);
+                const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                return hasLetter && hasNumber && hasSpecial;
             }
             function showError(input, message) {
                 const existingError = input.parentNode.querySelector('.error-message');
@@ -165,26 +198,36 @@
                 document.body.appendChild(successDiv);
                 setTimeout(() => { successDiv.remove(); }, 2000);
             }
-            googleRegister.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('Google 회원가입 기능이 구현될 예정입니다.');
+            // 비밀번호 토글 기능
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
             });
-            kakaoRegister.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('Kakao 회원가입 기능이 구현될 예정입니다.');
+
+            password2Toggle.addEventListener('click', function() {
+                const type = password2Input.type === 'password' ? 'text' : 'password';
+                password2Input.type = type;
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
             });
-            // Input focus effects
-            const inputs = document.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentNode.querySelector('.input-icon').style.color = '#3182f6';
+
+            // 모두 동의하기 기능
+            allAgree.addEventListener('change', function() {
+                const checkboxes = [ageAgree, serviceAgree, privacyAgree, marketingAgree];
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
                 });
-                input.addEventListener('blur', function() {
-                    if (!this.value) {
-                        this.parentNode.querySelector('.input-icon').style.color = '#b0b8c1';
-                    }
+            });
+
+            // 개별 체크박스 변경 시 모두 동의 상태 업데이트
+            [ageAgree, serviceAgree, privacyAgree, marketingAgree].forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const requiredCheckboxes = [ageAgree, serviceAgree, privacyAgree];
+                    const allChecked = requiredCheckboxes.every(cb => cb.checked) && marketingAgree.checked;
+                    allAgree.checked = allChecked;
                 });
             });
+
         });
     </script>
 </body>
