@@ -21,21 +21,31 @@
     </style>
 </head>
 <body>
+    <!-- Back to Home Link -->
     <a href="mainpage.jsp" class="back-home">
         <i class="fas fa-arrow-left"></i>
         홈으로 돌아가기
     </a>
+
+    <!-- Register Container -->
     <div class="register-container fade-in-up">
         <!-- Header -->
         <div class="register-header">
-            <div class="logo">highwayguide</div>
-            <h1 class="heading">회원가입하고<br>비즈니스 성공을 시작해 보세요!</h1>
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <h1>HighWayGuide</h1>
+                <div class="star-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
             <div class="login-link-top">
                 이미 계정이 있으신가요? <a href="login.jsp">로그인하기</a>
             </div>
         </div>
 
-        <!-- Form -->
+        <!-- Register Form -->
         <form class="register-form" id="registerForm">
             <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
@@ -114,6 +124,29 @@
             const privacyAgree = document.getElementById('privacyAgree');
             const marketingAgree = document.getElementById('marketingAgree');
 
+            // 스크롤 애니메이션
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 관찰할 요소들
+            document.querySelectorAll('.form-group, .terms-container, .register-btn').forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                element.style.transition = 'all 0.6s ease-out';
+                observer.observe(element);
+            });
+
             registerForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const email = emailInput.value.trim();
@@ -188,7 +221,7 @@
                 successDiv.style.position = 'fixed';
                 successDiv.style.top = '20px';
                 successDiv.style.right = '20px';
-                successDiv.style.background = '#3182f6';
+                successDiv.style.background = '#667eea';
                 successDiv.style.color = '#fff';
                 successDiv.style.padding = '1rem 2rem';
                 successDiv.style.borderRadius = '8px';
