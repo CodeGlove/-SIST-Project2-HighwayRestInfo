@@ -28,6 +28,7 @@ public class EmailSendAction implements Action{
 
         final String fromEmail="jaeyoon0725.utube@gmail.com";
         final String password="mkphhkrfgvvwhyqk";
+
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
