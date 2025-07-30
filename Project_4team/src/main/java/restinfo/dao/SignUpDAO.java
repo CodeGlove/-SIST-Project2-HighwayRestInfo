@@ -7,22 +7,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SignUpDAO {
-    public static int add(String id, String pwd, String name, String home, String interest) {
+    public static int add(String id, String Hpwd) {
         Map<String, String> m = new HashMap<>();
         m.put("ID", id);
-        m.put("Pwd", pwd);
-        m.put("Name", name);
-        m.put("Home", home);
-        m.put("Interest", interest);
+        m.put("Pwd", Hpwd);
+
 
         SqlSession ss = FactoryService.getFactory().openSession();
-        int cnt = ss.insert("restinfo.singUp", m);
+        int cnt = ss.insert("restinfo.signUp", m);
 
         if (cnt > 0)
             ss.commit();
         else
             ss.rollback();
         ss.close();
+
         return cnt;
 
     }
