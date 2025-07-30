@@ -8,14 +8,14 @@
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://localhost:3306/my_db"/>
-                <property name="username" value="root"/>
-                <property name="password" value="1111"/>
+                <property name="url" value="jdbc:mysql://restinfo-db-instance.c50u4mqy2h6b.ap-northeast-2.rds.amazonaws.com:3306/my_db?serverTimezone=Asia/Seoul&amp;useSSL=false"/>
+                <property name="username" value="admin"/>
+                <property name="password" value="gbrpthwjdqh"/>
             </dataSource>
         </environment>
     </environments>
     <mappers>
-        <mapper resource="mybatis/mapper/bbs.xml"/>
-        <mapper resource="mybatis/mapper/signUp.xml"/>
+        <mapper resource="mybatis/mapper/emp.xml"/>
+        <mapper resource="mybatis/mapper/dept.xml"/>
     </mappers>
 </configuration>
