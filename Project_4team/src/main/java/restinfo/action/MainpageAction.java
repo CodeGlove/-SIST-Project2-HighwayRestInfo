@@ -7,6 +7,6 @@ public class MainpageAction implements Action {
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
 		
-		return "mainpage.jsp";
+		return "index.jsp";
 	}
 }
