@@ -6,6 +6,6 @@ import javax.servlet.http.HttpServletResponse;
 public class RegAction implements Action {
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
-		return "register1.jsp";
+		return "signupOptions.jsp";
 	}
 }

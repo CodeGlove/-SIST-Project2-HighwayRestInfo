@@ -22,7 +22,7 @@
 </head>
 <body>
     <!-- Back to Home Link -->
-    <a href="mainpage.jsp" class="back-home">
+    <a href="index.jsp" class="back-home">
         <i class="fas fa-arrow-left"></i>
         홈으로 돌아가기
     </a>
@@ -57,7 +57,7 @@
                     <i class="fas fa-n"></i>
                     네이버로 시작하기
                 </a>
-                <a href="register.jsp" class="btn btn-email" id="emailBtn">
+                <a href="signupForm.jsp" class="btn btn-email" id="emailBtn">
                     이메일로 시작하기
                 </a>
             </div>
