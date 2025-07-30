@@ -1,9 +1,6 @@
 package restinfo.action;
 
-import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
+import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
@@ -48,7 +45,7 @@ public class EmailSendAction implements Action{
             msg.setFrom(new InternetAddress(fromEmail, "HighwayGuide 관리자"));
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
             msg.setSubject("[HighwayGuide] 회원가입 이메일 인증번호입니다.");
-            msg.setText("인증번호: " + authCode);
+            msg.setText("인증번호: " + Code);
 
             Transport.send(msg);
 
