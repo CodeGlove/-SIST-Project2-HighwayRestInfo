@@ -22,7 +22,7 @@
 </head>
 <body>
     <!-- Back to Home Link -->
-    <a href="mainpage.jsp" class="back-home">
+    <a href="index.jsp" class="back-home">
         <i class="fas fa-arrow-left"></i>
         홈으로 돌아가기
     </a>
@@ -154,7 +154,7 @@
                 showSuccess('로그인 중입니다...');
                 setTimeout(() => {
                     alert('로그인이 완료되었습니다!');
-                    window.location.href = 'mainpage.jsp';
+                    window.location.href = 'index.jsp';
                 }, 1500);
             });
 
