@@ -24,6 +24,6 @@ public class LoginAction implements Action {
 			loginSuccess = false; //로그인 실패
 		}
 
-		return "login.jsp";
+		return null; //비동기 요청에 대한 응답(페이지 이동x)
 	}
 }
