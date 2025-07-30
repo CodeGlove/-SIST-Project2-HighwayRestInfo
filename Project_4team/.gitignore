@@ -35,4 +35,5 @@ build/
 .vscode/
 
 ### Mac OS ###
-.DS_Stores
+.DS_Store
+src/main/resources/mybatis/config/conf.xml
