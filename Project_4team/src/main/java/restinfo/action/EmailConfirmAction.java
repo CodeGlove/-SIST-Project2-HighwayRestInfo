@@ -11,10 +11,13 @@ public class EmailConfirmAction implements Action{
 
         // script에서 사용자가 입력한 code
         String submittedCode = request.getParameter("code");
-
+        System.out.println("코드는"+submittedCode);
         // 실제로 메일로 전송된 코드
         HttpSession session = request.getSession();
         Integer realAuthCode = (Integer) session.getAttribute("code");
+
+
+
 
         if (realAuthCode != null && submittedCode != null && submittedCode.equals(String.valueOf(realAuthCode))) {
             // 인증 성공

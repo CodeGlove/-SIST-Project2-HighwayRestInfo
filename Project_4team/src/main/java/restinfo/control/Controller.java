@@ -90,39 +90,32 @@ public class Controller extends HttpServlet {
             }
         }//while의 끝
     }
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 요청시 한글처리
-        request.setCharacterEncoding("utf-8");
-        
-        //type이라는 파라미터 받기
-        String type = request.getParameter("type");
-        
-        //type이 전달되지 않아 null을 가지면 index로 초기화 하자!
-        if(type == null)
-            type = "mainpage";
-        
-        //type으로 받은 값이 actionMap의 key로 사용되고 있으므로
-        // 원하는 객체를 얻어내자!
-        Action action = actionMap.get(type);
-        
-        String viewPath = action.execute(request, response);
-        
-        //viewPath가 null이면 현재 컨트롤러를 sendRedirect로
-        // 다시 호출되도록 한다.
-        if(viewPath == null)
-            response.sendRedirect("Controller");
-        else{
-            // forward로 이동~~~~~~~~~!
-            RequestDispatcher disp =
-                    request.getRequestDispatcher(viewPath);
-            disp.forward(request,response);
-        }
+        // GET 요청은 POST로 넘겨서 모든 처리를 한 곳에서 관리
+        doPost(request, response);
     }
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+        // 1. POST 요청의 한글 깨짐을 막기 위해 인코딩 설정
+        request.setCharacterEncoding("UTF-8");
+
+        // 2. type 파라미터를 받아 담당자를 찾음
+        String type = request.getParameter("type");
+        if (type == null)
+            type = "mainpage";
+        Action action = actionMap.get(type);
+
+        // 3. 담당자에게 실제 작업 실행을 시킴
+        String viewPath = action.execute(request, response);
+
+        // 4. viewPath가 null이 아닐 경우에만 페이지 이동(forward)
+        // (AJAX 통신은 null을 리턴하므로 이 부분은 실행되지 않음)
+        if (viewPath != null) {
+            RequestDispatcher disp = request.getRequestDispatcher(viewPath);
+            disp.forward(request, response);
+        }
     }
 }

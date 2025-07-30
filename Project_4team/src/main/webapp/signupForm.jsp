@@ -101,6 +101,7 @@
             transform: translateY(-1px);
         }
 
+
         .confirm-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
@@ -189,7 +190,6 @@
                             <input type="text" id="verificationCode" name="verificationCode" class="form-input" placeholder="인증번호 6자리를 입력하세요" maxlength="6">
 
                            <%--타이머 추가--%>
-                            <span id="timer" class="verification-message" style="margin-left: 0.5rem; white-space: nowrap;"></span>
 
                             <button type="button" class="confirm-btn" id="confirmBtn">
                                 확인
@@ -305,70 +305,89 @@
                 observer.observe(element);
             });
 
-            // 이메일 인증 버튼 클릭 이벤트
-            verifyBtn.addEventListener('click', function() {
+            // '인증하기' 버튼 이벤트 리스너 (최종 수정본)************************************
+            verifyBtn.addEventListener('click', async function() {
                 const email = emailInput.value.trim();
-
-                if (!email) {
-                    showError(emailInput, '이메일을 입력해주세요.');
-                    return;
-                }
-
                 if (!isValidEmail(email)) {
                     showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
                     return;
                 }
 
-                // 인증 버튼 비활성화
                 verifyBtn.disabled = true;
                 verifyBtn.textContent = '인증번호 발송 중...';
 
-                // 인증번호 입력 컨테이너 표시
-                verificationContainer.classList.add('show');
-                verificationCode.focus();
+                // 1. 전송할 데이터를 URLSearchParams로 만듭니다.
+                const params = new URLSearchParams();
+                params.append('email', email);
 
-                // 시뮬레이션: 2초 후 인증번호 발송 완료
-                setTimeout(() => {
-                    verifyBtn.textContent = '재발송';
-                    verifyBtn.disabled = false;
-                    showVerificationMessage('인증번호가 발송되었습니다. 이메일을 확인해주세요.', 'success');
-                }, 2000);
+                // 2. POST 방식으로 fetch 요청을 보냅니다.
+                // URL에서는 email 파라미터를 제거합니다.
+                const response = await fetch('Controller?type=emailSend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
+                });
+
+                if (response.ok) {
+                    verificationContainer.classList.add('show');
+                    verificationCode.focus();
+                    showVerificationMessage('인증번호가 발송되었습니다.', 'success');
+                } else {
+                    showVerificationMessage('인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+                }
+                verifyBtn.textContent = '재발송';
+                verifyBtn.disabled = false;
             });
 
-            // 인증번호 확인 버튼 클릭 이벤트
-            confirmBtn.addEventListener('click', function() {
+            // '인증번호 확인' 버튼 이벤트 리스너 (최종 수정본)******************************
+            confirmBtn.addEventListener('click', async function() {
                 const code = verificationCode.value.trim();
-
-                if (!code) {
-                    showVerificationMessage('인증번호를 입력해주세요.', 'error');
-                    return;
-                }
-
                 if (code.length !== 6) {
                     showVerificationMessage('인증번호는 6자리입니다.', 'error');
                     return;
                 }
 
-                // 확인 버튼 비활성화
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = '확인 중...';
 
-                // 시뮬레이션: 1초 후 인증 완료
-                setTimeout(() => {
-                    isEmailVerified = true;
-                    confirmBtn.textContent = '인증완료';
-                    confirmBtn.style.background = '#03C75A';
-                    showVerificationMessage('이메일 인증이 완료되었습니다.', 'success');
+                try {
+                    const params = new URLSearchParams();
+                    params.append('code', code);
 
-                    // 인증 완료 후 입력 필드 비활성화
-                    emailInput.disabled = true;
-                    verificationCode.disabled = true;
+                    const response = await fetch('Controller?type=emailConfirm', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
 
-                    // 재발송 버튼 비활성화
-                    verifyBtn.disabled = true;
-                    verifyBtn.textContent = '인증완료';
-                    verifyBtn.style.background = '#03C75A';
-                }, 1000);
+                    if (response.ok) {
+                        isEmailVerified = true;
+
+                        // 인증 성공 UI 처리 (성공 시에는 버튼 상태를 되돌리지 않음)
+                        confirmBtn.textContent = '인증완료';
+                        confirmBtn.style.background = '#03C75A';
+                        emailInput.disabled = true;
+                        verificationCode.disabled = true;
+                        verifyBtn.disabled = true;
+                        verifyBtn.textContent = '인증완료';
+                        verifyBtn.style.background = '#03C75A';
+                    } else {
+                        isEmailVerified = false;
+                        showVerificationMessage('인증번호가 일치하지 않습니다.', 'error');
+                        // 실패 시 버튼 상태 복구
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '확인';
+                    }
+                } catch (error) {
+                    console.error('Fetch Error:', error);
+                    showVerificationMessage('인증 확인 중 오류가 발생했습니다.', 'error');
+                    // 에러 발생 시 버튼 상태 복구
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = '확인';
+
+                }
             });
 
             // 인증번호 입력 필드에서 엔터 키 이벤트
