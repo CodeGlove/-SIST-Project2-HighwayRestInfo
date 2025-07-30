@@ -13,7 +13,7 @@ import java.util.Properties;
 
 @WebServlet("/Controller")
 public class Controller extends HttpServlet {
-    
+    //useBodyEncodingForURI="true"*******
     // Properties파일의 경로를 저장하자!
     private String myParam = "/WEB-INF/action.properties";
     

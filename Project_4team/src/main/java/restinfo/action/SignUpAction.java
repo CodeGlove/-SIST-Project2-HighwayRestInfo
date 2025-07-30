@@ -15,14 +15,16 @@ public class SignUpAction implements Action{
         request.setCharacterEncoding("utf-8");
         String email=request.getParameter("email");
         String pwd = request.getParameter("password");
+        String name = request.getParameter("name");
 
         //해쉬 값 으로 넣기
         String hashpwd= BCrypt.hashpw(pwd,BCrypt.gensalt());
         System.out.println(hashpwd);
         System.out.println(email);
+        System.out.println(name);
 
 
-            int cnt = SignUpDAO.add(email, hashpwd);
+            int cnt = SignUpDAO.add(email, hashpwd, name);
 
             if (cnt > 0) {
                 System.out.println("완료");

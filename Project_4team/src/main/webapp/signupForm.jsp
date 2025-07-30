@@ -166,8 +166,15 @@
             </div>
         </div>
 
+
         <!-- Register Form -->
         <form class="register-form" id="registerForm" method="post" action="Controller?type=signUp">
+
+            <div class="form-group">
+                <label for="name" class="form-label">닉네임</label>
+                <input type="text" id="name" name="name" class="form-input" placeholder="이름을 입력해 주세요" required>
+            </div>
+
             <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
                 <div class="email-verification-container">
@@ -180,6 +187,10 @@
                     <div class="verification-code-container" id="verificationContainer">
                         <div class="verification-input-group">
                             <input type="text" id="verificationCode" name="verificationCode" class="form-input" placeholder="인증번호 6자리를 입력하세요" maxlength="6">
+
+                           <%--타이머 추가--%>
+                            <span id="timer" class="verification-message" style="margin-left: 0.5rem; white-space: nowrap;"></span>
+
                             <button type="button" class="confirm-btn" id="confirmBtn">
                                 확인
                             </button>
@@ -251,6 +262,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const registerForm = document.getElementById('registerForm');
             const emailInput = document.getElementById('email');
+            const nameInput=document.getElementById("name");
             const passwordInput = document.getElementById('password');
             const password2Input = document.getElementById('password2');
             const passwordToggle = document.getElementById('passwordToggle');
@@ -406,7 +418,12 @@
                 const email = emailInput.value.trim();
                 const password = passwordInput.value.trim();
                 const password2 = password2Input.value.trim();
+                const name =nameInput.value.trim();
 
+                if(name.length<1){
+                    showError(nameInput,"닉네임을 입력해주세요")
+                    return
+                }
                 if (!isValidEmail(email)) {
                     showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
                     return;

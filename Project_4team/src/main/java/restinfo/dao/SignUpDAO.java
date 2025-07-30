@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SignUpDAO {
-    public static int add(String id, String Hpwd) {
+    public static int add(String id, String Hpwd, String name) {
         Map<String, String> m = new HashMap<>();
         m.put("ID", id);
         m.put("Pwd", Hpwd);
+        m.put("Name", name);
+
 
 
         SqlSession ss = FactoryService.getFactory().openSession();
