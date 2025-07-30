@@ -167,7 +167,7 @@
         </div>
 
         <!-- Register Form -->
-        <form class="register-form" id="registerForm">
+        <form class="register-form" id="registerForm" method="post" action="Controller?type=signUp">
             <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
                 <div class="email-verification-container">
@@ -188,7 +188,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="password" class="form-label">비밀번호</label>
                 <div class="password-input-container">
@@ -198,7 +198,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="password2" class="form-label">비밀번호 확인</label>
                 <div class="password-input-container">
@@ -260,14 +260,14 @@
             const serviceAgree = document.getElementById('serviceAgree');
             const privacyAgree = document.getElementById('privacyAgree');
             const marketingAgree = document.getElementById('marketingAgree');
-            
+
             // 이메일 인증 관련 요소들
             const verifyBtn = document.getElementById('verifyBtn');
             const verificationContainer = document.getElementById('verificationContainer');
             const verificationCode = document.getElementById('verificationCode');
             const confirmBtn = document.getElementById('confirmBtn');
             const verificationMessage = document.getElementById('verificationMessage');
-            
+
             let isEmailVerified = false;
 
             // 스크롤 애니메이션
@@ -296,25 +296,25 @@
             // 이메일 인증 버튼 클릭 이벤트
             verifyBtn.addEventListener('click', function() {
                 const email = emailInput.value.trim();
-                
+
                 if (!email) {
                     showError(emailInput, '이메일을 입력해주세요.');
                     return;
                 }
-                
+
                 if (!isValidEmail(email)) {
                     showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
                     return;
                 }
-                
+
                 // 인증 버튼 비활성화
                 verifyBtn.disabled = true;
                 verifyBtn.textContent = '인증번호 발송 중...';
-                
+
                 // 인증번호 입력 컨테이너 표시
                 verificationContainer.classList.add('show');
                 verificationCode.focus();
-                
+
                 // 시뮬레이션: 2초 후 인증번호 발송 완료
                 setTimeout(() => {
                     verifyBtn.textContent = '재발송';
@@ -326,32 +326,32 @@
             // 인증번호 확인 버튼 클릭 이벤트
             confirmBtn.addEventListener('click', function() {
                 const code = verificationCode.value.trim();
-                
+
                 if (!code) {
                     showVerificationMessage('인증번호를 입력해주세요.', 'error');
                     return;
                 }
-                
+
                 if (code.length !== 6) {
                     showVerificationMessage('인증번호는 6자리입니다.', 'error');
                     return;
                 }
-                
+
                 // 확인 버튼 비활성화
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = '확인 중...';
-                
+
                 // 시뮬레이션: 1초 후 인증 완료
                 setTimeout(() => {
                     isEmailVerified = true;
                     confirmBtn.textContent = '인증완료';
                     confirmBtn.style.background = '#03C75A';
                     showVerificationMessage('이메일 인증이 완료되었습니다.', 'success');
-                    
+
                     // 인증 완료 후 입력 필드 비활성화
                     emailInput.disabled = true;
                     verificationCode.disabled = true;
-                    
+
                     // 재발송 버튼 비활성화
                     verifyBtn.disabled = true;
                     verifyBtn.textContent = '인증완료';
@@ -389,7 +389,7 @@
             function showVerificationMessage(message, type) {
                 verificationMessage.textContent = message;
                 verificationMessage.className = `verification-message verification-${type}`;
-                
+
                 // 3초 후 메시지 제거
                 setTimeout(() => {
                     verificationMessage.textContent = '';
@@ -397,16 +397,16 @@
                 }, 3000);
             }
 
-            registerForm.addEventListener('submit', function(e) {
+            // 재윤 -- 아래 표시************ 표시까지 수정함 데이터action으로 전송위함.
+            registerForm.addEventListener('submit', async function(e) {
+                // 1. 폼의 기본 제출 기능은 막습니다.
                 e.preventDefault();
+
+                // 2. 모든 유효성 검사는 그대로 유지합니다.
                 const email = emailInput.value.trim();
                 const password = passwordInput.value.trim();
                 const password2 = password2Input.value.trim();
-                
-                if (!email) {
-                    showError(emailInput, '이메일을 입력해주세요.');
-                    return;
-                }
+
                 if (!isValidEmail(email)) {
                     showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
                     return;
@@ -415,16 +415,8 @@
                     showError(emailInput, '이메일 인증을 완료해주세요.');
                     return;
                 }
-                if (!password) {
-                    showError(passwordInput, '비밀번호를 입력해주세요.');
-                    return;
-                }
-                if (password.length < 8) {
-                    showError(passwordInput, '비밀번호는 8자 이상이어야 합니다.');
-                    return;
-                }
-                if (!isValidPassword(password)) {
-                    showError(passwordInput, '영문, 숫자, 특수문자가 모두 포함되어야 합니다.');
+                if (!password || password.length < 8 || !isValidPassword(password)) {
+                    showError(passwordInput, '비밀번호는 영문, 숫자, 특수문자가 모두 들어간 8자 이상이어야 합니다.');
                     return;
                 }
                 if (password !== password2) {
@@ -435,12 +427,51 @@
                     alert('필수 약관에 동의해주세요.');
                     return;
                 }
-                showSuccess('회원가입 중입니다...');
-                setTimeout(() => {
-                    alert('회원가입이 완료되었습니다!');
-                    window.location.href = 'Controller?type=login';
-                }, 1500);
+
+                // 3. (핵심) setTimeout 대신 fetch를 사용해 서버에 데이터를 전송합니다.
+                try {
+                    const submitBtn = document.querySelector('.register-btn');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '가입 처리 중...';
+
+                    emailInput.disabled = false;
+                    // 2. FormData 객체를 다시 사용합니다.
+                    const formData = new FormData(registerForm);
+                    // 3. 다시 비활성화합니다.
+                    emailInput.disabled = true;
+
+                    // fetch API로 서버에 데이터 전송
+                    const response = await fetch(registerForm.action, {
+                        method: 'POST',
+                        headers: {
+
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+
+                        body: new URLSearchParams(formData)
+                    });
+
+                    // 서버 응답 확인
+                    if (response.ok) {
+                        alert('회원가입이 완료되었습니다!');
+                        window.location.href = 'login.jsp'; // 성공 시 로그인 페이지로 이동
+                    } else {
+                        // 서버 측에서 문제가 발생했을 경우 (예: 중복된 이메일)
+                        alert('회원가입에 실패했습니다. 입력 정보를 확인해주세요.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '가입완료';
+                    }
+                } catch (error) {
+                    // 네트워크 문제 등 fetch 자체가 실패한 경우
+                    console.error('Fetch Error:', error);
+                    alert('서버와 통신 중 오류가 발생했습니다.');
+                    const submitBtn = document.querySelector('.register-btn');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '가입완료';
+                }
             });
+            //********************************************************************************
+
             function isValidEmail(email) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
@@ -455,11 +486,11 @@
             function showError(input, message) {
                 const existingError = input.parentNode.querySelector('.error-message');
                 if (existingError) existingError.remove();
-                
+
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message email-error-message';
                 errorDiv.textContent = message;
-                
+
                 // 이메일 입력 필드인 경우 부모 컨테이너에 추가
                 if (input.id === 'email') {
                     const emailContainer = input.closest('.email-verification-container');
@@ -467,7 +498,7 @@
                 } else {
                     input.parentNode.appendChild(errorDiv);
                 }
-                
+
                 input.style.borderColor = '#e74c3c';
                 setTimeout(() => {
                     if (errorDiv.parentNode) {
