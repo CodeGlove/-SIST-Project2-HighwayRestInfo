@@ -1,3 +1,7 @@
+<%@ page import="java.math.BigInteger" %>
+<%@ page import="java.security.SecureRandom" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -54,10 +58,24 @@
                 <i class="fas fa-comment"></i>
                 카카오로 시작하기
             </a>
-            <a href="#" class="btn btn-naver" id="naverBtn">
+            <%
+                String clientId = "iSIp9_85FJFKnAphuUp0";//애플리케이션 클라이언트 아이디값";
+                String redirectURI = URLEncoder.encode("http://127.0.0.1:8080/Project_4team_war_exploded/Controller?type=naverCallback", StandardCharsets.UTF_8);
+                SecureRandom random = new SecureRandom();
+                String state = new BigInteger(130, random).toString();
+
+                String apiURL = "https://nid.naver.com/oauth2.0/authorize?response_type=code";
+                apiURL += "&client_id=" + clientId;
+                apiURL += "&redirect_uri=" + redirectURI;
+                apiURL += "&state=" + state;
+
+                session.setAttribute("state", state);
+            %>
+            <a href="<%=apiURL%>" class="btn btn-naver">
                 <i class="fas fa-n"></i>
                 네이버로 시작하기
             </a>
+
             <a href="signupForm.jsp" class="btn btn-email" id="emailBtn">
                 이메일로 시작하기
             </a>
@@ -88,15 +106,9 @@
     </div>
 </div>
 
-<%--네이버 로그인을 위한 안보이는 body--%>
-<div id="naverIdLogin" style="display:none"></div>
-<script type="text/javascript" src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js"
-        charset="utf-8"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const kakaoBtn = document.getElementById('kakaoBtn');
-        const naverBtn = document.getElementById('naverBtn'); /*네이버 로그인 */
         const emailBtn = document.getElementById('emailBtn');
         const googleIcon = document.getElementById('googleIcon');
         const appleIcon = document.getElementById('appleIcon');
@@ -131,27 +143,6 @@
         kakaoBtn.addEventListener('click', function (e) {
             e.preventDefault();
             alert('카카오 로그인 기능이 구현될 예정입니다.');
-        });
-
-        // 네이버 로그인***********************************************************ing********************
-        // ===== 네이버 로그인 초기화 =====
-        const naverLogin = new naver.LoginWithNaverId({
-            clientId: "iSIp9_85FJFKnAphuUp0",
-            callbackUrl: "http://localhost:8080/Project_4team_war_exploded/Controller?type=naverCallback",
-            isPopup: true,
-        });
-        naverLogin.init();
-
-
-        // ===== '네이버로 시작하기' 버튼에 기능 연결 =====
-        naverBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // a 태그의 기본 동작(페이지 이동) 막기  아무것도입력안되어있어도 맨위로 가는 동작이 있기 때문   type=button으로했다면 필요없음
-
-            // id가 'naverIdLogin'인 div의 자식 요소(네이버가 만든 숨겨진 로그인 링크)를 클릭시킴
-            const naverLoginButton = document.getElementById('naverIdLogin').firstChild;
-            if(naverLoginButton) {
-                naverLoginButton.click();
-            }
         });
 
         // 이메일 로그인
