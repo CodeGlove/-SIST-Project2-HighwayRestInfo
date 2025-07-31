@@ -12,11 +12,12 @@ import java.io.PrintWriter;
 public class LoginAction implements Action {
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
-		//ID, PW 추출
+		//ID 추출
 		String id = request.getParameter("username");
 
+		// 아이디 입력 안됐거나 입력란이 비어있을경우
 		if(id==null || id.trim().isEmpty()){
-			return "login.jsp";
+			return "login.jsp"; //로그인창 이동
 		}
 
 		//******** id 파라미터가 있으면, 비동기 로그인 수행 ********

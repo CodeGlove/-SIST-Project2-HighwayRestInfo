@@ -134,12 +134,12 @@
     .btn-login:hover {
       color: #222;
     }
-
+    /******* 07/31 한결: 로그아웃 버튼 생성*/
     .btn-logout {
       color: #666;
       background: none;
     }
-
+    /******* 07/31 한결: 로그아웃 호버 생성*/
     .btn-logout:hover {
       color: #222;
     }
