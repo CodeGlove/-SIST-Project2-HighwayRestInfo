@@ -495,13 +495,13 @@
         <section class="search-section slide-up">
             <h2 style="text-align: center; margin-bottom: 2rem; color: #222; font-size: 1.8rem;">고속도로 정보 검색</h2>
             <!-- 검색 입력창과 검색 버튼을 포함하는 컨테이너 -->
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="검색어를 입력하세요 (예: 휴게소, 주유소, 음식점)">
-                <button class="search-btn">
+            <form action="kakaoMap.jsp" method="get" class="search-container">
+                <input type="text" name="search" class="search-input" placeholder="검색어를 입력하세요 (예: 휴게소, 주유소, 음식점)">
+                <button type="submit" class="search-btn">
                     <i class="fas fa-search"></i>
                     검색
                 </button>
-            </div>
+            </form>
             <!-- 자주 찾는 검색어를 태그 형태로 제공 -->
             <div class="search-tags">
                 <a href="#" class="search-tag"><i class="fas fa-gas-pump"></i>주유소</a>
