@@ -453,6 +453,122 @@ body {
     animation: spin 1s ease-in-out infinite;
 }
 
+/* 휴게소 리스트 */
+.rest-areas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.rest-area-item {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.rest-area-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+}
+
+.rest-area-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.rest-area-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.rest-area-type {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rest-area-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.rest-area-name {
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.rest-area-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.rest-area-details .road-name {
+    color: #667eea;
+    font-weight: 500;
+}
+
+.rest-area-details .distance {
+    color: #666;
+    font-weight: 600;
+}
+
+/* 이름 정보 표시 */
+.name-display {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    margin-top: 1rem;
+}
+
+.name-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.name-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    min-width: 100px;
+}
+
+.name-value {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);

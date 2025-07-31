@@ -1,18 +1,21 @@
 package restinfo.action;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 public class KakaoMapAction implements Action {
 
@@ -113,6 +116,7 @@ public class KakaoMapAction implements Action {
 
 					// 6단계: 응답 읽기
 					int responseCode = conn.getResponseCode();
+					System.out.println(responseCode);
 					BufferedReader in;
 
 					// 성공/실패에 따라 적절한 스트림 선택
@@ -142,7 +146,33 @@ public class KakaoMapAction implements Action {
 							// 8단계: 요약 정보 표시
 							if (jsonResponse.has("routes") && jsonResponse.getJSONArray("routes").length() > 0) {
 								JSONObject route = jsonResponse.getJSONArray("routes").getJSONObject(0);
+								// guides 배열에서 name 값들을 추출
+								List<String> guideNames = new ArrayList<>();
+								JSONArray sections = jsonResponse.getJSONArray("routes").getJSONObject(0)
+										.getJSONArray("sections");
 
+								for (int i = 0; i < sections.length(); i++) {
+									JSONObject section = sections.getJSONObject(i);
+									if (section.has("guides")) {
+										JSONArray guides = section.getJSONArray("guides");
+										for (int j = 0; j < guides.length(); j++) {
+											JSONObject guide = guides.getJSONObject(j);
+											if (guide.has("name") && !guide.getString("name").isEmpty()) {
+												String guideName = guide.getString("name");
+												// 휴게소 관련 키워드가 포함된 경우만 추가
+												if (guideName.contains("휴게소") || guideName.contains("졸음쉼터") ||
+														guideName.contains("서비스") || guideName.contains("REST") ||
+														guideName.contains("SERVICE")) {
+													guideNames.add(guideName);
+												}
+											}
+										}
+									}
+								}
+
+								// 추출된 이름들을 쉼표로 구분하여 하나의 문자열로 만듦
+								String name = String.join(", ", guideNames);
+								request.setAttribute("name", name);
 								if (route.has("summary")) {
 									JSONObject summary = route.getJSONObject("summary");
 
@@ -229,7 +259,7 @@ public class KakaoMapAction implements Action {
 
 	/**
 	 * 주소를 좌표로 변환하는 메서드
-	 * 
+	 *
 	 * @param address 변환할 주소 (한글)
 	 * @param apiKey  카카오 API 키
 	 * @return "경도,위도" 형태의 좌표 문자열, 실패시 null
@@ -238,7 +268,7 @@ public class KakaoMapAction implements Action {
 		// 1단계: 실제 카카오 Geocoding API 호출
 		try {
 			// 주소를 UTF-8로 URL 인코딩
-			String encodedAddress = URLEncoder.encode(address, "UTF-8");
+			String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
 			// 카카오 로컬 API 주소 검색 엔드포인트
 			String geocodingUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + encodedAddress;
 
