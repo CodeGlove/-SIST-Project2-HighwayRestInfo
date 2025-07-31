@@ -8,4 +8,7 @@ public class LoginAction implements Action {
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
 		return "login.jsp";
 	}
+
+
 }
+
