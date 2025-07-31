@@ -2,6 +2,7 @@
 <%@ page import="java.security.SecureRandom" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="restinfo.util.ConfigLoader" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -59,7 +60,7 @@
                 카카오로 시작하기
             </a>
             <%
-                String clientId = "iSIp9_85FJFKnAphuUp0";//애플리케이션 클라이언트 아이디값";
+                String clientId = ConfigLoader.getProperty("NAVER_CLIENT_ID");//애플리케이션 클라이언트 아이디값";
                 String redirectURI = URLEncoder.encode("http://127.0.0.1:8080/Project_4team_war_exploded/Controller?type=naverCallback", StandardCharsets.UTF_8);
                 SecureRandom random = new SecureRandom();
                 String state = new BigInteger(130, random).toString();
