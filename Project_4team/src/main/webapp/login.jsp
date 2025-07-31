@@ -114,48 +114,73 @@
 
             // Tab switching
             tabBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     tabBtns.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                 });
             });
 
             // Password toggle
-            passwordToggle.addEventListener('click', function() {
+            passwordToggle.addEventListener('click', function () {
                 const type = passwordInput.type === 'password' ? 'text' : 'password';
                 passwordInput.type = type;
                 this.innerHTML = type === 'password' ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
             });
 
             // Form validation and submission
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                
+
+                const formData = new FormData(loginForm);
+
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
-                
-                // Basic validation
+                //유효성 검사
                 if (!username) {
                     showError(usernameInput, '사용자명, 이메일 또는 전화번호를 입력해주세요.');
                     return;
                 }
-                
+
                 if (!password) {
                     showError(passwordInput, '비밀번호를 입력해주세요.');
                     return;
                 }
-                
+
                 if (password.length < 6) {
                     showError(passwordInput, '비밀번호는 6자 이상이어야 합니다.');
                     return;
                 }
-                
+
+                // ****** fetch API를 사용해서 서버와 실제 통신 ******
+                fetch('Controller?type=login', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                }).then(response => {
+                    //서버 응답이 정상이 아닐때 에러처리
+                    if (!response.ok) {
+                        throw new Error('서버 응답 오류가 발생했습니다.');
+                    }
+                    return response.json(); //응답을 JSON 형태로 파싱한다.
+                }).then(data => {
+                    //서버로부터 받은 JSON 결과에 따라 처리
+                    if (data.status === 'success') {
+                        alert("로그인이 완료되었습니다!");
+                        window.location.href = 'loginResult.jsp'; //성공시 index 화면으로 이동
+                    } else {
+                        alert(data.message || "로그인에 실패했습니다."); //실패시 서버가 보낸 메시지를 alert창으로 보여줌
+                    }
+                }).catch(error => {
+                    // 통신 실패시 예외 처리
+                    console.error("Login Error:", error);
+                    alert("로그인 처리 중 오류가 발생했습니다.");
+                });
+
                 // Success - simulate login
-                showSuccess('로그인 중입니다...');
+                /*showSuccess('로그인 중입니다...');
                 setTimeout(() => {
                     alert('로그인이 완료되었습니다!');
                     window.location.href = 'index.jsp';
-                }, 1500);
+                }, 1500);*/
             });
 
             // Email validation
