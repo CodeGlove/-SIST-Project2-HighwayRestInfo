@@ -10,7 +10,15 @@ import javax.servlet.http.HttpSession;
 public class LoginAction implements Action {
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
+		//ID/PW 추출
 		String pwd = request.getParameter("password");
+		String id = request.getParameter("id");
+		//DAO 호출
+
+		//패스워드 검증
+
+		//세션 생성
+
 
 		UserVO vo = new UserVO();
 		String hashedPasswordFromDB = vo.getPwd();
@@ -20,6 +28,8 @@ public class LoginAction implements Action {
 			loginSuccess = true; //로그인 성공
 			HttpSession session = request.getSession();
 			session.setAttribute("loginUser", vo);
+			//JSON 응답 생성
+			
 		} else {
 			loginSuccess = false; //로그인 실패
 		}
