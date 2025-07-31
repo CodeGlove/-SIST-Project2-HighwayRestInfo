@@ -3,9 +3,9 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="restinfo">
-    <insert id="singUp" parameterType="Map">
-        insert into User (ID, Pwd, Name, Home, Interset)
-        values (#{ID}, #{Pwd}, #{Name}, #{Home}, #{Interset}
+    <insert id="signUp" parameterType="Map">
+        insert into User (ID, Pwd, Authority,Name)
+        values (#{ID}, #{Pwd}, 0,#{Name})
     </insert>
 
 </mapper>

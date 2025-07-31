@@ -101,6 +101,7 @@
             transform: translateY(-1px);
         }
 
+
         .confirm-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
@@ -166,8 +167,15 @@
             </div>
         </div>
 
+
         <!-- Register Form -->
-        <form class="register-form" id="registerForm">
+        <form class="register-form" id="registerForm" method="post" action="Controller?type=signUp">
+
+            <div class="form-group">
+                <label for="name" class="form-label">닉네임</label>
+                <input type="text" id="name" name="name" class="form-input" placeholder="이름을 입력해 주세요" required>
+            </div>
+
             <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
                 <div class="email-verification-container">
@@ -180,6 +188,9 @@
                     <div class="verification-code-container" id="verificationContainer">
                         <div class="verification-input-group">
                             <input type="text" id="verificationCode" name="verificationCode" class="form-input" placeholder="인증번호 6자리를 입력하세요" maxlength="6">
+
+                           <%--타이머 추가--%>
+
                             <button type="button" class="confirm-btn" id="confirmBtn">
                                 확인
                             </button>
@@ -188,7 +199,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="password" class="form-label">비밀번호</label>
                 <div class="password-input-container">
@@ -198,7 +209,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="password2" class="form-label">비밀번호 확인</label>
                 <div class="password-input-container">
@@ -251,6 +262,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const registerForm = document.getElementById('registerForm');
             const emailInput = document.getElementById('email');
+            const nameInput=document.getElementById("name");
             const passwordInput = document.getElementById('password');
             const password2Input = document.getElementById('password2');
             const passwordToggle = document.getElementById('passwordToggle');
@@ -260,14 +272,14 @@
             const serviceAgree = document.getElementById('serviceAgree');
             const privacyAgree = document.getElementById('privacyAgree');
             const marketingAgree = document.getElementById('marketingAgree');
-            
+
             // 이메일 인증 관련 요소들
             const verifyBtn = document.getElementById('verifyBtn');
             const verificationContainer = document.getElementById('verificationContainer');
             const verificationCode = document.getElementById('verificationCode');
             const confirmBtn = document.getElementById('confirmBtn');
             const verificationMessage = document.getElementById('verificationMessage');
-            
+
             let isEmailVerified = false;
 
             // 스크롤 애니메이션
@@ -293,70 +305,89 @@
                 observer.observe(element);
             });
 
-            // 이메일 인증 버튼 클릭 이벤트
-            verifyBtn.addEventListener('click', function() {
+            // '인증하기' 버튼 이벤트 리스너 (최종 수정본)************************************
+            verifyBtn.addEventListener('click', async function() {
                 const email = emailInput.value.trim();
-                
-                if (!email) {
-                    showError(emailInput, '이메일을 입력해주세요.');
-                    return;
-                }
-                
                 if (!isValidEmail(email)) {
                     showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
                     return;
                 }
-                
-                // 인증 버튼 비활성화
+
                 verifyBtn.disabled = true;
                 verifyBtn.textContent = '인증번호 발송 중...';
-                
-                // 인증번호 입력 컨테이너 표시
-                verificationContainer.classList.add('show');
-                verificationCode.focus();
-                
-                // 시뮬레이션: 2초 후 인증번호 발송 완료
-                setTimeout(() => {
-                    verifyBtn.textContent = '재발송';
-                    verifyBtn.disabled = false;
-                    showVerificationMessage('인증번호가 발송되었습니다. 이메일을 확인해주세요.', 'success');
-                }, 2000);
+
+                // 1. 전송할 데이터를 URLSearchParams로 만듭니다.
+                const params = new URLSearchParams();
+                params.append('email', email);
+
+                // 2. POST 방식으로 fetch 요청을 보냅니다.
+                // URL에서는 email 파라미터를 제거합니다.
+                const response = await fetch('Controller?type=emailSend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
+                });
+
+                if (response.ok) {
+                    verificationContainer.classList.add('show');
+                    verificationCode.focus();
+                    showVerificationMessage('인증번호가 발송되었습니다.', 'success');
+                } else {
+                    showVerificationMessage('인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+                }
+                verifyBtn.textContent = '재발송';
+                verifyBtn.disabled = false;
             });
 
-            // 인증번호 확인 버튼 클릭 이벤트
-            confirmBtn.addEventListener('click', function() {
+            // '인증번호 확인' 버튼 이벤트 리스너 (최종 수정본)******************************
+            confirmBtn.addEventListener('click', async function() {
                 const code = verificationCode.value.trim();
-                
-                if (!code) {
-                    showVerificationMessage('인증번호를 입력해주세요.', 'error');
-                    return;
-                }
-                
                 if (code.length !== 6) {
                     showVerificationMessage('인증번호는 6자리입니다.', 'error');
                     return;
                 }
-                
-                // 확인 버튼 비활성화
+
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = '확인 중...';
-                
-                // 시뮬레이션: 1초 후 인증 완료
-                setTimeout(() => {
-                    isEmailVerified = true;
-                    confirmBtn.textContent = '인증완료';
-                    confirmBtn.style.background = '#03C75A';
-                    showVerificationMessage('이메일 인증이 완료되었습니다.', 'success');
-                    
-                    // 인증 완료 후 입력 필드 비활성화
-                    emailInput.disabled = true;
-                    verificationCode.disabled = true;
-                    
-                    // 재발송 버튼 비활성화
-                    verifyBtn.disabled = true;
-                    verifyBtn.textContent = '인증완료';
-                    verifyBtn.style.background = '#03C75A';
-                }, 1000);
+
+                try {
+                    const params = new URLSearchParams();
+                    params.append('code', code);
+
+                    const response = await fetch('Controller?type=emailConfirm', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+
+                    if (response.ok) {
+                        isEmailVerified = true;
+
+                        // 인증 성공 UI 처리 (성공 시에는 버튼 상태를 되돌리지 않음)
+                        confirmBtn.textContent = '인증완료';
+                        confirmBtn.style.background = '#03C75A';
+                        emailInput.disabled = true;
+                        verificationCode.disabled = true;
+                        verifyBtn.disabled = true;
+                        verifyBtn.textContent = '인증완료';
+                        verifyBtn.style.background = '#03C75A';
+                    } else {
+                        isEmailVerified = false;
+                        showVerificationMessage('인증번호가 일치하지 않습니다.', 'error');
+                        // 실패 시 버튼 상태 복구
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '확인';
+                    }
+                } catch (error) {
+                    console.error('Fetch Error:', error);
+                    showVerificationMessage('인증 확인 중 오류가 발생했습니다.', 'error');
+                    // 에러 발생 시 버튼 상태 복구
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = '확인';
+
+                }
             });
 
             // 인증번호 입력 필드에서 엔터 키 이벤트
@@ -389,7 +420,7 @@
             function showVerificationMessage(message, type) {
                 verificationMessage.textContent = message;
                 verificationMessage.className = `verification-message verification-${type}`;
-                
+
                 // 3초 후 메시지 제거
                 setTimeout(() => {
                     verificationMessage.textContent = '';
@@ -397,15 +428,20 @@
                 }, 3000);
             }
 
-            registerForm.addEventListener('submit', function(e) {
+            // 재윤 -- 아래 표시************ 표시까지 수정함 데이터action으로 전송위함.
+            registerForm.addEventListener('submit', async function(e) {
+                // 1. 폼의 기본 제출 기능은 막습니다.
                 e.preventDefault();
+
+                // 2. 모든 유효성 검사는 그대로 유지합니다.
                 const email = emailInput.value.trim();
                 const password = passwordInput.value.trim();
                 const password2 = password2Input.value.trim();
-                
-                if (!email) {
-                    showError(emailInput, '이메일을 입력해주세요.');
-                    return;
+                const name =nameInput.value.trim();
+
+                if(name.length<1){
+                    showError(nameInput,"닉네임을 입력해주세요")
+                    return
                 }
                 if (!isValidEmail(email)) {
                     showError(emailInput, '올바른 이메일 형식을 입력해주세요.');
@@ -415,16 +451,8 @@
                     showError(emailInput, '이메일 인증을 완료해주세요.');
                     return;
                 }
-                if (!password) {
-                    showError(passwordInput, '비밀번호를 입력해주세요.');
-                    return;
-                }
-                if (password.length < 8) {
-                    showError(passwordInput, '비밀번호는 8자 이상이어야 합니다.');
-                    return;
-                }
-                if (!isValidPassword(password)) {
-                    showError(passwordInput, '영문, 숫자, 특수문자가 모두 포함되어야 합니다.');
+                if (!password || password.length < 8 || !isValidPassword(password)) {
+                    showError(passwordInput, '비밀번호는 영문, 숫자, 특수문자가 모두 들어간 8자 이상이어야 합니다.');
                     return;
                 }
                 if (password !== password2) {
@@ -435,12 +463,51 @@
                     alert('필수 약관에 동의해주세요.');
                     return;
                 }
-                showSuccess('회원가입 중입니다...');
-                setTimeout(() => {
-                    alert('회원가입이 완료되었습니다!');
-                    window.location.href = 'Controller?type=login';
-                }, 1500);
+
+                // 3. (핵심) setTimeout 대신 fetch를 사용해 서버에 데이터를 전송합니다.
+                try {
+                    const submitBtn = document.querySelector('.register-btn');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '가입 처리 중...';
+
+                    emailInput.disabled = false;
+                    // 2. FormData 객체를 다시 사용합니다.
+                    const formData = new FormData(registerForm);
+                    // 3. 다시 비활성화합니다.
+                    emailInput.disabled = true;
+
+                    // fetch API로 서버에 데이터 전송
+                    const response = await fetch(registerForm.action, {
+                        method: 'POST',
+                        headers: {
+
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+
+                        body: new URLSearchParams(formData)
+                    });
+
+                    // 서버 응답 확인
+                    if (response.ok) {
+                        alert('회원가입이 완료되었습니다!');
+                        window.location.href = 'login.jsp'; // 성공 시 로그인 페이지로 이동
+                    } else {
+                        // 서버 측에서 문제가 발생했을 경우 (예: 중복된 이메일)
+                        alert('회원가입에 실패했습니다. 입력 정보를 확인해주세요.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '가입완료';
+                    }
+                } catch (error) {
+                    // 네트워크 문제 등 fetch 자체가 실패한 경우
+                    console.error('Fetch Error:', error);
+                    alert('서버와 통신 중 오류가 발생했습니다.');
+                    const submitBtn = document.querySelector('.register-btn');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '가입완료';
+                }
             });
+            //********************************************************************************
+
             function isValidEmail(email) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
@@ -455,11 +522,11 @@
             function showError(input, message) {
                 const existingError = input.parentNode.querySelector('.error-message');
                 if (existingError) existingError.remove();
-                
+
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message email-error-message';
                 errorDiv.textContent = message;
-                
+
                 // 이메일 입력 필드인 경우 부모 컨테이너에 추가
                 if (input.id === 'email') {
                     const emailContainer = input.closest('.email-verification-container');
@@ -467,7 +534,7 @@
                 } else {
                     input.parentNode.appendChild(errorDiv);
                 }
-                
+
                 input.style.borderColor = '#e74c3c';
                 setTimeout(() => {
                     if (errorDiv.parentNode) {
