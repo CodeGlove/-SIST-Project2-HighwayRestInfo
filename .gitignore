@@ -29,3 +29,5 @@ misc.xml
 
 # Java Maven/Gradle
 target/
+
+src/main/resources/mybatis/config/conf.xml
