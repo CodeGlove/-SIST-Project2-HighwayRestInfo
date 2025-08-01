@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> <!-- JSTL 코어 태그 라이브러리 -->
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %> <!-- JSTL 포맷 태그 라이브러리 -->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!-- JSTL 코어 태그 라이브러리 -->
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!-- JSTL 포맷 태그 라이브러리 -->
 <%
     // 한글 인코딩 설정 - POST 요청과 응답에서 한글이 깨지지 않도록 설정
     request.setCharacterEncoding("UTF-8");
@@ -13,12 +15,14 @@
     <meta charset="UTF-8"> <!-- 문자 인코딩 설정 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 반응형 뷰포트 설정 -->
     <title>🚗 HighwayGuide - 실시간 길찾기</title>
-    
+
     <!-- 폰트 및 아이콘 -->
     <link rel="preconnect" href="https://fonts.googleapis.com"> <!-- 폰트 사전 연결 -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <!-- 폰트 사전 연결 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"> <!-- Inter 폰트 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"> <!-- Font Awesome 아이콘 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Inter 폰트 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome 아이콘 -->
     <link href="css/kakaoStyle.css" rel="stylesheet"> <!-- 커스텀 CSS 파일 -->
 </head>
 <body>
@@ -46,15 +50,15 @@
             <i class="fas fa-route"></i> <!-- 경로 아이콘 -->
             실시간 길찾기 <!-- 제목 텍스트 -->
         </h2>
-        
+
         <form action="Controller?type=kakaoMap" method="post" id="routeForm"> <!-- 길찾기 폼 -->
             <div class="form-group"> <!-- 출발지 입력 그룹 -->
                 <label for="origin">출발지</label> <!-- 출발지 라벨 -->
                 <div class="input-wrapper"> <!-- 입력 필드 래퍼 -->
                     <i class="fas fa-map-marker-alt"></i> <!-- 위치 아이콘 -->
                     <input type="text" id="origin" name="origin" class="form-input" <!-- 출발지 입력 필드 -->
-                           placeholder="출발지를 입력하세요 (예: 서울특별시 강남구 테헤란로 152)" <!-- 플레이스홀더 -->
-                           value="서울특별시 강남구 테헤란로 152" required> <!-- 기본값 및 필수 입력 -->
+                    placeholder="출발지를 입력하세요 (예: 서울특별시 강남구 테헤란로 152)" <!-- 플레이스홀더 -->
+                    value="서울특별시 강남구 테헤란로 152" required> <!-- 기본값 및 필수 입력 -->
                 </div>
             </div>
 
@@ -63,9 +67,10 @@
                 <div class="input-wrapper"> <!-- 입력 필드 래퍼 -->
                     <i class="fas fa-flag-checkered"></i> <!-- 깃발 아이콘 -->
                     <input type="text" id="destination" name="destination" class="form-input" <!-- 목적지 입력 필드 -->
-                           placeholder="목적지를 입력하세요 (예: 서울특별시 서초구 서초대로 396)" <!-- 플레이스홀더 -->
-                           value="<c:out value='${param.search != null ? param.search : "서울특별시 서초구 서초대로 396"}' />" <!-- URL 파라미터 또는 기본값 -->
-                           required> <!-- 필수 입력 -->
+                    placeholder="목적지를 입력하세요 (예: 서울특별시 서초구 서초대로 396)" <!-- 플레이스홀더 -->
+                    value="<c:out value='${param.search != null ? param.search : "서울특별시 서초구 서초대로 396"}'/>"
+                    <!-- URL 파라미터 또는 기본값 -->
+                    required> <!-- 필수 입력 -->
                 </div>
             </div>
 
@@ -74,7 +79,7 @@
                 <div class="input-wrapper"> <!-- 입력 필드 래퍼 -->
                     <i class="fas fa-map-pin"></i> <!-- 핀 아이콘 -->
                     <input type="text" id="waypoints" name="waypoints" class="form-input" <!-- 경유지 입력 필드 -->
-                           placeholder="경유지를 |로 구분하여 입력하세요"> <!-- 플레이스홀더 -->
+                    placeholder="경유지를 |로 구분하여 입력하세요"> <!-- 플레이스홀더 -->
                 </div>
             </div>
 
@@ -88,7 +93,7 @@
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn"> <!-- 제출 버튼 -->
-                    <span id="btnText"> <!-- 버튼 텍스트 -->
+                <span id="btnText"> <!-- 버튼 텍스트 -->
                         <i class="fas fa-search"></i> <!-- 검색 아이콘 -->
                         길찾기 시작 <!-- 버튼 텍스트 -->
                     </span>
@@ -100,15 +105,16 @@
         </form>
     </div>
 
-        <!-- 결과 섹션 -->
+    <!-- 결과 섹션 -->
     <div class="result-section" id="resultSection"> <!-- 결과 표시 영역 -->
         <h2> <!-- 결과 섹션 제목 -->
             <i class="fas fa-chart-line"></i> <!-- 차트 아이콘 -->
             길찾기 결과 <!-- 제목 텍스트 -->
         </h2>
-        
+
         <div id="initialMessage" style="text-align: center; color: #666; padding: 2rem;"> <!-- 초기 안내 메시지 -->
-            <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem; color: #667eea;"></i> <!-- 정보 아이콘 -->
+            <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem; color: #667eea;"></i>
+            <!-- 정보 아이콘 -->
             <p>출발지와 목적지를 입력하고 길찾기를 시작하세요.</p> <!-- 안내 텍스트 1 -->
             <p>실시간 교통정보를 반영한 최적 경로를 제공합니다.</p> <!-- 안내 텍스트 2 -->
         </div>
@@ -122,7 +128,8 @@
                     <p><strong>응답 코드:</strong> <c:out value="${responseCode}"/></p> <!-- 응답 코드 표시 -->
                 </c:if>
                 <c:if test="${not empty errorResponse}"> <!-- 에러 응답이 있을 때 -->
-                    <div class="json-display"><c:out value="${errorResponse}"/></div> <!-- 에러 응답 JSON 표시 -->
+                    <div class="json-display"><c:out value="${errorResponse}"/></div>
+                    <!-- 에러 응답 JSON 표시 -->
                 </c:if>
                 <c:if test="${not empty responseLength}"> <!-- 응답 길이가 있을 때 -->
                     <p><strong>응답 길이:</strong> <c:out value="${responseLength}"/></p> <!-- 응답 길이 표시 -->
@@ -136,7 +143,8 @@
                 <h3><i class="fas fa-map-marked-alt"></i> 주소 변환 결과</h3> <!-- 좌표 정보 제목 -->
                 <div class="coordinate-item"> <!-- 출발지 좌표 항목 -->
                     <span class="coordinate-label">출발지</span> <!-- 출발지 라벨 -->
-                    <span class="coordinate-value"><c:out value="${origin}"/> → <c:out value="${originCoords}"/></span> <!-- 주소 → 좌표 -->
+                    <span class="coordinate-value"><c:out value="${origin}"/> → <c:out value="${originCoords}"/></span>
+                    <!-- 주소 → 좌표 -->
                 </div>
                 <div class="coordinate-item"> <!-- 목적지 좌표 항목 -->
                     <span class="coordinate-label">목적지</span> <!-- 목적지 라벨 -->
@@ -220,44 +228,48 @@
             </div>
         </c:if>
 
-        <!-- 휴게소 정보 표시 -->
-        <c:if test="${not empty restAreas}">
-            <div class="summary-info">
-                <h3><i class="fas fa-utensils"></i> 경로상 휴게소 목록</h3>
-                <div class="rest-areas-list">
-                    <c:forEach var="restArea" items="${restAreas}" varStatus="status">
-                        <div class="rest-area-item">
-                            <div class="rest-area-header">
-                                <span class="rest-area-number">${status.index + 1}</span>
-                                <span class="rest-area-type">
-                                        <c:choose>
-                                            <c:when test="${restArea.type == 'REST_AREA'}">휴게소</c:when>
-                                            <c:when test="${restArea.type == 'SERVICE_AREA'}">서비스구역</c:when>
-                                            <c:otherwise>휴게시설</c:otherwise>
-                                        </c:choose>
-                                    </span>
-                            </div>
-                            <div class="rest-area-info">
-                                <div class="rest-area-name"><c:out value="${restArea.name}"/></div>
-                                <div class="rest-area-details">
-                                    <span class="road-name"><c:out value="${restArea.roadName}"/></span>
-                                    <span class="distance"><c:out value="${restArea.distance}"/>m</span>
-                                </div>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-            </div>
-        </c:if>
 
-        <!-- 추출된 이름 정보 표시 -->
-        <c:if test="${not empty name}">
+
+        <!-- 휴게소 정보 표시 -->
+        <c:if test="${not empty restAreasStr or not empty restStopsStr}">
             <div class="summary-info">
-                <h3><i class="fas fa-info-circle"></i> 경로상 휴게소 및 주요 지점</h3>
+                <h3><i class="fas fa-map-marked-alt"></i> 경로상 휴게시설</h3>
                 <div class="name-display">
-                    <div class="name-item">
-                        <span class="name-label">발견된 지점:</span>
-                        <span class="name-value"><c:out value="${name}"/></span>
+                    <c:if test="${not empty restAreasStr}">
+                        <div class="name-item">
+                            <span class="name-label">휴게소:</span>
+                            <span class="name-value"><c:out value="${restAreasStr}"/></span>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty restStopsStr}">
+                        <div class="name-item">
+                            <span class="name-label">졸음쉼터:</span>
+                            <span class="name-value"><c:out value="${restStopsStr}"/></span>
+                        </div>
+                    </c:if>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <form action="Controller?type=restArea" method="post" style="display: inline;">
+                            <input type="hidden" name="restAreasStr" value="${restAreasStr}">
+                            <input type="hidden" name="restStopsStr" value="${restStopsStr}">
+                            <button type="submit" class="detail-link" style="
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                                padding: 0.8rem 1.5rem;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                transition: all 0.2s;
+                                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                                border: none;
+                                cursor: pointer;
+                            ">
+                                <i class="fas fa-list"></i>
+                                상세 목록 보기
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -281,7 +293,7 @@
         // URL 파라미터에서 검색어 가져오기
         const urlParams = new URLSearchParams(window.location.search); // URL 파라미터 파싱
         const searchTerm = urlParams.get('search'); // 검색어 추출
-        
+
         if (searchTerm) { // 검색어가 있으면
             // 검색어를 목적지 입력창에 자동으로 설정
             document.getElementById('destination').value = decodeURIComponent(searchTerm); // 목적지 입력창에 설정
@@ -296,7 +308,7 @@
             const submitBtn = document.getElementById('submitBtn'); // 제출 버튼 요소
             const btnText = document.getElementById('btnText'); // 버튼 텍스트 요소
             const btnLoading = document.getElementById('btnLoading'); // 로딩 요소
-            
+
             // 로딩 상태로 변경
             submitBtn.disabled = true; // 버튼 비활성화
             btnText.style.display = 'none'; // 텍스트 숨기기
@@ -308,7 +320,7 @@
         // 결과가 있을 때 초기 메시지 숨기기
         const resultSection = document.getElementById('resultSection'); // 결과 섹션 요소
         const initialMessage = document.getElementById('initialMessage'); // 초기 메시지 요소
-        
+
         if (resultSection.children.length > 2) { // 헤더와 초기 메시지 외에 다른 내용이 있으면
             initialMessage.style.display = 'none'; // 초기 메시지 숨기기
         }

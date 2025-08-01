@@ -146,8 +146,9 @@ public class KakaoMapAction implements Action {
 							// 8단계: 요약 정보 표시
 							if (jsonResponse.has("routes") && jsonResponse.getJSONArray("routes").length() > 0) {
 								JSONObject route = jsonResponse.getJSONArray("routes").getJSONObject(0);
-								// guides 배열에서 name 값들을 추출
-								List<String> guideNames = new ArrayList<>();
+								// guides 배열에서 name 값들을 추출 (휴게소와 졸음쉼터 구분)
+								List<String> restAreas = new ArrayList<>(); // 휴게소 리스트
+								List<String> restStops = new ArrayList<>(); // 졸음쉼터 리스트
 								JSONArray sections = jsonResponse.getJSONArray("routes").getJSONObject(0)
 										.getJSONArray("sections");
 
@@ -159,20 +160,38 @@ public class KakaoMapAction implements Action {
 											JSONObject guide = guides.getJSONObject(j);
 											if (guide.has("name") && !guide.getString("name").isEmpty()) {
 												String guideName = guide.getString("name");
-												// 휴게소 관련 키워드가 포함된 경우만 추가
-												if (guideName.contains("휴게소") || guideName.contains("졸음쉼터") ||
-														guideName.contains("서비스") || guideName.contains("REST") ||
-														guideName.contains("SERVICE")) {
-													guideNames.add(guideName);
+												System.out.println("발견된 guide name: " + guideName); // 디버깅용
+												// 휴게소와 졸음쉼터를 구분하여 저장
+												if (guideName.contains("휴게소") || guideName.contains("서비스") ||
+														guideName.contains("REST") || guideName.contains("SERVICE")) {
+													restAreas.add(guideName);
+													System.out.println("휴게소 추가: " + guideName); // 디버깅용
+												} else if (guideName.contains("졸음쉼터")) {
+													restStops.add(guideName);
+													System.out.println("졸음쉼터 추가: " + guideName); // 디버깅용
 												}
 											}
 										}
 									}
 								}
 
-								// 추출된 이름들을 쉼표로 구분하여 하나의 문자열로 만듦
-								String name = String.join(", ", guideNames);
-								request.setAttribute("name", name);
+								// 각각의 리스트를 문자열로 변환
+								String restAreasStr = String.join(", ", restAreas);
+								String restStopsStr = String.join(", ", restStops);
+
+								// 디버깅용 로그 출력
+								System.out.println("=== 휴게소 추출 결과 ===");
+								System.out.println("휴게소 개수: " + restAreas.size());
+								System.out.println("졸음쉼터 개수: " + restStops.size());
+								System.out.println("휴게소 목록: " + restAreasStr);
+								System.out.println("졸음쉼터 목록: " + restStopsStr);
+								System.out.println("========================");
+
+								// request에 저장
+								request.setAttribute("restAreas", restAreas);
+								request.setAttribute("restStops", restStops);
+								request.setAttribute("restAreasStr", restAreasStr);
+								request.setAttribute("restStopsStr", restStopsStr);
 								if (route.has("summary")) {
 									JSONObject summary = route.getJSONObject("summary");
 
