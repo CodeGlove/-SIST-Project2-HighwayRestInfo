@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.mail.Session;
+import mybatis.vo.UserVO;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
@@ -97,9 +98,10 @@ public class NaverCallbackAction implements Action {
                 log.info("사용자 식별값: {}, 이메일: {}, 이름: {}", userIdentifier, email, name);
 
                 // 세션 저장
-                request.getSession().setAttribute("id", userIdentifier);
-                request.getSession().setAttribute("email", email);
-                request.getSession().setAttribute("name", name);
+                UserVO vo =new UserVO();
+                vo.setID(email);
+                vo.setName(name);
+                request.getSession().setAttribute("loginUser",vo);
 
 
             }
