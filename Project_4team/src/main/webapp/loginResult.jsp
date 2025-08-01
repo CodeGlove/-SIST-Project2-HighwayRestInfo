@@ -614,6 +614,14 @@
       card.style.transition = 'all 0.6s ease-out';
       observer.observe(card);
     });
+    <c:if test="${not empty sessionScope.name}">
+    // EL(Expression Language)을 사용해 세션 값을 JavaScript 변수에 저장합니다.
+    // 서버에서 JSP가 처리될 때 '${sessionScope.name}' 부분이 실제 이름(예: "홍길동")으로 바뀝니다.
+    const userName = '${sessionScope.name}';
+
+    // 브라우저의 개발자 도구 콘솔에 환영 메시지를 출력합니다.
+    alert(userName + '님 환영합니다. 👋');
+    </c:if>
   });
 </script>
 </body>
