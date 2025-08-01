@@ -14,6 +14,7 @@ public class LoginAction implements Action {
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
 		//ID 추출
 		String id = request.getParameter("username");
+		String pwd = request.getParameter("password");
 
 		// 아이디 입력 안됐거나 입력란이 비어있을경우
 		if(id==null || id.trim().isEmpty()){
@@ -21,14 +22,13 @@ public class LoginAction implements Action {
 		}
 
 		//******** id 파라미터가 있으면, 비동기 로그인 수행 ********
-		String pwd = request.getParameter("password");
 		UserVO vo = LoginDAO.login(id); //DAO 호출
 
 		boolean loginSuccess = false;
 		String message = "";
 
 		//로그인 처리
-		if(vo != null && BCrypt.checkpw(pwd, vo.getPwd())) {
+		if(vo != null && BCrypt.checkpw(pwd, vo.getPwd())) { //vo가 존재하고 비밀번호 일치하면 로그인 성공
 			//로그인 성공
 			loginSuccess = true;
 			HttpSession session = request.getSession();//세션 생성
