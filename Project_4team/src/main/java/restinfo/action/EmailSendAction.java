@@ -3,6 +3,7 @@ package restinfo.action;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import restinfo.util.ConfigLoader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,8 +25,8 @@ public class EmailSendAction implements Action{
         session.setAttribute("code",Code);
         session.setAttribute("email",email);
 
-        final String fromEmail="jaeyoon0725.utube@gmail.com";
-        final String password="clkxawqcomycsklx";
+        final String fromEmail= ConfigLoader.getProperty("GOOGLE_SENDER_MAIL");
+        final String password= ConfigLoader.getProperty("GOOGLE_APPLICATION_PASSWORD");
 
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");

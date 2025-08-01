@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -7,7 +8,8 @@
     <title>HighwayGuide - 고속도로의 모든 것</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @font-face {
@@ -191,14 +193,37 @@
             animation: float 6s ease-in-out infinite;
         }
 
-        .floating-icon:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
-        .floating-icon:nth-child(2) { top: 30%; right: 15%; animation-delay: 1s; }
-        .floating-icon:nth-child(3) { top: 60%; left: 5%; animation-delay: 2s; }
-        .floating-icon:nth-child(4) { top: 70%; right: 10%; animation-delay: 3s; }
+        .floating-icon:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-icon:nth-child(2) {
+            top: 30%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+
+        .floating-icon:nth-child(3) {
+            top: 60%;
+            left: 5%;
+            animation-delay: 2s;
+        }
+
+        .floating-icon:nth-child(4) {
+            top: 70%;
+            right: 10%;
+            animation-delay: 3s;
+        }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         /* Search Section */
@@ -401,8 +426,12 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
@@ -418,185 +447,189 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="nav-container">
-            <a href="#" class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-road"></i>
-                </div>
-                HighwayGuide
-            </a>
-            <nav>
-                <ul class="nav-links">
-                    <li><a href="#">회사 소개</a></li>
-                    <li><a href="#">공지사항</a></li>
-                    <li><a href="#">고객센터</a></li>
-                    <li><a href="#">자주 묻는 질문</a></li>
-                    <li><a href="#">채용</a></li>
-                </ul>
-            </nav>
-            <div class="auth-buttons">
-                <a href="#" class="btn btn-login">KOR</a>
-                <a href="#" class="btn btn-login">ENG</a>
-                <a href="Controller?type=login" class="btn btn-login">로그인</a>
-                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+<!-- Header -->
+
+<header class="header">
+    <div class="nav-container">
+        <a href="#" class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-road"></i>
+            </div>
+            HighwayGuide
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#">회사 소개</a></li>
+                <li><a href="#">공지사항</a></li>
+                <li><a href="#">고객센터</a></li>
+                <li><a href="#">자주 묻는 질문</a></li>
+                <li><a href="#">채용</a></li>
+            </ul>
+        </nav>
+        <div class="auth-buttons">
+            <a href="#" class="btn btn-login">KOR</a>
+            <a href="#" class="btn btn-login">ENG</a>
+            <a href="Controller?type=login" class="btn btn-login">로그인</a>
+            <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+        </div>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<main>
+    <section class="hero">
+        <div class="floating-icons">
+            <div class="floating-icon">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="floating-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="floating-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <div class="floating-icon">
+                <i class="fas fa-gift"></i>
             </div>
         </div>
-    </header>
-
-    <!-- Hero Section -->
-    <main>
-        <section class="hero">
-            <div class="floating-icons">
-                <div class="floating-icon">
-                    <i class="fas fa-car"></i>
-                </div>
-                <div class="floating-icon">
-                    <i class="fas fa-building"></i>
-                </div>
-                <div class="floating-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="floating-icon">
-                    <i class="fas fa-gift"></i>
-                </div>
+        <div class="hero-content fade-in">
+            <h1>고속도로의 모든 것<br>HighwayGuide에서 쉽고 간편하게</h1>
+            <p>전국의 고속도로, 휴게소, 주유소, 충전소, 음식점, 호텔 등<br>여행에 필요한 모든 정보를 한 곳에서 확인하세요.</p>
+            <div class="cta-buttons">
+                <a href="#" class="cta-btn primary">앱 다운로드</a>
+                <a href="#" class="cta-btn secondary">서비스 소개</a>
             </div>
-            <div class="hero-content fade-in">
-                <h1>고속도로의 모든 것<br>HighwayGuide에서 쉽고 간편하게</h1>
-                <p>전국의 고속도로, 휴게소, 주유소, 충전소, 음식점, 호텔 등<br>여행에 필요한 모든 정보를 한 곳에서 확인하세요.</p>
-                <div class="cta-buttons">
-                    <a href="#" class="cta-btn primary">앱 다운로드</a>
-                    <a href="#" class="cta-btn secondary">서비스 소개</a>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section slide-up">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: #222; font-size: 1.8rem;">고속도로 정보 검색</h2>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="검색어를 입력하세요 (예: 휴게소, 주유소, 음식점)">
+            <button class="search-btn">
+                <i class="fas fa-search"></i>
+                검색
+            </button>
+        </div>
+        <div class="search-tags">
+            <a href="#" class="search-tag"><i class="fas fa-gas-pump"></i>주유소</a>
+            <a href="#" class="search-tag"><i class="fas fa-charging-station"></i>충전소</a>
+            <a href="#" class="search-tag"><i class="fas fa-utensils"></i>음식점</a>
+            <a href="#" class="search-tag"><i class="fas fa-hotel"></i>호텔</a>
+            <a href="#" class="search-tag"><i class="fas fa-restroom"></i>화장실</a>
+            <a href="#" class="search-tag"><i class="fas fa-parking"></i>주차장</a>
+            <a href="#" class="search-tag"><i class="fas fa-wifi"></i>WiFi</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2 style="text-align: center; margin-bottom: 1rem; color: #222; font-size: 2.5rem;">고속도로 관리</h2>
+        <p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 3rem;">지출부터 똑똑하게 똑똑하게</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-route"></i>
                 </div>
+                <h3>실시간 교통정보</h3>
+                <p>고속도로의 실시간 교통상황을 확인하고 최적의 경로를 찾아보세요.</p>
             </div>
-        </section>
-
-        <!-- Search Section -->
-        <section class="search-section slide-up">
-            <h2 style="text-align: center; margin-bottom: 2rem; color: #222; font-size: 1.8rem;">고속도로 정보 검색</h2>
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="검색어를 입력하세요 (예: 휴게소, 주유소, 음식점)">
-                <button class="search-btn">
-                    <i class="fas fa-search"></i>
-                    검색
-                </button>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-gas-pump"></i>
+                </div>
+                <h3>휴게소 정보</h3>
+                <p>주유소, 충전소, 음식점, 화장실 등 휴게소의 모든 정보를 한눈에 확인하세요.</p>
             </div>
-            <div class="search-tags">
-                <a href="#" class="search-tag"><i class="fas fa-gas-pump"></i>주유소</a>
-                <a href="#" class="search-tag"><i class="fas fa-charging-station"></i>충전소</a>
-                <a href="#" class="search-tag"><i class="fas fa-utensils"></i>음식점</a>
-                <a href="#" class="search-tag"><i class="fas fa-hotel"></i>호텔</a>
-                <a href="#" class="search-tag"><i class="fas fa-restroom"></i>화장실</a>
-                <a href="#" class="search-tag"><i class="fas fa-parking"></i>주차장</a>
-                <a href="#" class="search-tag"><i class="fas fa-wifi"></i>WiFi</a>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <h3>상세 지도</h3>
+                <p>고속도로 구간별 상세 지도와 시설물 정보를 제공합니다.</p>
             </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features">
-            <h2 style="text-align: center; margin-bottom: 1rem; color: #222; font-size: 2.5rem;">고속도로 관리</h2>
-            <p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 3rem;">지출부터 똑똑하게 똑똑하게</p>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-route"></i>
-                    </div>
-                    <h3>실시간 교통정보</h3>
-                    <p>고속도로의 실시간 교통상황을 확인하고 최적의 경로를 찾아보세요.</p>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-gas-pump"></i>
-                    </div>
-                    <h3>휴게소 정보</h3>
-                    <p>주유소, 충전소, 음식점, 화장실 등 휴게소의 모든 정보를 한눈에 확인하세요.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-map-marked-alt"></i>
-                    </div>
-                    <h3>상세 지도</h3>
-                    <p>고속도로 구간별 상세 지도와 시설물 정보를 제공합니다.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3>운행시간 관리</h3>
-                    <p>운전시간과 휴식시간을 체계적으로 관리하여 안전한 운전을 도와드립니다.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <h3>긴급상황 알림</h3>
-                    <p>사고, 공사, 기상상황 등 긴급한 정보를 실시간으로 알려드립니다.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <h3>즐겨찾기</h3>
-                    <p>자주 이용하는 휴게소나 경로를 저장하고 빠르게 찾아보세요.</p>
-                </div>
+                <h3>운행시간 관리</h3>
+                <p>운전시간과 휴식시간을 체계적으로 관리하여 안전한 운전을 도와드립니다.</p>
             </div>
-        </section>
-    </main>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>긴급상황 알림</h3>
+                <p>사고, 공사, 기상상황 등 긴급한 정보를 실시간으로 알려드립니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3>즐겨찾기</h3>
+                <p>자주 이용하는 휴게소나 경로를 저장하고 빠르게 찾아보세요.</p>
+            </div>
+        </div>
+    </section>
+</main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 검색 기능
-            const searchBtn = document.querySelector('.search-btn');
-            const searchInput = document.querySelector('.search-input');
-            
-            searchBtn.addEventListener('click', function() {
-                const searchTerm = searchInput.value;
-                if (searchTerm) {
-                    alert(`검색어: ${searchTerm}\n검색 기능이 구현될 예정입니다.`);
-                } else {
-                    alert('검색어를 입력하세요.');
-                }
-            });
-            
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchBtn.click();
-                }
-            });
-            
-            // 검색 태그 클릭 이벤트
-            document.querySelectorAll('.search-tag').forEach(tag => {
-                tag.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    searchInput.value = this.textContent.trim();
-                    searchInput.focus();
-                });
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 검색 기능
+        const searchBtn = document.querySelector('.search-btn');
+        const searchInput = document.querySelector('.search-input');
 
-            // 스크롤 애니메이션
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
+        searchBtn.addEventListener('click', function () {
+            const searchTerm = searchInput.value;
+            if (searchTerm) {
+                alert(`검색어: ${searchTerm}\n검색 기능이 구현될 예정입니다.`);
+            } else {
+                alert('검색어를 입력하세요.');
+            }
+        });
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
 
-            // 관찰할 요소들
-            document.querySelectorAll('.feature-card').forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = 'all 0.6s ease-out';
-                observer.observe(card);
+        // 검색 태그 클릭 이벤트
+        document.querySelectorAll('.search-tag').forEach(tag => {
+            tag.addEventListener('click', function (e) {
+                e.preventDefault();
+                searchInput.value = this.textContent.trim();
+                searchInput.focus();
             });
         });
-    </script>
+
+        // 스크롤 애니메이션
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // 관찰할 요소들
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease-out';
+            observer.observe(card);
+        });
+
+
+
+    });
+</script>
 </body>
 </html>
