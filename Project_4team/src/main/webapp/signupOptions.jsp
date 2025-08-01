@@ -55,22 +55,41 @@
 
         <!-- Main Buttons -->
         <div class="main-buttons">
-            <a href="#" class="btn btn-kakao" id="kakaoBtn">
+            <%
+                String kakaoClientId = ConfigLoader.getProperty("KAKAO_CLIENT_ID"); // ① properties 파일에서 읽어올 키
+                String kakaoRedirectURI =
+                        URLEncoder.encode("http://127.0.0.1:8080/Project_4team_war_exploded/Controller?type=kakaoCallback", StandardCharsets.UTF_8);
+
+                // state 값 생성 (네이버와 동일한 로직)
+                String kakaoState = (String) session.getAttribute("kakao_state");
+                if (kakaoState == null) {
+                    SecureRandom randomK = new SecureRandom();
+                    kakaoState = new BigInteger(130, randomK).toString();
+                    session.setAttribute("kakao_state", kakaoState); // 세션에 저장
+                    System.out.println("storedStateMY1:"+ kakaoState);
+                }
+                String kakaoApiURL = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + kakaoClientId
+                        + "&redirect_uri=" + kakaoRedirectURI + "&state=" + kakaoState;
+            %>
+            <a href="<%=kakaoApiURL%>" class="btn btn-kakao" id="kakaoBtn">
                 <i class="fas fa-comment"></i>
                 카카오로 시작하기
             </a>
             <%
                 String clientId = ConfigLoader.getProperty("NAVER_CLIENT_ID");//애플리케이션 클라이언트 아이디값";
                 String redirectURI = URLEncoder.encode("http://127.0.0.1:8080/Project_4team_war_exploded/Controller?type=naverCallback", StandardCharsets.UTF_8);
-                SecureRandom random = new SecureRandom();
-                String state = new BigInteger(130, random).toString();
 
+                String state = (String) session.getAttribute("mystate");
+                if (state == null) {
+                    SecureRandom randomN = new SecureRandom();
+                    state = new BigInteger(130, randomN).toString();
+                    session.setAttribute("mystate", state);
+                }
                 String apiURL = "https://nid.naver.com/oauth2.0/authorize?response_type=code";
                 apiURL += "&client_id=" + clientId;
                 apiURL += "&redirect_uri=" + redirectURI;
                 apiURL += "&state=" + state;
 
-                session.setAttribute("state", state);
             %>
             <a href="<%=apiURL%>" class="btn btn-naver">
                 <i class="fas fa-n"></i>
@@ -140,11 +159,11 @@
             observer.observe(element);
         });
 
-        // 카카오 로그인
-        kakaoBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            alert('카카오 로그인 기능이 구현될 예정입니다.');
-        });
+        // // 카카오 로그인
+        // kakaoBtn.addEventListener('click', function (e) {
+        //     e.preventDefault();
+        //     alert('카카오 로그인 기능이 구현될 예정입니다.');
+        // });
 
         // 이메일 로그인
         emailBtn.addEventListener('click', function (e) {
