@@ -92,12 +92,16 @@ public class NaverCallbackAction implements Action {
                 // 3. 중첩된 JSONObject에서 최종 데이터를 꺼냅니다.
                 String userIdentifier = (String) profileResponse.get("id");
                 String email = (String) profileResponse.get("email");
+                String name = (String) profileResponse.get("name");
 
-                log.info("사용자 식별값: {}, 이메일: {}", userIdentifier, email);
+                log.info("사용자 식별값: {}, 이메일: {}, 이름: {}", userIdentifier, email, name);
 
                 // 세션 저장
                 request.getSession().setAttribute("id", userIdentifier);
                 request.getSession().setAttribute("email", email);
+                request.getSession().setAttribute("name", name);
+
+
             }
         } catch (Exception e) {
             out.println(e);
