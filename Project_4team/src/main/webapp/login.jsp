@@ -56,14 +56,16 @@
             <div class="form-group">
                 <div class="input-container">
                     <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="username, Email or phone" required>
+                    <input type="text" id="username" name="username" class="form-input"
+                           placeholder="username, Email or phone" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-container">
                     <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="password" name="password" class="form-input" placeholder="Password" required>
+                    <input type="password" id="password" name="password" class="form-input"
+                           placeholder="Password" required>
                     <button type="button" class="password-toggle" id="passwordToggle">
                         <i class="fas fa-eye-slash"></i>
                     </button>
@@ -112,50 +114,87 @@
             const signupLink = document.getElementById('signupLink');
             const tabBtns = document.querySelectorAll('.tab-btn');
 
+            //********* 한결: 뒤로가기 및 앞으로가기 시 입력필드 초기화
+            usernameInput.value = '';
+            passwordInput.value = '';
+
+            //뒤로가기 / 앞으로가기로 페이지에 접근할 때 실행된다.
+            window.addEventListener('pageshow', function (event) {
+                if(event.persisted){ //캐시가 계속 남아있을경우 입력필드 값 초기화
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                }
+            });
+
             // Tab switching
             tabBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     tabBtns.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                 });
             });
 
             // Password toggle
-            passwordToggle.addEventListener('click', function() {
+            passwordToggle.addEventListener('click', function () {
                 const type = passwordInput.type === 'password' ? 'text' : 'password';
                 passwordInput.type = type;
                 this.innerHTML = type === 'password' ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
             });
 
             // Form validation and submission
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                
+
+                const formData = new FormData(loginForm);
+
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
-                
-                // Basic validation
+                //유효성 검사
                 if (!username) {
                     showError(usernameInput, '사용자명, 이메일 또는 전화번호를 입력해주세요.');
                     return;
                 }
-                
+
                 if (!password) {
                     showError(passwordInput, '비밀번호를 입력해주세요.');
                     return;
                 }
-                
+
                 if (password.length < 6) {
                     showError(passwordInput, '비밀번호는 6자 이상이어야 합니다.');
                     return;
                 }
-                
+
+                // ****** fetch API를 사용해서 서버와 실제 통신 ******
+                fetch('Controller?type=login', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                }).then(response => {
+                    //서버 응답이 정상이 아닐때 에러처리
+                    if (!response.ok) {
+                        throw new Error('서버 응답 오류가 발생했습니다.');
+                    }
+                    return response.json(); //응답을 JSON 형태로 파싱한다.
+                }).then(data => {
+                    //서버로부터 받은 JSON 결과에 따라 처리
+                    if (data.status === 'success') {
+                        alert("로그인이 완료되었습니다!");
+                        window.location.href = 'loginResult.jsp'; //성공시 index 화면으로 이동
+                    } else {
+                        alert(data.message || "로그인에 실패했습니다."); //실패시 서버가 보낸 메시지를 alert창으로 보여줌
+                    }
+                }).catch(error => {
+                    // 통신 실패시 예외 처리
+                    console.error("Login Error:", error);
+                    alert("로그인 처리 중 오류가 발생했습니다.");
+                });
+
                 // Success - simulate login
-                showSuccess('로그인 중입니다...');
+                /*showSuccess('로그인 중입니다...');
                 setTimeout(() => {
                     alert('로그인이 완료되었습니다!');
                     window.location.href = 'index.jsp';
-                }, 1500);
+                }, 1500);*/
             });
 
             // Email validation
@@ -223,9 +262,6 @@
                 e.preventDefault();
                 alert('GitHub 로그인 기능이 구현될 예정입니다.');
             });
-
-
-
 
             // Auto sign in checkbox
             autoSignin.addEventListener('change', function() {

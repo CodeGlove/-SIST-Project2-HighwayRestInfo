@@ -107,7 +107,7 @@ public class NaverCallbackAction implements Action {
             out.println(e);
         }
 
-        return "Controller?type=mainpage";
+        return "loginResult.jsp";
     }
 
 

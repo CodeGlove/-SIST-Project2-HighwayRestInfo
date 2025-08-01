@@ -23,4 +23,11 @@
 hs_err_pid*
 replay_pid*
 
+# IDE files
+misc.xml
+.idea/
+
+# Java Maven/Gradle
+target/
+
 src/main/resources/mybatis/config/conf.xml
