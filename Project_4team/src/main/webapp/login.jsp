@@ -56,14 +56,16 @@
             <div class="form-group">
                 <div class="input-container">
                     <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="username, Email or phone" required>
+                    <input type="text" id="username" name="username" class="form-input"
+                           placeholder="username, Email or phone" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-container">
                     <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="password" name="password" class="form-input" placeholder="Password" required>
+                    <input type="password" id="password" name="password" class="form-input"
+                           placeholder="Password" required>
                     <button type="button" class="password-toggle" id="passwordToggle">
                         <i class="fas fa-eye-slash"></i>
                     </button>
@@ -111,6 +113,18 @@
             const githubLogin = document.getElementById('githubLogin');
             const signupLink = document.getElementById('signupLink');
             const tabBtns = document.querySelectorAll('.tab-btn');
+
+            //********* 한결: 뒤로가기 및 앞으로가기 시 입력필드 초기화
+            usernameInput.value = '';
+            passwordInput.value = '';
+
+            //뒤로가기 / 앞으로가기로 페이지에 접근할 때 실행된다.
+            window.addEventListener('pageshow', function (event) {
+                if(event.persisted){ //캐시가 계속 남아있을경우 입력필드 값 초기화
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                }
+            });
 
             // Tab switching
             tabBtns.forEach(btn => {
@@ -248,9 +262,6 @@
                 e.preventDefault();
                 alert('GitHub 로그인 기능이 구현될 예정입니다.');
             });
-
-
-
 
             // Auto sign in checkbox
             autoSignin.addEventListener('change', function() {

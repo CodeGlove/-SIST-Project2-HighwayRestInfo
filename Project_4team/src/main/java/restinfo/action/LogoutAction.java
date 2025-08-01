@@ -3,7 +3,6 @@ package restinfo.action;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.PrintWriter;
 
 public class LogoutAction implements Action {
     @Override
@@ -13,10 +12,16 @@ public class LogoutAction implements Action {
 
         // 세션이 존재할 경우 삭제
         if (session != null) {
-            session.invalidate(); //세션 무효화
+            session.invalidate(); //세션안에 있는 데이터 삭제후 세션 무효화
         }
 
-        //로그인 페이지로 이동
-        return "login.jsp";
+        try {
+            response.sendRedirect("index.jsp");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Controller 한테 view 처리를 맡기지 않음
+        return null;
     }
 }
