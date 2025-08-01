@@ -29,11 +29,24 @@ public class NaverCallbackAction implements Action {
 
         log.info("네이버 로그인 완료: {}", response.toString());
 
+        // 네이버가 보내주는 state
+        String returnedState = request.getParameter("state");
+
+        //내가 만들어서 보낸 state
+        String storedState = (String) request.getSession().getAttribute("mystate");
+
+//        if (storedState == null || !storedState.equals(returnedState)) {
+//            System.out.println("state 값이 일치하지 않습니다.");
+//            return "index.jsp"; // 혹은 다른 에러 처리 페이지
+//        }
+
+
         String clientId = ConfigLoader.getProperty("NAVER_CLIENT_ID");
         String clientSecret = ConfigLoader.getProperty("NAVER_CLIENT_SECRET");;//애플리케이션 클라이언트 시크릿값";
         String code = request.getParameter("code");
-        String state = request.getParameter("state");
-        log.info("Code: {}, State: {}", code, state);
+
+
+        log.info("Code: {}, State: {}", code, returnedState);
         String redirectURI = URLEncoder.encode("http://127.0.0.1:8080/Project_4team_war_exploded/Controller?type=naverCallback", StandardCharsets.UTF_8);
         String apiURL;
         apiURL = "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&";
@@ -41,7 +54,7 @@ public class NaverCallbackAction implements Action {
         apiURL += "&client_secret=" + clientSecret;
         apiURL += "&redirect_uri=" + redirectURI;
         apiURL += "&code=" + code;
-        apiURL += "&state=" + state;
+        apiURL += "&state=" + returnedState;
         String access_token = "";
         String refresh_token = "";
         out.println("apiURL="+apiURL);
@@ -102,6 +115,8 @@ public class NaverCallbackAction implements Action {
                 vo.setID(email);
                 vo.setName(name);
                 request.getSession().setAttribute("loginUser",vo);
+                request.getSession().setAttribute("login_provider", "naver");
+                request.getSession().setAttribute("access_token", access_token);
 
 
             }
