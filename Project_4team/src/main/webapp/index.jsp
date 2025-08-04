@@ -353,6 +353,20 @@
             color: #666;
             line-height: 1.6;
         }
+        .feature-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+            background-color: #f0f8ff;
+        }
+
+
 
         /* CTA Buttons */
         .cta-buttons {
@@ -528,6 +542,7 @@
         <h2 style="text-align: center; margin-bottom: 1rem; color: #222; font-size: 2.5rem;">고속도로 관리</h2>
         <p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 3rem;">지출부터 똑똑하게 똑똑하게</p>
         <div class="feature-grid">
+            <a href="map.jsp" class="feature-link">
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-route"></i>
@@ -535,6 +550,7 @@
                 <h3>실시간 교통정보</h3>
                 <p>고속도로의 실시간 교통상황을 확인하고 최적의 경로를 찾아보세요.</p>
             </div>
+            </a>
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-gas-pump"></i>
