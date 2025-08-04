@@ -117,6 +117,11 @@
         .btn-login:hover {
             color: #222;
         }
+        /* 08.04 - 한결 추가*/
+        .btn-notice {
+            color: #666;
+            background: none;
+        }
 
         .btn-register {
             color: #fff;
@@ -460,7 +465,7 @@
         <nav>
             <ul class="nav-links">
                 <li><a href="#">회사 소개</a></li>
-                <li><a href="#">공지사항</a></li>
+                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li> <%--08.04-한결 수정--%>
                 <li><a href="#">고객센터</a></li>
                 <li><a href="#">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
