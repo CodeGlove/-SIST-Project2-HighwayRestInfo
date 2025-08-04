@@ -57,6 +57,7 @@
             <version>1.2</version>
         </dependency>
 
+
         <!--해쉬코드위한 라이브러리  재윤-->
         <dependency>
             <groupId>org.mindrot</groupId>
@@ -81,6 +82,8 @@
             <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
+
+        <!--로그 찍기 위함 -재윤-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -91,11 +94,20 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.11</version>
         </dependency>
+
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
         </dependency>
+
+        <!--카카오 맵 api  불러오기 위함 재윤 -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
 
 
     </dependencies>
