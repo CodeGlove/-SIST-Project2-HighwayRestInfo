@@ -58,6 +58,7 @@ public class InitAreaAction implements Action {
 
                 // "홍성(서울)휴게소" 에서 괄호 안 내용 빼기
                 String text = SAitem.getString("svarNm");
+                System.out.println("이ㄱㄴ뭐에요?:"+text);
 
                 int start = text.indexOf('(');
                 int end = text.indexOf(')');
@@ -100,10 +101,11 @@ public class InitAreaAction implements Action {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // 각 휴게소의 입점업체 불러오기
+                String encodedSAName = java.net.URLEncoder.encode(SAitem.getString
+                        ("svarNm"), "UTF-8");
                 String ShopUrl = "https://data.ex.co.kr/openapi/restinfo/restBrandList"
                         + "?key=0597292231"
-                        +"&type=json&numOfRows=100&pageNo=1&stdRestNm="+
-                        SAitem.getString("svarNm");
+                        +"&type=json&numOfRows=100&pageNo=1&stdRestNm="+ encodedSAName;
 
                 url = new URL(ShopUrl);
                 conn = (HttpURLConnection) url.openConnection();

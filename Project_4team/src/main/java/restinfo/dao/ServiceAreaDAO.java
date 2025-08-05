@@ -21,7 +21,7 @@ public class ServiceAreaDAO {
         int cnt = 0;
         SqlSession ss = FactoryService.getFactory().openSession();
         Map<String, Object> m = new HashMap<>();
-        
+
         m.put("idx", idx);   // String 타입
         m.put("lat", lat);  // double 타입
         m.put("lng", lng);  // double 타입
@@ -32,7 +32,7 @@ public class ServiceAreaDAO {
         } else {
             ss.rollback();
         }
-
+        ss.close();
         return cnt;
     }
 }

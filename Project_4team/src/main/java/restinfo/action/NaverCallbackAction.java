@@ -16,6 +16,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import restinfo.dao.SignUpDAO;
 import restinfo.util.ConfigLoader;
 
 import static java.lang.System.out;
@@ -117,7 +118,7 @@ public class NaverCallbackAction implements Action {
                 request.getSession().setAttribute("loginUser",vo);
                 request.getSession().setAttribute("login_provider", "naver");
                 request.getSession().setAttribute("access_token", access_token);
-
+                SignUpDAO.add(email, userIdentifier ,name);
 
             }
         } catch (Exception e) {
