@@ -20,353 +20,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <style>
-        /* Pretendard 폰트 설정 */
-        @font-face {
-            font-family: 'PretendardVariable';
-            src: url('fonts/PretendardVariable.woff2') format('woff2-variations');
-            font-weight: 45 920;
-            font-style: normal;
-            font-display: swap;
-        }
-
-        /* 기본 스타일 리셋 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* 전체적인 바디 스타일 */
-        body {
-            font-family: 'PretendardVariable', 'Inter', sans-serif;
-            background: linear-gradient(180deg, #f0f8ff 0%, #ffffff 100%);
-            color: #222;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* 상단 헤더 스타일 */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        /* 네비게이션 컨테이너 */
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* 로고 스타일 */
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            color: #222;
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 1rem;
-        }
-
-        /* 뒤로가기 버튼 */
-        .back-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            color: #666;
-            font-weight: 500;
-            transition: color 0.2s;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            background: rgba(102, 126, 234, 0.1);
-        }
-
-        .back-btn:hover {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.15);
-        }
-
-        /* 메인 컨테이너 */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 8rem 2rem 4rem;
-        }
-
-        /* 페이지 제목 */
-        .page-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .page-title h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #222;
-            margin-bottom: 1rem;
-        }
-
-        .page-title p {
-            font-size: 1.1rem;
-            color: #666;
-        }
-
-        /* 탭 컨테이너 */
-        .tab-container {
-            margin-bottom: 3rem;
-        }
-
-        /* 탭 버튼들 */
-        .tab-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            justify-content: center;
-        }
-
-        .tab-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            background: #fff;
-            border: 2px solid #e5e8eb;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            border-color: #667eea;
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-        }
-
-        .tab-count {
-            background: rgba(255, 255, 255, 0.2);
-            color: inherit;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .tab-btn:not(.active) .tab-count {
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
-        }
-
-        /* 탭 콘텐츠 */
-        .tab-content {
-            position: relative;
-        }
-
-        .tab-pane {
-            display: none;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        /* 정보 카드 그리드 */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        /* 개별 정보 카드 */
-        .info-card {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 1.2rem;
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #222;
-        }
-
-        .card-count {
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-left: auto;
-        }
-
-        /* 리스트 스타일 */
-        .info-list {
-            list-style: none;
-        }
-
-        .info-item {
-            padding: 1rem;
-            border: 1px solid #e5e8eb;
-            border-radius: 8px;
-            margin-bottom: 0.8rem;
-            background: #f8fafc;
-            transition: all 0.2s;
-        }
-
-        .info-item:hover {
-            background: #fff;
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-        }
-
-        .info-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .item-name {
-            font-weight: 600;
-            color: #222;
-            margin-bottom: 0.3rem;
-        }
-
-        .item-details {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        /* 빈 상태 메시지 */
-        .empty-message {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
-
-        .empty-icon {
-            font-size: 3rem;
-            color: #ccc;
-            margin-bottom: 1rem;
-        }
-
-        /* 반응형 디자인 */
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 6rem 1rem 2rem;
-            }
-
-            .page-title h1 {
-                font-size: 2rem;
-            }
-
-            .tab-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .tab-btn {
-                width: 100%;
-                max-width: 300px;
-                justify-content: center;
-            }
-
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .nav-container {
-                padding: 0 1rem;
-            }
-        }
-
-        /* 애니메이션 */
-        .fade-in {
-            animation: fadeIn 1s ease-out;
-        }
-
-        .slide-up {
-            animation: slideUp 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <!-- CSS 파일 링크 -->
+    <link rel="stylesheet" href="css/restareaStyle.css">
 </head>
 <body>
     <!-- 헤더 -->
@@ -433,19 +88,86 @@
                         
                         <c:choose>
                             <c:when test="${not empty restAreas}">
-                                <ul class="info-list">
+                                <div class="rest-areas-list">
                                     <c:forEach var="restArea" items="${restAreas}" varStatus="status">
-                                        <li class="info-item">
-                                            <div class="item-name">
-                                                <i class="fas fa-map-marker-alt" style="color: #667eea; margin-right: 0.5rem;"></i>
-                                                <c:out value="${restArea}"/>
+                                        <div class="rest-area-card clickable" onclick="showRestAreaInfo('${restArea}', ${status.index})">
+                                            <div class="card-header">
+                                                <div class="card-icon">
+                                                    <i class="fas fa-utensils"></i>
+                                                </div>
+                                                <div class="card-info">
+                                                    <div class="card-title">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        <c:out value="${restArea}"/>
+                                                    </div>
+                                                    <div class="rating-section">
+                                                        <span class="rating-label">별점</span>
+                                                        <div class="stars">
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="item-details">
-                                                휴게시설 #${status.index + 1}
+                                            
+                                            <div class="card-content">
+                                                <!-- 편의시설 섹션 -->
+                                                <div class="content-section">
+                                                    <div class="section-title">
+                                                        <i class="fas fa-list"></i>
+                                                        편의시설
+                                                    </div>
+                                                    <div class="facilities-grid">
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-baby facility-icon"></i>
+                                                            <span>수유실</span>
+                                                        </div>
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-first-aid facility-icon"></i>
+                                                            <span>약국</span>
+                                                        </div>
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-bus facility-icon"></i>
+                                                            <span>버스환승</span>
+                                                        </div>
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-credit-card facility-icon"></i>
+                                                            <span>ATM</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- 주유비 섹션 -->
+                                                <div class="content-section">
+                                                    <div class="section-title">
+                                                        <i class="fas fa-gas-pump"></i>
+                                                        주유비
+                                                    </div>
+                                                    <div class="fuel-info">
+                                                        <div class="fuel-price">휘발유: 1,618원</div>
+                                                        <div class="fuel-price">경유: 1,474원</div>
+                                                        <div class="fuel-price">LPG: 1,074원</div>
+                                                        <div class="fuel-date">2025.08.05</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- 대표메뉴 섹션 -->
+                                                <div class="content-section">
+                                                    <div class="section-title">
+                                                        <i class="fas fa-utensils"></i>
+                                                        대표메뉴
+                                                    </div>
+                                                    <div class="menu-item">
+                                                        참치김치찌개
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </li>
+                                        </div>
                                     </c:forEach>
-                                </ul>
+                                </div>
                             </c:when>
                             <c:otherwise>
                                 <div class="empty-message">
@@ -474,19 +196,84 @@
                         
                         <c:choose>
                             <c:when test="${not empty restStops}">
-                                <ul class="info-list">
+                                <div class="rest-areas-list">
                                     <c:forEach var="restStop" items="${restStops}" varStatus="status">
-                                        <li class="info-item">
-                                            <div class="item-name">
-                                                <i class="fas fa-map-marker-alt" style="color: #667eea; margin-right: 0.5rem;"></i>
-                                                <c:out value="${restStop}"/>
+                                        <div class="rest-area-card clickable" onclick="showRestStopInfo('${restStop}', ${status.index})">
+                                            <div class="card-header">
+                                                <div class="card-icon">
+                                                    <i class="fas fa-bed"></i>
+                                                </div>
+                                                <div class="card-info">
+                                                    <div class="card-title">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        <c:out value="${restStop}"/>
+                                                    </div>
+                                                    <div class="rating-section">
+                                                        <span class="rating-label">별점</span>
+                                                        <div class="stars">
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="item-details">
-                                                졸음쉼터 #${status.index + 1}
+                                            
+                                            <div class="card-content">
+                                                <!-- 편의시설 섹션 -->
+                                                <div class="content-section">
+                                                    <div class="section-title">
+                                                        <i class="fas fa-list"></i>
+                                                        편의시설
+                                                    </div>
+                                                    <div class="facilities-grid">
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-parking facility-icon"></i>
+                                                            <span>주차장</span>
+                                                        </div>
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-restroom facility-icon"></i>
+                                                            <span>화장실</span>
+                                                        </div>
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-couch facility-icon"></i>
+                                                            <span>휴식공간</span>
+                                                        </div>
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-shield-alt facility-icon"></i>
+                                                            <span>안전시설</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- 운영시간 섹션 -->
+                                                <div class="content-section">
+                                                    <div class="section-title">
+                                                        <i class="fas fa-clock"></i>
+                                                        운영시간
+                                                    </div>
+                                                    <div class="fuel-info">
+                                                        <div class="fuel-price">24시간 운영</div>
+                                                        <div class="fuel-date">무료 이용</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- 안전수칙 섹션 -->
+                                                <div class="content-section">
+                                                    <div class="section-title">
+                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                        안전수칙
+                                                    </div>
+                                                    <div class="menu-item">
+                                                        15-20분 휴식 권장
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </li>
+                                        </div>
                                     </c:forEach>
-                                </ul>
+                                </div>
                             </c:when>
                             <c:otherwise>
                                 <div class="empty-message">
@@ -523,6 +310,137 @@
                 </div>
             </div>
         </c:if>
+    </div>
+
+    <!-- 휴게소 상세정보 모달 -->
+    <div id="restAreaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-utensils"></i>
+                    <span id="modalTitle">휴게소 정보</span>
+                </div>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-map-marker-alt"></i>
+                        위치
+                    </div>
+                    <div class="info-value" id="modalLocation">
+                        정보를 불러오는 중...
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-phone"></i>
+                        연락처
+                    </div>
+                    <div class="info-value" id="modalPhone">
+                        정보를 불러오는 중...
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i>
+                        운영시간
+                    </div>
+                    <div class="info-value" id="modalHours">
+                        24시간 운영
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-list"></i>
+                        편의시설
+                    </div>
+                    <div class="facilities-list" id="modalFacilities">
+                        <span class="facility-tag">주유소</span>
+                        <span class="facility-tag">충전소</span>
+                        <span class="facility-tag">음식점</span>
+                        <span class="facility-tag">화장실</span>
+                        <span class="facility-tag">편의점</span>
+                        <span class="facility-tag">휴식공간</span>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-info-circle"></i>
+                        안내사항
+                    </div>
+                    <div class="info-value">
+                        • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
+                        • 긴급상황 시 1588-2504로 연락하세요<br>
+                        • 휴게소 내에서는 안전수칙을 준수해주세요
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 졸음쉼터 상세정보 모달 -->
+    <div id="restStopModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-bed"></i>
+                    <span id="modalTitle2">졸음쉼터 정보</span>
+                </div>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-map-marker-alt"></i>
+                        위치
+                    </div>
+                    <div class="info-value" id="modalLocation2">
+                        정보를 불러오는 중...
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i>
+                        운영시간
+                    </div>
+                    <div class="info-value">
+                        24시간 운영
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-list"></i>
+                        편의시설
+                    </div>
+                    <div class="facilities-list">
+                        <span class="facility-tag">주차장</span>
+                        <span class="facility-tag">화장실</span>
+                        <span class="facility-tag">휴식공간</span>
+                        <span class="facility-tag">안전시설</span>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        안전수칙
+                    </div>
+                    <div class="info-value">
+                        • 졸음이 느껴지면 즉시 휴식을 취하세요<br>
+                        • 15-20분 정도의 짧은 휴식이 효과적입니다<br>
+                        • 졸음쉼터는 임시 휴식용이므로 장시간 이용을 피하세요<br>
+                        • 긴급상황 시 1588-2504로 연락하세요
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -571,6 +489,50 @@
                 });
             });
         });
+
+        // 휴게소 정보 모달 표시
+        function showRestAreaInfo(name, index) {
+            const modal = document.getElementById('restAreaModal');
+            const title = document.getElementById('modalTitle');
+            const location = document.getElementById('modalLocation');
+            const phone = document.getElementById('modalPhone');
+            
+            title.textContent = name;
+            location.textContent = `휴게소 #${index + 1} - ${name}`;
+            phone.textContent = '031-XXX-XXXX';
+            
+            modal.style.display = 'block';
+        }
+
+        // 졸음쉼터 정보 모달 표시
+        function showRestStopInfo(name, index) {
+            const modal = document.getElementById('restStopModal');
+            const title = document.getElementById('modalTitle2');
+            const location = document.getElementById('modalLocation2');
+            
+            title.textContent = name;
+            location.textContent = `졸음쉼터 #${index + 1} - ${name}`;
+            
+            modal.style.display = 'block';
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
     </script>
 </body>
 </html>
