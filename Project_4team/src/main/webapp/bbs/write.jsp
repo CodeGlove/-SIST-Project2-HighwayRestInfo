@@ -5,7 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
-    <%--<link rel="stylesheet" href="./css/summernote-lite.css"/>--%> <%--css파일 연결하기--%>
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/34.1.0/classic/ckeditor.css">
+    <script src="https://cdn.ckeditor.com/ckeditor5/34.1.0/classic/ckeditor.js"></script>
     <style type="text/css">
         #bbs table {
             width:580px;
@@ -47,22 +48,13 @@
     </style>
     <script type="text/javascript">
         function sendData(){
-            /*for(var i=0 ; i<document.forms[0].elements.length ; i++){
-              if(document.forms[0].elements[i].value == ""){ //하나도 빠짐없이 입력하게끔 하는 유효성검사!
-                alert(document.forms[0].elements[i].name+
-                        "를 입력하세요");
-                document.forms[0].elements[i].focus();
-                return;//수행 중단
-              }
-            }*/
+        //console.log("보내기 완료")
 
-//		document.forms[0].action = "test.jsp";
-
-            let title = $("#title").val();
-            if(title.trim().length < 1){
+            let subject = $("#subject").val();
+            if(subject.trim().length < 1){
                 alert("제목을 입력하세요");
-                $("#title").val("");
-                $("#title").focus();
+                $("#subject").val("");
+                $("#subject").focus();
                 return;
             }
 
@@ -89,8 +81,7 @@
               $("#file").focus();
               return;
             }*/
-
-            document.forms[0].submit();
+            document.forms[0].submit(); //submit이 발생하면 writeAction이 실행됨.
         }
     </script>
 </head>
@@ -98,16 +89,16 @@
 <div id="bbs">
     <form action="Controller?type=write" method="post"
           encType="multipart/form-data">
-        <input type="hidden" name="category" value="BBS"/>
-        <table summary="게시판 글쓰기">
-            <caption>게시판 글쓰기</caption>
+        <%--<input type="hidden" name="category" value="BBS"/>--%>
+        <table summary="공지사항 작성하기">
+            <caption>공지사항 작성하기</caption>
             <tbody>
             <tr>
                 <th>제목:</th>
-                <td><input type="text" name="title" id="title" size="45"/></td>
+                <td><input type="text" name="subject" id="subject" size="45"/></td>
             </tr>
             <tr>
-                <th>이름:</th>
+                <th>작성자:</th>
                 <td><input type="text" name="writer" id="writer" size="12"/></td>
             </tr>
             <tr>
@@ -119,17 +110,25 @@
                 <th>첨부파일:</th>
                 <td><input type="file" id="file" name="file"/></td>
             </tr>
-            <!--
-                            <tr>
-                                <th>비밀번호:</th>
-                                <td><input type="password" name="pwd" size="12"/></td>
-                            </tr>
-            -->
+            <tr>
+                <th>카테고리:</th>
+                <td>
+                    <select id="category" name="category">
+                        <option value="">::: 카테고리를 선택하세요 :::</option>
+                        <option value="HighWay">고속도로</option>
+                        <option value="RestArea">졸음쉼터</option>
+                        <option value="ServiceArea">휴게소</option>
+                        <option value="Shop">매장</option>
+                        <option value="Guide">이용안내</option>
+                        <option value="Other">기타</option>
+                    </select>
+                </td>
+            </tr>
             <tr>
                 <td colspan="2">
-                    <input type="button" value="보내기"
+                    <input type="button" value="완료"
                            onclick="sendData()"/>
-                    <input type="button" value="다시"/>
+                    <input type="button" value="수정"/>
                     <input type="button" value="목록"/>
                 </td>
             </tr>

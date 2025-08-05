@@ -143,6 +143,12 @@
     .btn-logout:hover {
       color: #222;
     }
+    /******* 08/05 한결 생성*/
+    .btn-notice {
+      color: #666;
+      background: none;
+    }
+
 
     /* Hero Section */
     .hero {
@@ -449,7 +455,7 @@
     <nav>
       <ul class="nav-links">
         <li><a href="#">회사 소개</a></li>
-        <li><a href="#">공지사항</a></li>
+        <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
         <li><a href="#">고객센터</a></li>
         <li><a href="#">자주 묻는 질문</a></li>
         <li><a href="#">채용</a></li>

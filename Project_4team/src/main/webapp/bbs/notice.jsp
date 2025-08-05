@@ -34,7 +34,8 @@
     .subject {width:30%}
     .writer {width:20%}
     .writeDate {width:20%}
-    .modDate {width:15%}
+    .modDate {width:20%}
+    .del {width:15%}
     .title{background:#667eea}
 
     .odd {background:silver}
@@ -89,14 +90,15 @@
       <th class="no">번호</th>
       <th class="subject">제목</th>
       <th class="writer">글쓴이</th>
-      <th class="writeDate">날짜</th>
+      <th class="writeDate">작성일</th>
       <th class="modDate">수정일</th>
+      <th class="del"></th>
     </tr>
     </thead>
 
     <tfoot>
     <tr>
-      <td colspan="4">
+      <td colspan="5">
         <ol class="paging">
           <c:set var="p" value="${requestScope.page}" scope="page"/>
 
@@ -106,12 +108,12 @@
           <c:if test="${p.startPage >= p.pagePerBlock}">
             <li><a href="Controller?type=notice&cPage=${p.nowPage-p.pagePerBlock}">&lt;</a></li>
           </c:if>
-          <c:forEach begin="${p.startPage}" end="${p.endPage}" varStatus="vs">
-            <c:if test="${p.nowPage == vs.index}">
-              <li class="now">${vs.index}</li>
+          <c:forEach begin="${p.startPage}" end="${p.endPage}" var="pageNum">
+            <c:if test="${p.nowPage == pageNum}">
+              <li class="now">${pageNum}</li>
             </c:if>
-            <c:if test="${p.nowPage != vs.index}">
-              <li><a href="Controller?type=notice&cPage=${vs.index}">${vs.index}</a></li>
+            <c:if test="${p.nowPage != pageNum}">
+              <li><a href="Controller?type=notice&cPage=${pageNum}">${pageNum}</a></li>
             </c:if>
           </c:forEach>
 
@@ -122,18 +124,18 @@
             <li class="disable">&gt;</li>
           </c:if>
         </ol>
+        <%--관리자일 경우에만 글쓰기 버튼 표시--%>
       </td>
       <td>
         <%--관리자일 경우에만 글쓰기 버튼 표시--%>
         <c:if test="${sessionScope.loginUser.authority == 1}">
           <input type="button" value="글쓰기"
-               onclick="javascript:location.href='Controller?type=write'"/>
+                 onclick="javascript:location.href='Controller?type=write'"/>
         </c:if>
       </td>
     </tr>
     </tfoot>
     <tbody>
-
     <c:set var="ar" value="${requestScope.ar}"/>
     <c:set var="i" value="0"/>
     <c:forEach items="${ar}" var="vo" varStatus="vs">
@@ -141,20 +143,22 @@
       <tr>
         <td>${num}</td>
         <td style="text-align: left">
-          <a href="Controller?type=notice&b_idx=${vo.PostNum}&cPage=${nowPage}">
+          <a href="Controller?type=notice&PostNum=${vo.postNum}&cPage=${p.nowPage}">
               ${vo.subject}
-            <c:if test="${vo.c_list != null and fn:length(vo.c_list) > 0}">
+            <%--댓글 수 보이게하기--%>
+            <%--<c:if test="${vo.c_list != null and fn:length(vo.c_list) > 0}">
               (<c:out value="${fn:length(vo.c_list)}"/>)
-            </c:if>
+            </c:if>--%>
           </a>
         </td>
         <td>${vo.writer}</td>
-        <td>${vo.write_date}</td>
+        <td>${vo.writeDate}</td>
+        <td>${vo.modDate}</td>
         <td>
           <%--관리자일 경우 삭제 버튼 추가--%>
           <c:if test="${sessionScope.loginUser.authority == 1}">
             <input type="button" value="삭제"
-                   onclick="location.href='Controller?type=del&b_idx=${vo.PostNum}'"/>
+                   onclick="location.href='Controller?type=del&PostNum=${vo.postNum}'"/>
           </c:if>
         </td>
       </tr>

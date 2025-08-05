@@ -5,16 +5,66 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Board">
 
-    <!-- 총 게시물 수를 반환하는 기능-->
-    <select id="totalCount" resultType="int" parameterType="String">
+    <!--전체 게시물 수를 반환하는 기능-->
+    <select id="totalCount" resultType="int">
         SELECT COUNT(*) FROM Board
-        WHERE Category = #{category}
     </select>
 
+    <!--전체 게시물 목록을 반환하는 기능-->
     <select id="list" resultType="mybatis.vo.BbsVO" parameterType="map">
+        SELECT * FROM Board
+        ORDER BY PostNum DESC
+        LIMIT #{begin}, #{numPerPage}
+    </select>
+
+    <!-- 특정 카테고리의 총 게시물 수를 반환하는 기능-->
+    <!--<select id="totalCount" resultType="int" parameterType="String">
+        SELECT COUNT(*) FROM Board
+        WHERE Category = #{category}
+    </select>-->
+
+    <!--특정 카테고리의 목록을 반환하는 기능-->
+    <!--<select id="list" resultType="mybatis.vo.BbsVO" parameterType="map">
         SELECT * FROM Board
         WHERE Category = #{category}
         ORDER BY PostNum DESC
         LIMIT #{begin}, #{numPerPage}
+    </select>-->
+
+    <!--원글 목록: 인자 3개(???, begin, end)-->
+
+    <!--원글 저장-->
+    <insert id="add" parameterType="map">
+        INSERT INTO Board(subject, writer, content, FileName, category,
+                            writeDate, ThumbsUp, ThumbsDown, `Delete`, Pwd)
+                    VALUES(#{subject}, #{writer}, #{content}, #{FileName}, #{category},
+                            NOW(), 0, 0, 0, #{Pwd})
+    </insert>
+
+    <!--원글 보기-->
+    <select id="getBbs" parameterType="String" resultType="mybatis.vo.BbsVO">
+        SELECT * FROM Board
+        WHERE PostNum = #{PostNum}
     </select>
+
+    <!-- 원글 삭제-->
+    <update id="del" parameterType="String">
+        UPDATE Board
+        SET `Delete` = 1 <!--삭제 여부 확인(0: false, 1: true-->
+        WHERE PostNum = #{PostNum}
+    </update>
+
+    <!-- 좋아요 증가-->
+    <update id="Like" parameterType="String">
+        UPDATE Board
+        SET ThumbsUp = ThumbsUp + 1
+        WHERE PostNum = #{PostNum}
+    </update>
+
+    <!-- 싫어요 증가 -->
+    <update id="Hate" parameterType="String">
+        UPDATE Board
+        SET ThumbsDown = ThumbsDown + 1
+        WHERE PostNum = #{PostNum}
+    </update>
 </mapper>

@@ -64,7 +64,7 @@
         <tbody>
         <tr>
           <th>제목:</th>
-          <td>${vo.subject}</td>
+          <td>${vo.Subject}</td>
         </tr>
         <c:if test="${vo.FileName ne null and vo.FileName.length() > 4}"> <%--첨부파일이 있을경우에만 보여주기--%>
           <tr>
@@ -76,11 +76,11 @@
         </c:if>
         <tr>
           <th>이름:</th>
-          <td>${vo.writer}</td>
+          <td>${vo.Writer}</td>
         </tr>
         <tr>
           <th>내용:</th>
-          <td>${vo.content}</td>
+          <td>${vo.Content}</td>
         </tr>
 
         <tr>
