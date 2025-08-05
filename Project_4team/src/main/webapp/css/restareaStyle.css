@@ -1,0 +1,780 @@
+/* Pretendard 폰트 설정 */
+@font-face {
+    font-family: 'PretendardVariable';
+    src: url('../fonts/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 45 920;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* 기본 스타일 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 전체적인 바디 스타일 */
+body {
+    font-family: 'PretendardVariable', 'Inter', sans-serif;
+    background: linear-gradient(180deg, #f0f8ff 0%, #ffffff 100%);
+    color: #222;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* 상단 헤더 스타일 */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 네비게이션 컨테이너 */
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 로고 스타일 */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #222;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+}
+
+/* 뒤로가기 버튼 */
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+    transition: color 0.2s;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.back-btn:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.15);
+}
+
+/* 메인 컨테이너 */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 6rem 2rem 2rem;
+}
+
+/* 페이지 제목 */
+.page-title {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.5rem;
+}
+
+.page-title p {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* 탭 컨테이너 */
+.tab-container {
+    margin-bottom: 2rem;
+}
+
+/* 탭 버튼들 */
+.tab-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: #fff;
+    border: 2px solid #e5e8eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.tab-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: inherit;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.tab-btn:not(.active) .tab-count {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+/* 탭 콘텐츠 */
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* 정보 카드 그리드 */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* 개별 정보 카드 */
+.info-card {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    border: 1px solid #f0f0f0;
+}
+
+.info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    border-color: #667eea;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+    flex: 1;
+}
+
+.card-count {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* 리스트 스타일 */
+.info-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.8rem;
+}
+
+.info-item {
+    padding: 0.6rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 50px;
+}
+
+.info-item:hover {
+    background: #f8fafc;
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.item-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #222;
+    font-size: 0.85rem;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-details {
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.2;
+}
+
+/* 빈 상태 메시지 */
+.empty-message {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 5rem 1rem 1.5rem;
+    }
+
+    .page-title h1 {
+        font-size: 1.8rem;
+    }
+
+    .tab-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tab-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-list {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .info-item {
+        padding: 0.5rem;
+        min-height: 45px;
+    }
+
+    .item-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.6rem;
+    }
+
+    .item-name {
+        font-size: 0.8rem;
+    }
+
+    .item-details {
+        font-size: 0.7rem;
+    }
+
+    .nav-container {
+        padding: 0 1rem;
+    }
+}
+
+/* 애니메이션 */
+.fade-in {
+    animation: fadeIn 1s ease-out;
+}
+
+.slide-up {
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 모달 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.close {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.close:hover {
+    opacity: 0.7;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.info-section {
+    margin-bottom: 1.5rem;
+}
+
+.info-section:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-value {
+    color: #333;
+    line-height: 1.6;
+}
+
+.facilities-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.facility-tag {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+/* 새로운 카드 스타일 */
+.rest-area-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    border: 1px solid #e5e8eb;
+}
+
+.rest-area-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.card-info {
+    flex: 1;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.rating-label {
+    font-size: 0.9rem;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.stars {
+    display: flex;
+    gap: 0.1rem;
+}
+
+.star {
+    color: #ffd700;
+    font-size: 0.9rem;
+}
+
+.star.empty {
+    color: #e5e8eb;
+}
+
+.card-content {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* 휴게소명과 정보를 같은 줄에 배치 */
+.rest-area-info-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.rest-area-name-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.rest-area-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rest-area-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: #667eea;
+}
+
+.info-sections-row {
+    display: flex;
+    gap: 0.8rem;
+    flex: 1;
+}
+
+.content-section {
+    background: #f8fafc;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #e5e8eb;
+    flex: 1;
+    min-width: 0;
+}
+
+.section-title {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.facilities-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.facility-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.facility-icon {
+    color: #667eea;
+    font-size: 0.8rem;
+}
+
+.fuel-price {
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+}
+
+.fuel-date {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.menu-item {
+    font-weight: 600;
+    color: #222;
+    font-size: 0.9rem;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .card-content {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .facilities-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rest-area-card {
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .card-header {
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .card-content {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .rest-area-info-row {
+        flex-direction: column;
+        gap: 0.6rem;
+        align-items: stretch;
+    }
+
+    .info-sections-row {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .content-section {
+        padding: 0.6rem;
+    }
+
+    .section-title {
+        font-size: 0.8rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .facility-item {
+        font-size: 0.7rem;
+    }
+
+    .fuel-price {
+        font-size: 0.8rem;
+    }
+
+    .fuel-date {
+        font-size: 0.7rem;
+    }
+
+    .menu-item {
+        font-size: 0.8rem;
+    }
+}
