@@ -3,14 +3,12 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="SA">
-    <insert id="load" parameterType="java.util.List">
+    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
         Address, Tel, ShopCode)
         values
-        <foreach collection="list" item="vo" separator=",">
-            (#{vo.SAName}, #{vo.SADirection}, #{vo.WayNum}, #{vo.CompactParking}, #{vo.LargeParking},
-            #{vo.DisabledParking}, #{vo.Address}, #{vo.Tel}, #{vo.ShopCode})
-        </foreach>
+        (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
+            #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
         ON DUPLICATE KEY UPDATE
         SAName = values(SAName),
         SADirection = values(SADirection),
@@ -22,5 +20,33 @@
         Tel = values(Tel),
         ShopCode = values(ShopCode)
     </insert>
+
+
+    <insert id="insert" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
+        insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
+        Address, Tel, ShopCode)
+        values
+        (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
+        #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
+    </insert>
+
+    <update id="update" parameterType="mybatis.vo.ServiceAreaVO">
+        update ServiceArea
+        set
+        WayNum = #{WayNum},
+        CompactParking = #{CompactParking},
+        LargeParking = #{LargeParking},
+        DisabledParking = #{DisabledParking},
+        Address = #{Address},
+        Tel = #{Tel},
+        ShopCode = #{ShopCode}
+        where
+        SAName = #{SAName} and
+        SADirection = #{SADirection}
+    </update>
+
+    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
+        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
+    </select>
 
 </mapper>

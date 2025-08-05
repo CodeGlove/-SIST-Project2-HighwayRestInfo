@@ -1,7 +1,31 @@
 package mybatis.vo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ServiceAreaVO {
-    private String SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, ShopCode;
+    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, ShopCode;
+    private List<ShopVO> Shoplist;
+
+    public ServiceAreaVO() {
+        Shoplist = new ArrayList<ShopVO>();
+    }
+
+    public List<ShopVO> getShoplist() {
+        return Shoplist;
+    }
+
+    public String getIdx() {
+        return Idx;
+    }
+
+    public void setIdx(String idx) {
+        Idx = idx;
+    }
+
+    public void setShoplist(List<ShopVO> shoplist) {
+        Shoplist = shoplist;
+    }
 
     public String getSAName() {
         return SAName;

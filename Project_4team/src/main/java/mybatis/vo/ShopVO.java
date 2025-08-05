@@ -1,22 +1,14 @@
 package mybatis.vo;
 
 public class ShopVO {
-    private String SAName, SADirection, ShopName;
+    private String ShopName, SAKey;
 
-    public String getSAName() {
-        return SAName;
+    public String getSAKey() {
+        return SAKey;
     }
 
-    public void setSAName(String SAName) {
-        this.SAName = SAName;
-    }
-
-    public String getSADirection() {
-        return SADirection;
-    }
-
-    public void setSADirection(String SADirection) {
-        this.SADirection = SADirection;
+    public void setSAKey(String SAKey) {
+        this.SAKey = SAKey;
     }
 
     public String getShopName() {

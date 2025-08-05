@@ -24,10 +24,8 @@ public class InitAreaAction implements Action {
         String SAUrl = "https://data.ex.co.kr/openapi/restinfo/hiwaySvarInfoList"
                 + "?key=0597292231"
                 + "&type=json&numOfRows=1000&svarNm=%ED%9C%B4%EA%B2%8C%EC%86%8C&svarGsstClssCd=0";
-        // 휴게소 리스트
+        // 휴게소 리스트, 여기에 입점업체 리스트도 있음
         List<ServiceAreaVO> SAlist = new ArrayList<>();
-        // 입점업체 리스트
-        List<ShopVO>Shoplist = new ArrayList<>();
 
         try {
             // 📡 URL 객체 생성 + 연결 설정
@@ -88,6 +86,7 @@ public class InitAreaAction implements Action {
                     savo.setSADirection("양방향");
                 else
                     savo.setSADirection(SAitem.getString("gudClssNm") + inside);     // 방향
+
                 System.out.println(wayNum);
                 savo.setWayNum(wayNum);     // 도로명
                 savo.setCompactParking(SAitem.getString("cocrPrkgTrcn"));
@@ -97,7 +96,6 @@ public class InitAreaAction implements Action {
                 savo.setTel(SAitem.getString("rprsTelNo"));         // 전화번호
                 savo.setShopCode(SAitem.getString("bsopAdtnlFcltCd"));     //영업점포코드
 
-                SAlist.add(savo); // 리스트에 VO 추가
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -131,15 +129,58 @@ public class InitAreaAction implements Action {
                 for (int k = 0; k < Shopitems.length(); k++) {
                     JSONObject Shopitem = Shopitems.getJSONObject(k); // 각 객체 추출
                     ShopVO shop = new ShopVO();
-                    shop.setSAName(outside);
-                    if (inside.equals(""))
-                        shop.setSADirection("양방향");
-                    else
-                        shop.setSADirection(SAitem.getString("gudClssNm") + inside);// 방향
-                    shop.setShopName(Shopitem.getString("brdName"));
-                    Shoplist.add(shop);
+//                    shop.setSAName(outside);
+//                    if (inside.equals(""))
+//                        shop.setSADirection("양방향");
+//                    else
+//                        shop.setSADirection(SAitem.getString("gudClssNm") + inside);// 방향
+
+                    // 입점 업체명 : 외부 데이터셋의 데이터가 일관성이 없어 정제작업 해야함
+                    if (Shopitem.getString("brdName").equals("기타")) { // 받아온 문자열이 "기타"라면 다른 컬럼을 받아야함
+                        String str = Shopitem.getString("brdDesc").trim(); // 다른 컬럼 받기
+                        String[] ar = null;
+                         if (str.contains("는") || str.contains("은") || str.contains(" ")) { // 해당 문자열은 문장식으로 점포를 설명되는 레코드도 있다 점포명만 추출
+                            if (str.contains(("는")))
+                                shop.setShopName(str.substring(0, str.indexOf("는")));
+                            if (str.contains(("은")))
+                                shop.setShopName(str.substring(0, str.indexOf("은")));
+                            if (str.contains((" ")))
+                                shop.setShopName(str.substring(0, str.indexOf(" ")));
+                            continue;
+                        } else if (str.contains(",") || str.contains("/")) { // 해당 컬럼의 값은 ,나 /로 묶여있을 수 있음
+                            if (str.contains(","))
+                                ar = str.split(",");
+                            if (str.contains("/")){
+                                if (ar != null){ // 이 문자열은 ,도 있고 /도 있는 문자열이다
+                                    ar = str.split(",/");
+                                } else // "/"만 가진 문자열일 경우
+                                    ar = str.split("/");
+                            }
+                            for (String s : ar) { // 구분자로 나눈 문자열배열 각각 레코드들로 넣기
+                                ShopVO splitValue = new ShopVO();
+                                splitValue.setShopName(s);
+                                savo.getShoplist().add(splitValue);
+                            }
+                            continue;
+                        } else if (str.contains("/")) {
+                            ar = str.split("/");
+                            for (String s : ar) {
+                                ShopVO splitValue = new ShopVO();
+                                splitValue.setShopName(s);
+                                savo.getShoplist().add(splitValue);
+                            }
+                            continue;
+                        } else
+                            shop.setShopName(str);
+                    }
+                    else // 정상적으로 컬럼을 받은 경우
+                        shop.setShopName(Shopitem.getString("brdName"));
+
+                    // 받아온 점포 정보 vo에 넣어두기
+                    savo.getShoplist().add(shop);
                 }
-                ManageDAO.initShop(Shoplist);
+
+                SAlist.add(savo); // 리스트에 VO 추가
             }
 
             ManageDAO.initSA(SAlist);
@@ -150,4 +191,6 @@ public class InitAreaAction implements Action {
         }
         return "manage.jsp";
     }
+
+    private
 }
