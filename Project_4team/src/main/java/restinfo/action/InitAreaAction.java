@@ -62,8 +62,8 @@ public class InitAreaAction implements Action {
                 int start = text.indexOf('(');
                 int end = text.indexOf(')');
 
-                String inside = "";   // 괄호 안
-                String outside = text; // 괄호 제거된 전체
+                String inside = "";   // 괄호 안의 문자열이 저장될 부분
+                String outside = text; // 괄호 제거된 전체가 저장될 문자열
 
                 if (start != -1 && end != -1 && end > start) {
                     inside = text.substring(start, end + 1); // (와 ) 사이
@@ -139,43 +139,25 @@ public class InitAreaAction implements Action {
                     if (Shopitem.getString("brdName").equals("기타")) { // 받아온 문자열이 "기타"라면 다른 컬럼을 받아야함
                         String str = Shopitem.getString("brdDesc").trim(); // 다른 컬럼 받기
                         String[] ar = null;
-                         if (str.contains("는") || str.contains("은") || str.contains(" ")) { // 해당 문자열은 문장식으로 점포를 설명되는 레코드도 있다 점포명만 추출
-                            if (str.contains(("는")))
-                                shop.setShopName(str.substring(0, str.indexOf("는")));
-                            if (str.contains(("은")))
-                                shop.setShopName(str.substring(0, str.indexOf("은")));
-                            if (str.contains((" ")))
-                                shop.setShopName(str.substring(0, str.indexOf(" ")));
-                            continue;
-                        } else if (str.contains(",") || str.contains("/")) { // 해당 컬럼의 값은 ,나 /로 묶여있을 수 있음
-                            if (str.contains(","))
-                                ar = str.split(",");
-                            if (str.contains("/")){
-                                if (ar != null){ // 이 문자열은 ,도 있고 /도 있는 문자열이다
-                                    ar = str.split(",/");
-                                } else // "/"만 가진 문자열일 경우
-                                    ar = str.split("/");
-                            }
+
+                        String refine = cutString(str); // 문자열 가공해주는 메서드 호출
+
+                         if (refine.contains(",") || refine.contains("/") || refine.contains("&")) {
+                             // 해당 컬럼의 값은 ,나 / 또는 &로 묶여있을 수 있음
+                             ar = refine.split("[,/&]");
                             for (String s : ar) { // 구분자로 나눈 문자열배열 각각 레코드들로 넣기
                                 ShopVO splitValue = new ShopVO();
                                 splitValue.setShopName(s);
                                 savo.getShoplist().add(splitValue);
                             }
                             continue;
-                        } else if (str.contains("/")) {
-                            ar = str.split("/");
-                            for (String s : ar) {
-                                ShopVO splitValue = new ShopVO();
-                                splitValue.setShopName(s);
-                                savo.getShoplist().add(splitValue);
-                            }
-                            continue;
                         } else
-                            shop.setShopName(str);
+                            shop.setShopName(refine);
                     }
-                    else // 정상적으로 컬럼을 받은 경우
-                        shop.setShopName(Shopitem.getString("brdName"));
-
+                    else {// 정상적으로 컬럼을 받은 경우
+                        String refine = cutString(Shopitem.getString("brdName").trim());
+                        shop.setShopName(refine);
+                    }
                     // 받아온 점포 정보 vo에 넣어두기
                     savo.getShoplist().add(shop);
                 }
@@ -192,5 +174,26 @@ public class InitAreaAction implements Action {
         return "manage.jsp";
     }
 
-    private
+    private String cutString(String str) {
+
+        while (str.contains("(") || str.contains(")")) {
+            // 문자열에 (사족)이 있다면 ()째로 잘라내기
+            int start = str.indexOf('('); // 012(45)78
+            int end = str.indexOf(')');
+
+            if (start != -1 && end != -1 && end > start) {
+                str = str.substring(0, start) + str.substring(end + 1); // 앞 + 뒤
+            }
+        }
+        // 문자열 문장형으로 쓰여있으면 앞의 단어 빼고 잘라내기
+        if (str.contains(("는")))
+            str = str.substring(0, str.indexOf("는"));
+        if (str.contains(("은")))
+            str = str.substring(0, str.indexOf("은"));
+        if (str.contains((" ")))
+            str = str.substring(0, str.indexOf(" "));
+        if (str.contains(("다양한")))
+            str = str.substring(0, str.indexOf("/다양한"));
+        return str;
+    }
 }

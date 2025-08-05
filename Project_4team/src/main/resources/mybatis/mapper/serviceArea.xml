@@ -3,24 +3,20 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="SA">
-    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
-        insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
-        Address, Tel, ShopCode)
-        values
-        (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
-            #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
-        ON DUPLICATE KEY UPDATE
-        SAName = values(SAName),
-        SADirection = values(SADirection),
-        WayNum = values(WayNum),
-        CompactParking = values(CompactParking),
-        LargeParking = values(LargeParking),
-        DisabledParking = values(DisabledParking),
-        Address = values(Address),
-        Tel = values(Tel),
-        ShopCode = values(ShopCode)
-    </insert>
+    <select id="all" resultType="mybatis.vo.ServiceAreaVO">
+        select * from ServiceArea
+    </select>
+    <update id="xY" parameterType="Map">
+        update ServiceArea SET
+        lat = #{lat},
+        lng = #{lng}
+        WHERE
+        Idx = #{idx}
+    </update>
 
+    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
+        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
+    </select>
 
     <insert id="insert" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
@@ -45,8 +41,21 @@
         SADirection = #{SADirection}
     </update>
 
-    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
-        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
-    </select>
-
+<!--    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
+        insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
+        Address, Tel, ShopCode)
+        values
+        (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
+        #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
+        ON DUPLICATE KEY UPDATE
+        SAName = values(SAName),
+        SADirection = values(SADirection),
+        WayNum = values(WayNum),
+        CompactParking = values(CompactParking),
+        LargeParking = values(LargeParking),
+        DisabledParking = values(DisabledParking),
+        Address = values(Address),
+        Tel = values(Tel),
+        ShopCode = values(ShopCode)
+    </insert>-->
 </mapper>
