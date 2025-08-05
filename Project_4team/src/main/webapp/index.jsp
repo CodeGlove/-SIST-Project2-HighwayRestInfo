@@ -353,20 +353,6 @@
             color: #666;
             line-height: 1.6;
         }
-        .feature-link {
-            text-decoration: none;
-            color: inherit;
-        }
-
-
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-            background-color: #f0f8ff;
-        }
-
-
 
         /* CTA Buttons */
         .cta-buttons {
@@ -458,6 +444,10 @@
                 transform: translateY(0);
             }
         }
+        .card-link {
+            text-decoration: none; /* a 태그의 밑줄 제거 */
+            color: inherit;        /* 글자색을 부모 요소의 색으로 강제 상속 (디자인 유지) */
+        }
     </style>
 </head>
 <body>
@@ -542,7 +532,6 @@
         <h2 style="text-align: center; margin-bottom: 1rem; color: #222; font-size: 2.5rem;">고속도로 관리</h2>
         <p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 3rem;">지출부터 똑똑하게 똑똑하게</p>
         <div class="feature-grid">
-            <a href="map.jsp" class="feature-link">
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-route"></i>
@@ -550,14 +539,15 @@
                 <h3>실시간 교통정보</h3>
                 <p>고속도로의 실시간 교통상황을 확인하고 최적의 경로를 찾아보세요.</p>
             </div>
-            </a>
-            <div class="feature-card">
+           <a href="Controller?type=mapinfo" class="card-link">
+               <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-gas-pump"></i>
                 </div>
                 <h3>휴게소 정보</h3>
                 <p>주유소, 충전소, 음식점, 화장실 등 휴게소의 모든 정보를 한눈에 확인하세요.</p>
             </div>
+           </a>
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-map-marked-alt"></i>
