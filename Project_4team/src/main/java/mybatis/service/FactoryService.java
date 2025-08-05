@@ -15,6 +15,7 @@ public class FactoryService {
                     "mybatis/config/conf.xml");
             factory = new SqlSessionFactoryBuilder().build(r);
             r.close();
+            System.out.println("✅ factory 객체 생성 완료");
         } catch (Exception e) {
             e.printStackTrace();
         }
