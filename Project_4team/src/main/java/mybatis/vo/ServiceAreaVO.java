@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceAreaVO {
-    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, ShopCode;
+    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, Lat, Lng, ShopCode;
     private List<ShopVO> Shoplist;
 
     public ServiceAreaVO() {
@@ -14,7 +14,7 @@ public class ServiceAreaVO {
     public List<ShopVO> getShoplist() {
         return Shoplist;
     }
-
+    
     public String getIdx() {
         return Idx;
     }
@@ -25,6 +25,14 @@ public class ServiceAreaVO {
 
     public void setShoplist(List<ShopVO> shoplist) {
         Shoplist = shoplist;
+    }
+    
+    public String getWayNum() {
+        return WayNum;
+    }
+
+    public void setWayNum(String wayNum) {
+        WayNum = wayNum;
     }
 
     public String getSAName() {
@@ -43,13 +51,6 @@ public class ServiceAreaVO {
         this.SADirection = SADirection;
     }
 
-    public String getWayNum() {
-        return WayNum;
-    }
-
-    public void setWayNum(String wayNum) {
-        WayNum = wayNum;
-    }
 
     public String getCompactParking() {
         return CompactParking;
@@ -81,6 +82,22 @@ public class ServiceAreaVO {
 
     public void setAddress(String address) {
         Address = address;
+    }
+
+    public String getLat() {
+        return Lat;
+    }
+
+    public void setLat(String lat) {
+        Lat = lat;
+    }
+
+    public String getLng() {
+        return Lng;
+    }
+
+    public void setLng(String lng) {
+        Lng = lng;
     }
 
     public String getTel() {
