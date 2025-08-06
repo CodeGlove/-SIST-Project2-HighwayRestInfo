@@ -5,11 +5,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
-    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/34.1.0/classic/ckeditor.css">
-    <script src="https://cdn.ckeditor.com/ckeditor5/34.1.0/classic/ckeditor.js"></script>
+    <%--<link rel="stylesheet" href="./css/summernote-lite.css"/>--%> <%--css 불러오기--%>
     <style type="text/css">
         #bbs table {
-            width:580px;
+            width:90%;
             margin-left:10px;
             border:1px solid black;
             border-collapse:collapse;
@@ -139,8 +138,25 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <%--<script src="./js/summernote-lite.js"></script>--%> <%--자바스크립트 파일 추가--%>
-<%--<script src="./js/lang/summernote-ko-KR.js"></script>--%> <%--언어추가(한글)--%>
+<script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script> <%--ckEditor 파일 추가--%>
+<!-- 실제로 textarea에 에디터를 적용시키는 코드 -->
 <script>
+    ClassicEditor
+        .create(document.querySelector('#content'), { // #editor에서 #content로 수정
+            ckfinder: {
+                // Summernote의 이미지 업로드 Controller 경로를 그대로 사용합니다.
+                uploadUrl: 'Controller?type=saveImg'
+            }
+        })
+        .then(editor => {
+            console.log('CKEditor가 성공적으로 로드되었습니다.', editor);
+        })
+        .catch(error => {
+            console.error('CKEditor 로드 중 에러 발생:', error);
+        });
+</script>
+
+<%--<script>
     $(function (){
         //무조건 수행하는곳
         $("#content").summernote({
@@ -182,7 +198,7 @@
             $("#content").summernote("editor.insertImage", res.img_url);
         });
     }
-</script>
+</script>--%>
 </body>
 </html>
 

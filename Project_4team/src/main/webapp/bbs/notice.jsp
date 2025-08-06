@@ -124,11 +124,11 @@
             <li class="disable">&gt;</li>
           </c:if>
         </ol>
-        <%--관리자일 경우에만 글쓰기 버튼 표시--%>
       </td>
       <td>
         <%--관리자일 경우에만 글쓰기 버튼 표시--%>
-        <c:if test="${sessionScope.loginUser.authority == 1}">
+        <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
+                      ne null and sessionScope.loginUser.authority == 1}">
           <input type="button" value="글쓰기"
                  onclick="javascript:location.href='Controller?type=write'"/>
         </c:if>
@@ -143,7 +143,7 @@
       <tr>
         <td>${num}</td>
         <td style="text-align: left">
-          <a href="Controller?type=notice&PostNum=${vo.postNum}&cPage=${p.nowPage}">
+          <a href="Controller?type=view&PostNum=${vo.postNum}&cPage=${p.nowPage}">
               ${vo.subject}
             <%--댓글 수 보이게하기--%>
             <%--<c:if test="${vo.c_list != null and fn:length(vo.c_list) > 0}">
@@ -156,7 +156,8 @@
         <td>${vo.modDate}</td>
         <td>
           <%--관리자일 경우 삭제 버튼 추가--%>
-          <c:if test="${sessionScope.loginUser.authority == 1}">
+          <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
+                        ne null and sessionScope.loginUser.authority == 1}">
             <input type="button" value="삭제"
                    onclick="location.href='Controller?type=del&PostNum=${vo.postNum}'"/>
           </c:if>

@@ -6,10 +6,10 @@
   response.setDateHeader("Expires", 0);
 
   // 2. 세션 유무 확인 (비로그인 시 접근 차단)
-  if (session.getAttribute("loginUser") == null) {
+  /*if (session.getAttribute("loginUser") == null) {
     response.sendRedirect("index.jsp");
     return;
-  }
+  }*/
 %>
 <%
   // 세션에서 "loginUser" 속성을 확인하여 없으면 로그인 페이지로 리다이렉트

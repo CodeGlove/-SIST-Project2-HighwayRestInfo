@@ -65,7 +65,7 @@ public class Paging {
 
     public void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
-        this.totalPage = (int)Math.ceil((double)totalCount/pagePerBlock);
+        this.totalPage = (int)Math.ceil((double)totalCount/numPerPage);/*pagePerBlock*/
     }
 
     public int getPagePerBlock() {

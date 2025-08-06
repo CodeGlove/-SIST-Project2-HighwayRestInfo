@@ -3,6 +3,7 @@ package bbs.action;
 import bbs.dao.BbsDAO;
 import com.oreilly.servlet.MultipartRequest;
 import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
+import mybatis.vo.BbsVO;
 import mybatis.vo.UserVO;
 import restinfo.action.Action;
 
@@ -18,8 +19,10 @@ public class WriteAction implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
 
+
+
         //******** 권한 확인 *********
-        HttpSession session = request.getSession();
+        /*HttpSession session = request.getSession();
         UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 
         //관리자 유효성 검사
@@ -31,7 +34,7 @@ public class WriteAction implements Action {
                 e.printStackTrace();
             }
             return null; //권한이 없다면 forward 막기
-        }
+        }*/
 
         String viewPath = null;
 
@@ -61,6 +64,15 @@ public class WriteAction implements Action {
                 String writer = mr.getParameter("writer");
                 String content = mr.getParameter("content");
                 String category = mr.getParameter("category");
+                String writeDate = mr.getParameter("writeDate");
+                String ThumbsUp = mr.getParameter("ThumbsUp");
+                String ThumbsDown = mr.getParameter("ThumbsDown");
+                String Delete = mr.getParameter("Delete");
+                String Pwd = mr.getParameter("Pwd");
+                if(Pwd == null){
+                    Pwd = "";
+                }
+
 
                 //첨부파일이 있다면 fname과 oname을 얻어내야 한다.
                 File f = mr.getFile("file");
@@ -69,7 +81,8 @@ public class WriteAction implements Action {
                     FileName = f.getName(); // 현재 저장된 파일명
                 }
                 //DB에 저장
-                int result = BbsDAO.add(subject, writer, content, FileName, category);
+                int result = BbsDAO.add(subject, writer, content, FileName, category,
+                                        writeDate, ThumbsUp, ThumbsDown, Delete, Pwd);
                 //DB에 저장이 완료되면 페이지 이동
                 if(result > 0) {
                     response.sendRedirect("Controller?type=notice"); //저장 완료되면 공지사항 목록 페이지로 리다이렉트

@@ -59,28 +59,28 @@
   <c:set var="vo" value="${requestScope.vo}"/>
   <div id="bbs">
     <form method="post" >
-      <table summary="게시판 글쓰기">
-        <caption>게시판 글쓰기</caption>
+      <table summary="공지사항 상세내용">
+        <caption>공지사항 상세내용</caption>
         <tbody>
         <tr>
           <th>제목:</th>
-          <td>${vo.Subject}</td>
+          <td>${vo.subject}</td>
         </tr>
-        <c:if test="${vo.FileName ne null and vo.FileName.length() > 4}"> <%--첨부파일이 있을경우에만 보여주기--%>
+        <c:if test="${vo.fileName ne null and vo.fileName.length() > 4}"> <%--첨부파일이 있을경우에만 보여주기--%>
           <tr>
             <th>첨부파일:</th>
-            <td><a href="javascript:down('${vo.FileName}')">
-                ${vo.FileName}
+            <td><a href="javascript:down('${vo.fileName}')">
+                ${vo.fileName}
             </a></td>
           </tr>
         </c:if>
         <tr>
           <th>이름:</th>
-          <td>${vo.Writer}</td>
+          <td>${vo.writer}</td>
         </tr>
         <tr>
           <th>내용:</th>
-          <td>${vo.Content}</td>
+          <td>${vo.content}</td>
         </tr>
 
         <tr>
@@ -99,7 +99,7 @@
       내용:<textarea rows="4" cols="55" name="content"></textarea><br/>
       비밀번호:<input type="password" name="pwd"/><br/>
 
-      <input type="hidden" name="PostNum" value="${vo.PostNum}">
+      <input type="hidden" name="PostNum" value="${vo.postNum}">
       <input type="hidden" name="cPage" value="${param.cPage}"/>
       <input type="hidden" name="type" value="commadd"/>
       <input type="submit" value="저장하기"/>
@@ -108,7 +108,7 @@
     <form name="ff" method="post">
       <input type="hidden" name="type"/>
       <input type="hidden" name="FileName"/>
-      <input type="hidden" name="PostNum" value="${vo.PostNum}"/>
+      <input type="hidden" name="PostNum" value="${vo.postNum}"/>
       <input type="hidden" name="cPage" value="${param.cPage}"/>
     </form>
 
@@ -118,7 +118,7 @@
           <%-- 비밀번호 표현등 할 수 있음 --%>
         <p>정말로 삭제하시겠습니까?</p>
         <input type="hidden" name="type" value="del"/>
-        <input type="hidden" name="PostNum" value="${vo.PostNum}"/>
+        <input type="hidden" name="PostNum" value="${vo.postNum}"/>
         <input type="hidden" name="cPage" value="${param.cPage}"/>
         <button type="button" onclick="del(this.form)">삭제</button>
       </form>
@@ -179,9 +179,9 @@
     document.ff.type.value = "edit";
     document.ff.submit();
   }
-  function down(fname) {
+  function down(FileName) {
     document.ff.action = "download.jsp";
-    document.ff.f_name.value = fname;
+    document.ff.FileName.value = FileName;
     document.ff.submit();
   }
 </script>
