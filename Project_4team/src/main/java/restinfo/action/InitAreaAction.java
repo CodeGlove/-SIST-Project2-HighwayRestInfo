@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,10 +102,12 @@ public class InitAreaAction implements Action {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // 각 휴게소의 입점업체 불러오기
+                String encodedSAName = java.net.URLEncoder.encode(SAitem.getString
+                        ("svarNm"), "UTF-8");
                 String ShopUrl = "https://data.ex.co.kr/openapi/restinfo/restBrandList?key="
                         + EXPRESSWAY_API_KEY
                         +"&type=json&numOfRows=100&pageNo=1&stdRestNm="+
-                        SAitem.getString("svarNm");
+                        encodedSAName;
 
                 url = new URL(ShopUrl);
                 conn = (HttpURLConnection) url.openConnection();
