@@ -251,6 +251,14 @@
                         <form action="Controller?type=restArea" method="post" style="display: inline;">
                             <input type="hidden" name="restAreasStr" value="${restAreasStr}">
                             <input type="hidden" name="restStopsStr" value="${restStopsStr}">
+                            <input type="hidden" name="origin" value="${origin}">
+                            <input type="hidden" name="destination" value="${destination}">
+                            <input type="hidden" name="distance" value="${distance}">
+                            <input type="hidden" name="duration" value="${duration}">
+                            <input type="hidden" name="taxiFare" value="${taxiFare}">
+                            <input type="hidden" name="tollFare" value="${tollFare}">
+                            <input type="hidden" name="restAreaDurations" value="${restAreaDurations}">
+                            <input type="hidden" name="restStopDurations" value="${restStopDurations}">
                             <button type="submit" class="detail-link" style="
                                 display: inline-flex;
                                 align-items: center;

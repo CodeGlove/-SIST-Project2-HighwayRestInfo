@@ -175,9 +175,36 @@ public class KakaoMapAction implements Action {
 									}
 								}
 
+								// 각 휴게소까지의 소요시간 계산
+								List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
+								List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
+
 								// 각각의 리스트를 문자열로 변환
 								String restAreasStr = String.join(", ", restAreas);
 								String restStopsStr = String.join(", ", restStops);
+
+								// 소요시간 리스트를 문자열로 변환 (배열 형태 제거)
+								String restAreaDurationsStr = "";
+								if (!restAreaDurations.isEmpty()) {
+									StringBuilder sb = new StringBuilder();
+									for (int i = 0; i < restAreaDurations.size(); i++) {
+										if (i > 0)
+											sb.append(", ");
+										sb.append(restAreaDurations.get(i));
+									}
+									restAreaDurationsStr = sb.toString();
+								}
+
+								String restStopDurationsStr = "";
+								if (!restStopDurations.isEmpty()) {
+									StringBuilder sb = new StringBuilder();
+									for (int i = 0; i < restStopDurations.size(); i++) {
+										if (i > 0)
+											sb.append(", ");
+										sb.append(restStopDurations.get(i));
+									}
+									restStopDurationsStr = sb.toString();
+								}
 
 								// 디버깅용 로그 출력
 								System.out.println("=== 휴게소 추출 결과 ===");
@@ -185,6 +212,8 @@ public class KakaoMapAction implements Action {
 								System.out.println("졸음쉼터 개수: " + restStops.size());
 								System.out.println("휴게소 목록: " + restAreasStr);
 								System.out.println("졸음쉼터 목록: " + restStopsStr);
+								System.out.println("휴게소까지 소요시간: " + restAreaDurations);
+								System.out.println("졸음쉼터까지 소요시간: " + restStopDurations);
 								System.out.println("========================");
 
 								// request에 저장
@@ -192,6 +221,23 @@ public class KakaoMapAction implements Action {
 								request.setAttribute("restStops", restStops);
 								request.setAttribute("restAreasStr", restAreasStr);
 								request.setAttribute("restStopsStr", restStopsStr);
+								request.setAttribute("restAreaDurations", restAreaDurations);
+								request.setAttribute("restStopDurations", restStopDurations);
+								request.setAttribute("origin", origin);
+								request.setAttribute("destination", destination);
+
+								// 거리, 시간, 통행료 정보 저장
+								if (route.has("summary")) {
+									JSONObject summary = route.getJSONObject("summary");
+									request.setAttribute("distance", summary.optInt("distance", 0));
+									request.setAttribute("duration", summary.optInt("duration", 0));
+
+									if (summary.has("fare")) {
+										JSONObject fare = summary.getJSONObject("fare");
+										request.setAttribute("taxiFare", fare.optInt("taxi", 0));
+										request.setAttribute("tollFare", fare.optInt("toll", 0));
+									}
+								}
 								if (route.has("summary")) {
 									JSONObject summary = route.getJSONObject("summary");
 
@@ -346,5 +392,82 @@ public class KakaoMapAction implements Action {
 		}
 
 		return null; // 모든 방법이 실패한 경우
+	}
+
+		/**
+	 * 출발지부터 각 휴게소/졸음쉼터까지의 소요시간을 계산하는 메서드
+	 *
+	 * @param sections  경로의 sections 배열
+	 * @param restAreas 휴게소/졸음쉼터 이름 리스트
+	 * @return 출발지부터 각 휴게소/졸음쉼터까지의 소요시간 리스트 (초 단위)
+	 */
+	private List<Integer> calculateDurationsToRestAreas(JSONArray sections, List<String> restAreas) {
+		List<Integer> durations = new ArrayList<>();
+		Map<String, Integer> restAreaDurations = new HashMap<>(); // 휴게소별 소요시간 저장
+		int currentDuration = 0; // 누적 소요시간
+
+		System.out.println("=== 소요시간 계산 디버깅 ===");
+		System.out.println("찾을 휴게소/졸음쉼터 목록: " + restAreas);
+
+		// 모든 sections를 순회하면서 각 휴게소/졸음쉼터의 소요시간을 찾기
+		for (int i = 0; i < sections.length(); i++) {
+			JSONObject section = sections.getJSONObject(i);
+			
+			// 현재 section의 소요시간을 누적
+			int sectionDuration = section.optInt("duration", 0);
+			currentDuration += sectionDuration;
+
+			System.out.println("Section " + i + " - 누적 소요시간: " + currentDuration + "초");
+
+			// guides 배열에서 휴게소/졸음쉼터 확인
+			if (section.has("guides")) {
+				JSONArray guides = section.getJSONArray("guides");
+				for (int j = 0; j < guides.length(); j++) {
+					JSONObject guide = guides.getJSONObject(j);
+					if (guide.has("name") && !guide.getString("name").isEmpty()) {
+						String guideName = guide.getString("name");
+						
+						// 현재 guide가 휴게소/졸음쉼터인지 확인
+						boolean isRestArea = false;
+						if (restAreas.contains(guideName)) {
+							isRestArea = true;
+						} else if (guideName.contains("휴게소") || guideName.contains("서비스") ||
+								guideName.contains("REST") || guideName.contains("SERVICE")) {
+							isRestArea = true;
+						} else if (guideName.contains("졸음쉼터")) {
+							isRestArea = true;
+						}
+
+						// 휴게소/졸음쉼터를 발견한 경우
+						if (isRestArea && restAreas.contains(guideName)) {
+							// 해당 휴게소/졸음쉼터의 소요시간을 저장 (이미 저장된 경우 덮어쓰지 않음)
+							if (!restAreaDurations.containsKey(guideName)) {
+								restAreaDurations.put(guideName, currentDuration);
+								System.out.println("발견! 출발지 → '" + guideName + "'까지 소요시간: " + currentDuration + "초");
+							} else {
+								System.out.println("이미 발견된 휴게소: '" + guideName + "' (소요시간: " + restAreaDurations.get(guideName) + "초)");
+							}
+						}
+					}
+				}
+			}
+		}
+
+		System.out.println("발견된 휴게소/졸음쉼터: " + restAreaDurations.keySet());
+
+		// restAreas 리스트의 순서대로 소요시간을 반환
+		for (String restArea : restAreas) {
+			if (restAreaDurations.containsKey(restArea)) {
+				durations.add(restAreaDurations.get(restArea));
+				System.out.println("최종 결과 - '" + restArea + "': " + restAreaDurations.get(restArea) + "초");
+			} else {
+				// 발견되지 않은 휴게소는 0으로 설정
+				durations.add(0);
+				System.out.println("경고: '" + restArea + "'를 경로에서 찾을 수 없습니다.");
+			}
+		}
+
+		System.out.println("=== 디버깅 완료 ===");
+		return durations;
 	}
 }
