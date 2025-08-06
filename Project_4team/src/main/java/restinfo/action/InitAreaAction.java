@@ -5,6 +5,7 @@ import mybatis.vo.ShopVO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import restinfo.dao.ManageDAO;
+import restinfo.util.ConfigLoader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +23,10 @@ public class InitAreaAction implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
 
-        String SAUrl = "https://data.ex.co.kr/openapi/restinfo/hiwaySvarInfoList"
-                + "?key=0597292231"
+        String EXPRESSWAY_API_KEY = ConfigLoader.getProperty("EXPRESSWAY_ID");
+
+        String SAUrl = "https://data.ex.co.kr/openapi/restinfo/hiwaySvarInfoList?key="
+                + EXPRESSWAY_API_KEY
                 + "&type=json&numOfRows=1000&svarNm=%ED%9C%B4%EA%B2%8C%EC%86%8C&svarGsstClssCd=0";
         // 휴게소 리스트, 여기에 입점업체 리스트도 있음
         List<ServiceAreaVO> SAlist = new ArrayList<>();
@@ -96,12 +100,11 @@ public class InitAreaAction implements Action {
                 savo.setTel(SAitem.getString("rprsTelNo"));         // 전화번호
                 savo.setShopCode(SAitem.getString("bsopAdtnlFcltCd"));     //영업점포코드
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // 각 휴게소의 입점업체 불러오기
-                String ShopUrl = "https://data.ex.co.kr/openapi/restinfo/restBrandList"
-                        + "?key=0597292231"
+                String ShopUrl = "https://data.ex.co.kr/openapi/restinfo/restBrandList?key="
+                        + EXPRESSWAY_API_KEY
                         +"&type=json&numOfRows=100&pageNo=1&stdRestNm="+
                         SAitem.getString("svarNm");
 
@@ -165,6 +168,10 @@ public class InitAreaAction implements Action {
                 SAlist.add(savo); // 리스트에 VO 추가
             }
 
+            //각 휴게소들 위도경도 매핑
+            Geocoding.mapping(SAlist);
+
+            // 받아온 리스트 DAO에 전달
             ManageDAO.initSA(SAlist);
 
 

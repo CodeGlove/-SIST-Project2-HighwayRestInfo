@@ -6,6 +6,11 @@
     <select id="all" resultType="mybatis.vo.ServiceAreaVO">
         select * from ServiceArea
     </select>
+
+    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
+        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
+    </select>
+
     <update id="xY" parameterType="Map">
         update ServiceArea SET
         lat = #{lat},
@@ -14,16 +19,12 @@
         Idx = #{idx}
     </update>
 
-    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
-        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
-    </select>
-
     <insert id="insert" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
-        Address, Tel, ShopCode)
+        Address, Lat, Lng Tel, ShopCode)
         values
         (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
-        #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
+        #{DisabledParking}, #{Address}, #{Lat}, #{Lng}, #{Tel}, #{ShopCode})
     </insert>
 
     <update id="update" parameterType="mybatis.vo.ServiceAreaVO">
@@ -34,6 +35,8 @@
         LargeParking = #{LargeParking},
         DisabledParking = #{DisabledParking},
         Address = #{Address},
+        Lat = #{Lat},
+        Lng = #{Lng},
         Tel = #{Tel},
         ShopCode = #{ShopCode}
         where
