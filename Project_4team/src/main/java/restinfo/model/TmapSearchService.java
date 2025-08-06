@@ -9,13 +9,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 public class TmapSearchService {
     private static final String APP_KEY;
@@ -36,7 +37,7 @@ public class TmapSearchService {
         }
     }
 
-    public static List<Map<String, String>> searchRestAreas(String keyword) {
+    public static List<Map<String, String>> searchRestAreas(String userKeyword) {
         List<Map<String, String>> restAreas = new ArrayList<>();
         if (APP_KEY == null) {
             System.err.println("API 키가 설정되지 않았습니다.");
@@ -44,7 +45,10 @@ public class TmapSearchService {
         }
 
         HttpClient client = HttpClient.newHttpClient();
-        String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
+
+        // 사용자가 입력한 키워드에 " 휴게소"를 붙여서 API 검색어를 만듭니다.
+        String searchKeyword = userKeyword + " 휴게소";
+        String encodedKeyword = URLEncoder.encode(searchKeyword, StandardCharsets.UTF_8);
         String urlWithParams = String.format("%s?version=1&searchKeyword=%s", POI_SEARCH_URL, encodedKeyword);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -64,13 +68,22 @@ public class TmapSearchService {
                         .getAsJsonObject("pois")
                         .getAsJsonArray("poi");
 
+                List<String> keywordWords = Arrays.asList(userKeyword.split("\\s+"));
+
                 for (JsonElement element : poiArray) {
                     JsonObject poi = element.getAsJsonObject();
                     String poiName = poi.get("name").getAsString();
                     String lowerBizName = poi.get("lowerBizName").getAsString();
 
-                    // 두 가지 조건을 모두 만족하는 경우만 추가
-                    if (lowerBizName.equals("고속도로휴게소") && poiName.contains(keyword)) {
+                    boolean allKeywordsMatch = true;
+                    for (String word : keywordWords) {
+                        if (!poiName.contains(word)) {
+                            allKeywordsMatch = false;
+                            break;
+                        }
+                    }
+
+                    if (lowerBizName.equals("고속도로휴게소") && allKeywordsMatch && poiName.contains("방향")) {
                         Map<String, String> restAreaInfo = new HashMap<>();
                         restAreaInfo.put("name", poiName);
                         restAreaInfo.put("id", poi.get("id").getAsString());

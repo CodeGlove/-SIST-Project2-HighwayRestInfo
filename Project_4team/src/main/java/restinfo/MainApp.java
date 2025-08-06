@@ -1,60 +1,51 @@
 package restinfo;
 
-import restinfo.model.TmapCongestionService;
 import restinfo.model.TmapSearchService;
+import restinfo.model.TmapCongestionService;
 import java.util.List;
 import java.util.Map;
 
 public class MainApp {
     public static void main(String[] args) {
-        // 1. "죽전" 키워드로 휴게소 목록 검색
-        List<Map<String, String>> restAreas = TmapSearchService.searchRestAreas("서울만남의광장");
+        String userKeyword = "천안";
+
+        List<Map<String, String>> restAreas = TmapSearchService.searchRestAreas(userKeyword);
+
+        System.out.println("====== " + userKeyword + " 휴게소 목록 ======");
 
         if (restAreas.isEmpty()) {
-            System.out.println("검색 결과가 없습니다.");
-            return;
-        }
+            System.out.println("원하는 휴게소를 찾을 수 없습니다.");
+        } else {
+            for (int i = 0; i < restAreas.size(); i++) {
+                Map<String, String> restArea = restAreas.get(i);
 
-        System.out.println("====== 죽전 휴게소 목록 ======");
-        for (int i = 0; i < restAreas.size(); i++) {
-            Map<String, String> area = restAreas.get(i);
-            System.out.printf("%d. %s (%s)\n", i + 1, area.get("name"), area.get("roadName"));
-        }
-        System.out.println("============================");
+                String congestionLevelStr = TmapCongestionService.getCongestionLevel(restArea.get("id"));
 
-        // --- 여기서부터 수정된 로직입니다 ---
-        Map<String, String> selectedArea = null;
+                String statusMessage = "";
+                switch (congestionLevelStr) {
+                    case "1":
+                        statusMessage = "🟢 (원활)";
+                        break;
+                    case "2":
+                        statusMessage = "🟡 (보통)";
+                        break;
+                    case "3":
+                        statusMessage = "🔴 (혼잡)";
+                        break;
+                    case "4":
+                        statusMessage = "⚫ (매우 혼잡)";
+                        break;
+                    case "미지원":
+                        statusMessage = "(혼잡도 정보 미지원)";
+                        break;
+                    default:
+                        statusMessage = "(알 수 없음)";
+                        break;
+                }
 
-        // 검색된 휴게소 리스트에서 '죽전휴게소'의 '서울방향'을 찾습니다.
-        for (Map<String, String> area : restAreas) {
-            String name = area.get("name");
-            if (name.contains("죽전휴게소") && name.contains("서울방향")) {
-                selectedArea = area;
-                break;
+                System.out.println(String.format("%d. %s %s (%s)", i + 1, restArea.get("name"), statusMessage, restArea.get("roadName")));
             }
         }
-
-        if (selectedArea == null) {
-            System.out.println("\n원하는 휴게소를 찾을 수 없습니다.");
-            return;
-        }
-
-        String selectedPoiId = selectedArea.get("id");
-        String selectedName = selectedArea.get("name");
-
-        // 2. 선택된 휴게소의 혼잡도 조회
-        int congestionLevel = TmapCongestionService.getCongestionLevel(selectedPoiId);
-
-        if (congestionLevel != -1) {
-            String status = "";
-            if (congestionLevel == 1) status = "여유";
-            else if (congestionLevel == 2) status = "보통";
-            else if (congestionLevel == 3) status = "혼잡";
-            else if (congestionLevel == 4) status = "매우 혼잡";
-
-            System.out.printf("\n[ %s ]의 현재 혼잡도는 [ %s ]입니다.\n", selectedName, status);
-        } else {
-            System.out.println("\n혼잡도 정보를 가져오는 데 실패했습니다.");
-        }
+        System.out.println("============================\n");
     }
 }
