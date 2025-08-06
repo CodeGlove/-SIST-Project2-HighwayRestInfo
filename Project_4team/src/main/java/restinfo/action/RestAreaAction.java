@@ -78,11 +78,52 @@ public class RestAreaAction implements Action {
             }
         }
 
+        // 통합 방식 데이터 처리
+        String allRestAreasStr = request.getParameter("allRestAreasStr");
+        String allRestAreaDurationsStr = request.getParameter("allRestAreaDurations");
+
+        List<String> allRestAreas = new ArrayList<>();
+        List<Integer> allRestAreaDurations = new ArrayList<>();
+
+        // 전체 휴게소/졸음쉼터 문자열을 리스트로 변환
+        if (allRestAreasStr != null && !allRestAreasStr.trim().isEmpty()) {
+            String[] areas = allRestAreasStr.split(", ");
+            for (String area : areas) {
+                if (!area.trim().isEmpty()) {
+                    allRestAreas.add(area.trim());
+                }
+            }
+        }
+
+        // 전체 휴게소/졸음쉼터 소요시간 문자열을 리스트로 변환
+        if (allRestAreaDurationsStr != null && !allRestAreaDurationsStr.trim().isEmpty()) {
+            // 배열 형태 제거 (예: "[18185]" -> "18185")
+            String cleanStr = allRestAreaDurationsStr.replaceAll("[\\[\\]]", "");
+            String[] durations = cleanStr.split(", ");
+            for (String duration : durations) {
+                if (!duration.trim().isEmpty()) {
+                    try {
+                        allRestAreaDurations.add(Integer.parseInt(duration.trim()));
+                    } catch (NumberFormatException e) {
+                        System.out
+                                .println("전체 휴게소/졸음쉼터 소요시간 변환 오류: " + e.getMessage() + " (값: " + duration.trim() + ")");
+                    }
+                }
+            }
+        }
+
+        // 통합 방식인지 확인 (allRestAreasStr이 있으면 통합 방식)
+        boolean isUnifiedMode = (allRestAreasStr != null && !allRestAreasStr.trim().isEmpty());
+
         // request에 저장
+        request.setAttribute("isUnifiedMode", isUnifiedMode);
+        request.setAttribute("allRestAreas", allRestAreas);
         request.setAttribute("restAreas", restAreas);
         request.setAttribute("restStops", restStops);
+        request.setAttribute("allRestAreasStr", allRestAreasStr);
         request.setAttribute("restAreasStr", restAreasStr);
         request.setAttribute("restStopsStr", restStopsStr);
+        request.setAttribute("allRestAreaDurations", allRestAreaDurations);
         request.setAttribute("restAreaDurations", restAreaDurations);
         request.setAttribute("restStopDurations", restStopDurations);
         request.setAttribute("origin", origin);

@@ -50,29 +50,69 @@
 
     <!-- 탭 컨테이너 -->
     <div class="tab-container slide-up">
-        <!-- 탭 버튼들 -->
-        <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="rest-areas">
-                <i class="fas fa-utensils"></i>
-                휴게소
-                <span class="tab-count">
-                        <c:choose>
-                            <c:when test="${not empty restAreas}">${restAreas.size()}개</c:when>
-                            <c:otherwise>0개</c:otherwise>
-                        </c:choose>
-                    </span>
-            </button>
-            <button class="tab-btn" data-tab="rest-stops">
-                <i class="fas fa-bed"></i>
-                졸음쉼터
-                <span class="tab-count">
-                        <c:choose>
-                            <c:when test="${not empty restStops}">${restStops.size()}개</c:when>
-                            <c:otherwise>0개</c:otherwise>
-                        </c:choose>
-                    </span>
-            </button>
-        </div>
+        <!-- 통합 방식일 때는 3개 탭, 기존 방식일 때는 분리된 탭 -->
+        <c:choose>
+            <c:when test="${isUnifiedMode}">
+                <!-- 통합 방식: 3개 탭 -->
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="rest-areas">
+                        <i class="fas fa-utensils"></i>
+                        휴게소
+                        <span class="tab-count">
+                            <c:choose>
+                                <c:when test="${not empty restAreas}">${restAreas.size()}개</c:when>
+                                <c:otherwise>0개</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                    <button class="tab-btn" data-tab="rest-stops">
+                        <i class="fas fa-bed"></i>
+                        졸음쉼터
+                        <span class="tab-count">
+                            <c:choose>
+                                <c:when test="${not empty restStops}">${restStops.size()}개</c:when>
+                                <c:otherwise>0개</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                    <button class="tab-btn" data-tab="all-rest-areas">
+                        <i class="fas fa-route"></i>
+                        통합보기
+                        <span class="tab-count">
+                            <c:choose>
+                                <c:when test="${not empty allRestAreas}">${allRestAreas.size()}개</c:when>
+                                <c:otherwise>0개</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <!-- 기존 방식: 분리된 탭 -->
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="rest-areas">
+                        <i class="fas fa-utensils"></i>
+                        휴게소
+                        <span class="tab-count">
+                            <c:choose>
+                                <c:when test="${not empty restAreas}">${restAreas.size()}개</c:when>
+                                <c:otherwise>0개</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                    <button class="tab-btn" data-tab="rest-stops">
+                        <i class="fas fa-bed"></i>
+                        졸음쉼터
+                        <span class="tab-count">
+                            <c:choose>
+                                <c:when test="${not empty restStops}">${restStops.size()}개</c:when>
+                                <c:otherwise>0개</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                </div>
+            </c:otherwise>
+        </c:choose>
 
         <!-- 경로 정보 표시 -->
         <c:if test="${not empty origin and not empty destination}">
@@ -133,8 +173,560 @@
 
         <!-- 탭 콘텐츠 -->
         <div class="tab-content">
-            <!-- 휴게소 탭 -->
-            <div id="rest-areas" class="tab-pane active">
+            <!-- 통합 방식: 휴게소 탭 -->
+            <c:if test="${isUnifiedMode}">
+                <div id="rest-areas" class="tab-pane active">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="card-title">휴게소 목록</div>
+                        </div>
+
+                        <c:choose>
+                            <c:when test="${not empty restAreas}">
+                                <div class="rest-areas-list">
+                                    <c:forEach var="restArea" items="${restAreas}" varStatus="status">
+                                        <div class="rest-area-card clickable"
+                                             onclick="showRestAreaInfo('${restArea}', ${status.index})">
+                                            <div class="rest-area-info-row">
+                                                <!-- 휴게소명 섹션 -->
+                                                <div class="rest-area-name-section">
+                                                    <div class="rest-area-name">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        <c:out value="${restArea}"/>
+                                                    </div>
+                                                    <div class="rest-area-rating">
+                                                        <span class="rating-label">별점</span>
+                                                        <div class="stars">
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 소요시간 표시 -->
+                                                    <c:if test="${not empty restAreaDurations and status.index < restAreaDurations.size()}">
+                                                        <div class="duration-info">
+                                                            <i class="fas fa-clock duration-icon"></i>
+                                                            <span class="duration-text">
+                                                                <c:set var="duration" value="${restAreaDurations[status.index]}"/>
+                                                                <c:set var="totalHours" value="${duration / 3600}"/>
+                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                                <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                                <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                                <c:choose>
+                                                                    <c:when test="${status.index == 0}">
+                                                                        출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        이전 휴게소부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+
+                                                <!-- 정보 섹션들 -->
+                                                <div class="info-sections-row">
+                                                    <!-- 편의시설 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-list"></i>
+                                                            편의시설
+                                                        </div>
+                                                        <div class="facilities-grid">
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-baby facility-icon"></i>
+                                                                <span>수유실</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-first-aid facility-icon"></i>
+                                                                <span>약국</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-bus facility-icon"></i>
+                                                                <span>버스환승</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-credit-card facility-icon"></i>
+                                                                <span>ATM</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 주유비 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title-with-date">
+                                                            <div class="section-title-left">
+                                                                <i class="fas fa-gas-pump"></i>
+                                                                주유비
+                                                            </div>
+                                                            <div class="section-title-date">2025.08.05</div>
+                                                        </div>
+                                                        <div class="fuel-info">
+                                                            <div class="fuel-price">휘발유: 1,618원</div>
+                                                            <div class="fuel-price">경유: 1,474원</div>
+                                                            <div class="fuel-price">LPG: 1,074원</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 대표메뉴 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-utensils"></i>
+                                                            대표메뉴
+                                                        </div>
+                                                        <div class="menu-item">
+                                                            참치김치찌개
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="empty-message">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <p>경로상 휴게소가 발견되지 않았습니다.</p>
+                                    <p style="font-size: 0.9rem; color: #999; margin-top: 0.5rem;">
+                                        다른 경로를 시도해보세요.
+                                    </p>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- 통합 방식: 졸음쉼터 탭 -->
+                <div id="rest-stops" class="tab-pane">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="card-title">졸음쉼터 목록</div>
+                        </div>
+
+                        <c:choose>
+                            <c:when test="${not empty restStops}">
+                                <div class="rest-areas-list">
+                                    <c:forEach var="restStop" items="${restStops}" varStatus="status">
+                                        <div class="rest-area-card clickable"
+                                             onclick="showRestStopInfo('${restStop}', ${status.index})">
+                                            <div class="rest-area-info-row">
+                                                <!-- 졸음쉼터명 섹션 -->
+                                                <div class="rest-area-name-section">
+                                                    <div class="rest-area-name">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        <c:out value="${restStop}"/>
+                                                    </div>
+                                                    <div class="rest-area-rating">
+                                                        <span class="rating-label">별점</span>
+                                                        <div class="stars">
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 소요시간 표시 -->
+                                                    <c:if test="${not empty restStopDurations and status.index < restStopDurations.size()}">
+                                                        <div class="duration-info">
+                                                            <i class="fas fa-clock duration-icon"></i>
+                                                            <span class="duration-text">
+                                                                <c:set var="duration" value="${restStopDurations[status.index]}"/>
+                                                                <c:set var="totalHours" value="${duration / 3600}"/>
+                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                                <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                                <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                                <c:choose>
+                                                                    <c:when test="${status.index == 0}">
+                                                                        출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        이전 졸음쉼터부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+
+                                                <!-- 정보 섹션들 -->
+                                                <div class="info-sections-row">
+                                                    <!-- 편의시설 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-list"></i>
+                                                            편의시설
+                                                        </div>
+                                                        <div class="facilities-grid">
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-parking facility-icon"></i>
+                                                                <span>주차장</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-restroom facility-icon"></i>
+                                                                <span>화장실</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-couch facility-icon"></i>
+                                                                <span>휴식공간</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-shield-alt facility-icon"></i>
+                                                                <span>안전시설</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 운영시간 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title-with-date">
+                                                            <div class="section-title-left">
+                                                                <i class="fas fa-clock"></i>
+                                                                운영시간
+                                                            </div>
+                                                            <div class="section-title-date">무료 이용</div>
+                                                        </div>
+                                                        <div class="fuel-info">
+                                                            <div class="fuel-price">24시간 운영</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 안전수칙 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            안전수칙
+                                                        </div>
+                                                        <div class="menu-item">
+                                                            15-20분 휴식 권장
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="empty-message">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <p>경로상 졸음쉼터가 발견되지 않았습니다.</p>
+                                    <p style="font-size: 0.9rem; color: #999; margin-top: 0.5rem;">
+                                        다른 경로를 시도해보세요.
+                                    </p>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- 통합 방식: 졸음쉼터 탭 -->
+                <div id="rest-stops" class="tab-pane">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="card-title">졸음쉼터 목록</div>
+                        </div>
+
+                        <c:choose>
+                            <c:when test="${not empty restStops}">
+                                <div class="rest-areas-list">
+                                    <c:forEach var="restStop" items="${restStops}" varStatus="status">
+                                        <div class="rest-area-card clickable"
+                                             onclick="showRestStopInfo('${restStop}', ${status.index})">
+                                            <div class="rest-area-info-row">
+                                                <!-- 졸음쉼터명 섹션 -->
+                                                <div class="rest-area-name-section">
+                                                    <div class="rest-area-name">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        <c:out value="${restStop}"/>
+                                                    </div>
+                                                    <div class="rest-area-rating">
+                                                        <span class="rating-label">별점</span>
+                                                        <div class="stars">
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 소요시간 표시 -->
+                                                    <c:if test="${not empty restStopDurations and status.index < restStopDurations.size()}">
+                                                        <div class="duration-info">
+                                                            <i class="fas fa-clock duration-icon"></i>
+                                                            <span class="duration-text">
+                                                                <c:set var="duration" value="${restStopDurations[status.index]}"/>
+                                                                <c:set var="totalHours" value="${duration / 3600}"/>
+                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                                <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                                <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                                <c:choose>
+                                                                    <c:when test="${status.index == 0}">
+                                                                        출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        이전 졸음쉼터부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+
+                                                <!-- 정보 섹션들 -->
+                                                <div class="info-sections-row">
+                                                    <!-- 편의시설 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-list"></i>
+                                                            편의시설
+                                                        </div>
+                                                        <div class="facilities-grid">
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-parking facility-icon"></i>
+                                                                <span>주차장</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-restroom facility-icon"></i>
+                                                                <span>화장실</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-couch facility-icon"></i>
+                                                                <span>휴식공간</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-shield-alt facility-icon"></i>
+                                                                <span>안전시설</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 운영시간 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title-with-date">
+                                                            <div class="section-title-left">
+                                                                <i class="fas fa-clock"></i>
+                                                                운영시간
+                                                            </div>
+                                                            <div class="section-title-date">무료 이용</div>
+                                                        </div>
+                                                        <div class="fuel-info">
+                                                            <div class="fuel-price">24시간 운영</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 안전수칙 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            안전수칙
+                                                        </div>
+                                                        <div class="menu-item">
+                                                            15-20분 휴식 권장
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="empty-message">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <p>경로상 졸음쉼터가 발견되지 않았습니다.</p>
+                                    <p style="font-size: 0.9rem; color: #999; margin-top: 0.5rem;">
+                                        다른 경로를 시도해보세요.
+                                    </p>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- 통합 방식: 통합보기 탭 -->
+                <div id="all-rest-areas" class="tab-pane">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-route"></i>
+                            </div>
+                            <div class="card-title">휴게시설 목록 (순서대로)</div>
+                        </div>
+
+                        <c:choose>
+                            <c:when test="${not empty allRestAreas}">
+                                <div class="rest-areas-list">
+                                    <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
+                                        <div class="rest-area-card clickable"
+                                             onclick="showRestAreaInfo('${restArea}', ${status.index})">
+                                            <div class="rest-area-info-row">
+                                                <!-- 휴게시설명 섹션 -->
+                                                <div class="rest-area-name-section">
+                                                    <div class="rest-area-name">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        <c:out value="${restArea}"/>
+                                                    </div>
+                                                    <div class="rest-area-rating">
+                                                        <span class="rating-label">별점</span>
+                                                        <div class="stars">
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star"></i>
+                                                            <i class="fas fa-star star empty"></i>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 소요시간 표시 -->
+                                                    <c:if test="${not empty allRestAreaDurations and status.index < allRestAreaDurations.size()}">
+                                                        <div class="duration-info">
+                                                            <i class="fas fa-clock duration-icon"></i>
+                                                            <span class="duration-text">
+                                                                <c:set var="duration" value="${allRestAreaDurations[status.index]}"/>
+                                                                <c:set var="totalHours" value="${duration / 3600}"/>
+                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                                <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                                <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                                <c:choose>
+                                                                    <c:when test="${status.index == 0}">
+                                                                        출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        이전 휴게시설부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+
+                                                <!-- 정보 섹션들 -->
+                                                <div class="info-sections-row">
+                                                    <!-- 편의시설 섹션 -->
+                                                    <div class="content-section">
+                                                        <div class="section-title">
+                                                            <i class="fas fa-list"></i>
+                                                            편의시설
+                                                        </div>
+                                                        <div class="facilities-grid">
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-baby facility-icon"></i>
+                                                                <span>수유실</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-first-aid facility-icon"></i>
+                                                                <span>약국</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-bus facility-icon"></i>
+                                                                <span>버스환승</span>
+                                                            </div>
+                                                            <div class="facility-item">
+                                                                <i class="fas fa-credit-card facility-icon"></i>
+                                                                <span>ATM</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 주유비/운영시간 섹션 -->
+                                                    <div class="content-section">
+                                                        <c:choose>
+                                                            <c:when test="${restArea.contains('휴게소')}">
+                                                                <div class="section-title-with-date">
+                                                                    <div class="section-title-left">
+                                                                        <i class="fas fa-gas-pump"></i>
+                                                                        주유비
+                                                                    </div>
+                                                                    <div class="section-title-date">2025.08.05</div>
+                                                                </div>
+                                                                <div class="fuel-info">
+                                                                    <div class="fuel-price">휘발유: 1,618원</div>
+                                                                    <div class="fuel-price">경유: 1,474원</div>
+                                                                    <div class="fuel-price">LPG: 1,074원</div>
+                                                                </div>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="section-title-with-date">
+                                                                    <div class="section-title-left">
+                                                                        <i class="fas fa-clock"></i>
+                                                                        운영시간
+                                                                    </div>
+                                                                    <div class="section-title-date">무료 이용</div>
+                                                                </div>
+                                                                <div class="fuel-info">
+                                                                    <div class="fuel-price">24시간 운영</div>
+                                                                </div>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+
+                                                    <!-- 대표메뉴/안전수칙 섹션 -->
+                                                    <div class="content-section">
+                                                        <c:choose>
+                                                            <c:when test="${restArea.contains('휴게소')}">
+                                                                <div class="section-title">
+                                                                    <i class="fas fa-utensils"></i>
+                                                                    대표메뉴
+                                                                </div>
+                                                                <div class="menu-item">
+                                                                    참치김치찌개
+                                                                </div>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="section-title">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                    안전수칙
+                                                                </div>
+                                                                <div class="menu-item">
+                                                                    15-20분 휴식 권장
+                                                                </div>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="empty-message">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <p>경로상 휴게시설이 발견되지 않았습니다.</p>
+                                    <p style="font-size: 0.9rem; color: #999; margin-top: 0.5rem;">
+                                        다른 경로를 시도해보세요.
+                                    </p>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </c:if>
+
+            <!-- 기존 방식: 휴게소 탭 -->
+            <c:if test="${!isUnifiedMode}">
+                <div id="rest-areas" class="tab-pane active">
                 <div class="info-card">
                     <div class="card-header">
                         <div class="card-icon">
@@ -176,7 +768,14 @@
                                                             <c:set var="hours" value="${totalHours.intValue()}"/>
                                                             <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
                                                             <c:set var="minutes" value="${totalMinutes.intValue()}"/>
-                                                            출발지부터 ${hours > 0 ? hours : ''}${hours > 0 ? '시간' : ''}${minutes > 0 ? minutes : ''}${minutes > 0 ? '분' : ''}
+                                                            <c:choose>
+                                                                <c:when test="${status.index == 0}">
+                                                                    출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    이전 휴게소부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </span>
                                                     </div>
                                                 </c:if>
@@ -300,7 +899,14 @@
                                                             <c:set var="hours" value="${totalHours.intValue()}"/>
                                                             <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
                                                             <c:set var="minutes" value="${totalMinutes.intValue()}"/>
-                                                            출발지부터 ${hours > 0 ? hours : ''}${hours > 0 ? '시간' : ''}${minutes > 0 ? minutes : ''}${minutes > 0 ? '분' : ''}
+                                                            <c:choose>
+                                                                <c:when test="${status.index == 0}">
+                                                                    출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    이전 졸음쉼터부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </span>
                                                     </div>
                                                 </c:if>
@@ -378,6 +984,7 @@
                     </c:choose>
                 </div>
             </div>
+        </c:if>
         </div>
     </div>
 

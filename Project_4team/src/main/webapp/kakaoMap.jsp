@@ -248,7 +248,8 @@
                         </div>
                     </c:if>
                     <div style="margin-top: 1rem; text-align: center;">
-                        <form action="Controller?type=restArea" method="post" style="display: inline;">
+                        <!-- 기존 방식 (휴게소/졸음쉼터 분리) -->
+                        <form action="Controller?type=restArea" method="post" style="display: inline; margin-right: 1rem;">
                             <input type="hidden" name="restAreasStr" value="${restAreasStr}">
                             <input type="hidden" name="restStopsStr" value="${restStopsStr}">
                             <input type="hidden" name="origin" value="${origin}">
@@ -275,7 +276,41 @@
                                 cursor: pointer;
                             ">
                                 <i class="fas fa-list"></i>
-                                상세 목록 보기
+                                기존 방식 보기
+                            </button>
+                        </form>
+                        
+                        <!-- 새로운 방식 (휴게소/졸음쉼터 통합) -->
+                        <form action="Controller?type=restArea" method="post" style="display: inline;">
+                            <input type="hidden" name="allRestAreasStr" value="${allRestAreasStr}">
+                            <input type="hidden" name="restAreasStr" value="${restAreasStr}">
+                            <input type="hidden" name="restStopsStr" value="${restStopsStr}">
+                            <input type="hidden" name="origin" value="${origin}">
+                            <input type="hidden" name="destination" value="${destination}">
+                            <input type="hidden" name="distance" value="${distance}">
+                            <input type="hidden" name="duration" value="${duration}">
+                            <input type="hidden" name="taxiFare" value="${taxiFare}">
+                            <input type="hidden" name="tollFare" value="${tollFare}">
+                            <input type="hidden" name="allRestAreaDurations" value="${allRestAreaDurations}">
+                            <input type="hidden" name="restAreaDurations" value="${restAreaDurations}">
+                            <input type="hidden" name="restStopDurations" value="${restStopDurations}">
+                            <button type="submit" class="detail-link" style="
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                                padding: 0.8rem 1.5rem;
+                                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                transition: all 0.2s;
+                                box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+                                border: none;
+                                cursor: pointer;
+                            ">
+                                <i class="fas fa-route"></i>
+                                통합 방식 보기
                             </button>
                         </form>
                     </div>
