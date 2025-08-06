@@ -1,10 +1,12 @@
 package restinfo.action;
 
+import com.google.gson.Gson;
 import mybatis.vo.ServiceAreaVO;
 import mybatis.vo.ShopVO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import restinfo.dao.ManageDAO;
+import restinfo.util.ConfigLoader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -96,6 +98,14 @@ public class InitAreaAction implements Action {
                 savo.setAddress(SAitem.getString("svarAddr"));       // 주소
                 savo.setTel(SAitem.getString("rprsTelNo"));         // 전화번호
                 savo.setShopCode(SAitem.getString("bsopAdtnlFcltCd"));     //영업점포코드
+
+
+
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
