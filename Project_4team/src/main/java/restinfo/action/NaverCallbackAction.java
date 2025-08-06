@@ -16,6 +16,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import restinfo.dao.SignUpDAO;
 import restinfo.util.ConfigLoader;
 
 import static java.lang.System.out;
@@ -111,14 +112,22 @@ public class NaverCallbackAction implements Action {
                 log.info("사용자 식별값: {}, 이메일: {}, 이름: {}", userIdentifier, email, name);
 
                 // 세션 저장
-                UserVO vo =new UserVO();
-                vo.setID(email);
-                vo.setName(name);
-                request.getSession().setAttribute("loginUser",vo);
-                request.getSession().setAttribute("login_provider", "naver");
-                request.getSession().setAttribute("access_token", access_token);
+                UserVO CheckVO = SignUpDAO.check(email,"NAVER");
+                if(CheckVO==null) {
+                    UserVO vo = new UserVO();
+                    vo.setID(email);
+                    vo.setName(name);
+                    request.getSession().setAttribute("loginUser", vo);
+                    request.getSession().setAttribute("login_provider", "naver");
+                    request.getSession().setAttribute("access_token", access_token);
+                    SignUpDAO.add(email, userIdentifier, name, "NAVER");
+                }else{
+                    request.getSession().setAttribute("loginUser",CheckVO);
+                    request.getSession().setAttribute("login_provider", "naver");
+                    request.getSession().setAttribute("access_token", access_token);
 
 
+                }
             }
         } catch (Exception e) {
             out.println(e);
