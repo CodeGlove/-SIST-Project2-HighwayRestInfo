@@ -4,6 +4,7 @@ import mybatis.vo.UserVO;
 import org.apache.ibatis.session.SqlSession;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import restinfo.dao.SignUpDAO;
 import restinfo.util.ConfigLoader;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,7 +62,7 @@ public class KakaoCallbackAction implements Action {
 
             // 응답 읽기
             StringBuilder responseSb = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     responseSb.append(line);
@@ -99,7 +100,7 @@ public class KakaoCallbackAction implements Action {
 
             // 응답 읽기
             StringBuilder responseSb = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     responseSb.append(line);
@@ -117,18 +118,31 @@ public class KakaoCallbackAction implements Action {
             String name = (String) profile.get("nickname");
             String email = (String) kakaoAccount.get("email");
 
+
             System.out.println("카카오 사용자 정보: id=" + id + ", nickname=" + name + ", email=" + email); // 디버깅용 로그
+            UserVO CheckVO = SignUpDAO.check(email,"KAKAO");
+            if(CheckVO==null) {
 
-            UserVO vo = new UserVO();
 
-            // 세션에 로그인 정보를 저장합니다.
-            request.getSession().setAttribute("id", String.valueOf(id)); // ID는 Long 타입이므로 문자열로 변환합니다.
-            vo.setID(email);
-            vo.setName(name);
-            request.getSession().setAttribute("loginUser",vo);
-            request.getSession().setAttribute("login_provider", "kakao");
-            request.getSession().setAttribute("access_token", accessToken);
+                UserVO vo = new UserVO();
 
+                // 세션에 로그인 정보를 저장합니다.
+                request.getSession().setAttribute("id", String.valueOf(id)); // ID는 Long 타입이므로 문자열로 변환합니다.
+                vo.setID(email);
+                vo.setName(name);
+                request.getSession().setAttribute("loginUser", vo);
+                request.getSession().setAttribute("login_provider", "kakao");
+                request.getSession().setAttribute("access_token", accessToken);
+
+                SignUpDAO.add(email, String.valueOf(id), name, "KAKAO");
+            }
+            else{
+                request.getSession().setAttribute("loginUser",CheckVO);
+                request.getSession().setAttribute("login_provider", "kakao");
+                request.getSession().setAttribute("access_token", accessToken);
+
+
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
