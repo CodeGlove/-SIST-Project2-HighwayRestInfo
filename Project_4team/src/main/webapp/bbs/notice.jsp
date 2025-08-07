@@ -145,10 +145,6 @@
         <td style="text-align: left">
           <a href="Controller?type=view&PostNum=${vo.postNum}&cPage=${p.nowPage}">
               ${vo.subject}
-            <%--댓글 수 보이게하기--%>
-            <%--<c:if test="${vo.c_list != null and fn:length(vo.c_list) > 0}">
-              (<c:out value="${fn:length(vo.c_list)}"/>)
-            </c:if>--%>
           </a>
         </td>
         <td>${vo.writer}</td>
@@ -159,15 +155,25 @@
           <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
                         ne null and sessionScope.loginUser.authority == 1}">
             <input type="button" value="삭제"
-                   onclick="location.href='Controller?type=del&PostNum=${vo.postNum}'"/>
+                   onclick="delPost('${vo.postNum}', '${p.nowPage}')"/>
+                           <%--location.href='Controller?type=del&PostNum=${vo.postNum}'"/>--%>
           </c:if>
         </td>
       </tr>
     </c:forEach>
     </tbody>
   </table>
-
 </div>
+<script>
+  function delPost(postNum, cPage) {
+    // 삭제할건지 물어봄
+    //alert(`삭제할 글 번호: ${postNum}\n현재 페이지: ${cPage}`);
+    if(confirm("정말로 삭제하시겠습니까?")){
+      //"type=del"과 함께 PostNum, cPage를 전달하여 Controller 호출
+      location.href=`Controller?type=del&PostNum=${postNum}&cPage=${cPage}`;
+    }
+  }
+</script>
 </body>
 </html>
 

@@ -34,28 +34,30 @@ public class NoticeAction implements Action {
         //현재 페이지값을 파라미터로 받는다.
         String cPage = request.getParameter("cPage");
 
-        if(cPage == null) //받은 페이지 없으면 첫페이지(1)로 가라.
+        int nowPage = 1;
+
+        if (cPage != null && !cPage.isEmpty()) {
+            nowPage = Integer.parseInt(cPage);
+        }
+
+        /*if(cPage != null && !cPage.isEmpty()) //받은 페이지 없으면 첫페이지(1)로 가라.
             page.setNowPage(1);
         else{
-            int nowPage = Integer.parseInt(cPage);
+            nowPage = Integer.parseInt(cPage);
             page.setNowPage(nowPage);
-        }
+        }*/
+
+        page.setNowPage(nowPage);
+
+        //총게시물 구한것들을 페이징 객체에 설정
+        page.setTotalCount(totalCount);
 
         //DAO(DB)를 호출하여 원하는 게시물들 목록을 받아야 한다.
         BbsVO[] ar = BbsDAO.getList(null, page.getBegin(), page.getEnd());
 
-        //페이징 정보를 Map에 담아 DAO에 전달
-        /*
-        Map<String, Object> map = new HashMap<>();
-        map.put("subject", subject);
-        map.put("begin", page.getBegin());
-        map.put("numPerPage", page.getNumPerPage());
-        */
-
         // JSP에서 표현하기 위해 request에 저장!
         request.setAttribute("ar", ar);
         request.setAttribute("page", page);
-        //request.setAttribute("nowPage", page.getNowPage()); //notice.jsp에서 값으로 사용가능
 
         return "bbs/notice.jsp"; //공지사항 페이지로 forward
     }

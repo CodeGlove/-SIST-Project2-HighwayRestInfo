@@ -79,14 +79,14 @@
         WHERE PostNum = #{PostNum}
     </update>
 
-    <!-- 좋아요 증가-->
+    <!-- 좋아요-->
     <update id="Like" parameterType="String">
         UPDATE Board
         SET ThumbsUp = ThumbsUp + 1
         WHERE PostNum = #{PostNum}
     </update>
 
-    <!-- 싫어요 증가 -->
+    <!-- 싫어요-->
     <update id="Hate" parameterType="String">
         UPDATE Board
         SET ThumbsDown = ThumbsDown + 1

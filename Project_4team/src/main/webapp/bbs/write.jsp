@@ -5,15 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
-    <%--<link rel="stylesheet" href="./css/summernote-lite.css"/>--%> <%--css 불러오기--%>
     <style type="text/css">
         #bbs table {
-            width:90%;
+            width:80%;
             margin-left:10px;
             border:1px solid black;
             border-collapse:collapse;
             font-size:14px;
-
         }
 
         #bbs table caption {
@@ -33,6 +31,10 @@
             border:1px solid black;
             padding:4px 10px;
         }
+        /*CK에디터 크기 지정*/
+        .ck-editor {
+            width: 100%;
+        }
 
         .no {width:15%}
         .subject {width:30%}
@@ -47,8 +49,10 @@
     </style>
     <script type="text/javascript">
         function sendData(){
-        //console.log("보내기 완료")
+            // ******** 에디터의 최신 내용을 <textarea>에 적용한다.
+            myEditor.updateSourceElement();
 
+            //유효성 검사
             let subject = $("#subject").val();
             if(subject.trim().length < 1){
                 alert("제목을 입력하세요");
@@ -101,9 +105,10 @@
                 <td><input type="text" name="writer" id="writer" size="12"/></td>
             </tr>
             <tr>
+                <%--ckeditor를 사용하면 textarea태그는 숨겨짐.(에디터UI가 여기에 동적으로 생성되기 때문)--%>
                 <th>내용:</th>
-                <td><textarea name="content" cols="50"
-                              id="content" rows="8"></textarea></td>
+                <td><textarea name="content" cols="80"
+                              id="content" rows="12"></textarea></td>
             </tr>
             <tr>
                 <th>첨부파일:</th>
@@ -137,68 +142,26 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<%--<script src="./js/summernote-lite.js"></script>--%> <%--자바스크립트 파일 추가--%>
 <script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script> <%--ckEditor 파일 추가--%>
 <!-- 실제로 textarea에 에디터를 적용시키는 코드 -->
 <script>
+    let myEditor;
+
     ClassicEditor
         .create(document.querySelector('#content'), { // #editor에서 #content로 수정
             ckfinder: {
-                // Summernote의 이미지 업로드 Controller 경로를 그대로 사용합니다.
+                // Summernote의 이미지 업로드 Controller 경로를 그대로 사용함
                 uploadUrl: 'Controller?type=saveImg'
             }
         })
         .then(editor => {
             console.log('CKEditor가 성공적으로 로드되었습니다.', editor);
+            myEditor = editor; // 생성된 에디터 인스턴스를 변수에 저장
         })
         .catch(error => {
             console.error('CKEditor 로드 중 에러 발생:', error);
         });
 </script>
-
-<%--<script>
-    $(function (){
-        //무조건 수행하는곳
-        $("#content").summernote({
-            lang: "ko-KR",
-            height: 300,
-            callbacks: {
-                onImageUpload: function (files, editor){
-                    // 에디터에 이미지를 추가될 때 수행하는 곳!
-                    // 이미지는 여러 개 추가할 수 있으므로 files는 배열이다.
-                    for(let i=0; i<files.length; i++)
-                        sendImg(files[i], editor); //sendImg 함수 호출
-                }
-            }
-        });
-
-    });
-    function sendImg(file, editor) {
-        //서버로 비동기식 통신을 수행하기 위해 준비한다.
-        // 이미지를 서버로 보내기위해 폼객체를 생성하자!
-        let frm = new FormData();
-
-        // 서버로 보낼 이미지파일을 폼객체에 파라미터로 지정
-        frm.append("upload", file);
-
-        // 비동기식 통신
-        $.ajax({
-            url: "Controller?type=saveImg",
-            data: frm, //파일이 들어가 있는곳
-            type: "post", //전송방식
-            contentType: false,
-            processData: false,
-            dataType: "json" //서버로 받을 형식
-        }).done(function (res){
-            // 요청 성공시 수행
-            // 분명 서버의 saveImg.jsp에서 응답하는 json
-            // res로 들어온다. 그 json에 img_url이라는 이름으로
-            // 이미지의 경로를 보내도록 되어 있다. 그것을 받아
-            // editor에 img태그를 넣어주면 된다.
-            $("#content").summernote("editor.insertImage", res.img_url);
-        });
-    }
-</script>--%>
 </body>
 </html>
 

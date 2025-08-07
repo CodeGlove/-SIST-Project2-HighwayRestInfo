@@ -123,17 +123,6 @@
         <button type="button" onclick="del(this.form)">삭제</button>
       </form>
     </div>
-
-    <%--댓글들<hr/>
-    <c:forEach var="cvo" items="${vo.c_list}">
-      <div>
-        이름:${cvo.writer}&nbsp;&nbsp;
-        날짜:${cvo.wrtie_date} <br/>
-        내용:${cvo.content}
-      </div>
-      <hr/> &lt;%&ndash;밑줄&ndash;%&gt;
-    </c:forEach>--%>
-
   </div>
 </c:if>
 
@@ -161,7 +150,7 @@
 
   function goList() {
     document.ff.action = "Controller";
-    document.ff.type.value = "list"
+    document.ff.type.value = "notice"
     document.ff.submit();
   }
   function goDel() {
@@ -177,7 +166,7 @@
     //ff를 찾아야한다!
     document.ff.action = "Controller";
     document.ff.type.value = "edit";
-    document.ff.submit();
+    document.ff.submit(); //EditAction으로 이동
   }
   function down(FileName) {
     document.ff.action = "download.jsp";

@@ -6,7 +6,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
-    <link rel="stylesheet" href="./css/summernote-lite.css"/> <%--css파일 연결하기--%>
     <style type="text/css">
         #bbs table {
             width:580px;
@@ -35,6 +34,7 @@
             padding:4px 10px;
         }
 
+
         .no {width:15%}
         .subject {width:30%}
         .writer {width:20%}
@@ -49,8 +49,10 @@
     </style>
     <script type="text/javascript">
         function sendData(){
-//		document.forms[0].action = "test.jsp";
+            // ******** 에디터의 최신 내용을 <textarea>에 적용한다.
+            myEditor.updateSourceElement();
 
+            //유효성 검사
             let subject = $("#subject").val();
             if(subject.trim().length < 1){
                 alert("제목을 입력하세요");
@@ -75,14 +77,6 @@
                 return;
             }
 
-            /*let file = $("#file").val();
-            if(file.trim().length < 1){
-              alert("첨부파일 없음");
-              $("#file").val("");
-              $("#file").focus();
-              return;
-            }*/
-
             document.forms[0].submit(); //submit이 발생하면 editAction이 실행됨.
         }
     </script>
@@ -96,26 +90,30 @@
 <div id="bbs">
     <form action="Controller?type=edit" method="post"
           encType="multipart/form-data">
-        <input type="hidden" name="bname" value="BBS"/>
-        <input type="hidden" name="PostNum" value="<%=vo.getPostNum()%>"/> <%--b_idx는 보이지 않게 처리!!!--%>
-        <input type="hidden" name="Writer" value="<%=vo.getWriter()%>"/>
+        <%--<input type="hidden" name="bname" value="BBS"/>--%>
+        <%-- (중요) '취소'와 '완료' 모두에 필요한 정보들을 hidden input으로 저장 --%>
+        <input type="hidden" id="hidden_postNum" value="${vo.postNum}"/>
+        <input type="hidden" id="hidden_cPage" value="${param.cPage}"/>
+
+        <%-- '완료' 버튼(폼 전송)을 위한 name 속성을 가진 input --%>
+        <input type="hidden" name="PostNum" value="${vo.postNum}"/> <%--b_idx는 보이지 않게 처리!!!--%>
         <input type="hidden" name="cPage" value="${param.cPage}"/>
         <table summary="공지사항 수정">
             <caption>공지사항 수정</caption>
             <tbody>
             <tr>
                 <th>제목:</th>
-                <td><input type="text" name="subject" id="title" size="45" value="<%=vo.getSubject()%>"/></td>
+                <td><input type="text" name="subject" id="subject" size="45" value="${vo.subject}"/></td>
             </tr>
             <tr>
                 <th>이름:</th>
-                <td><input type="text" name="writer" id="writer" size="12" value="<%=vo.getWriter()%>"
-                           disabled/></td>
+                <td><input type="text" name="writer" id="writer" size="12" value="${vo.writer}">
+                           readonly/></td>
             </tr>
             <tr>
                 <th>내용:</th>
                 <td><textarea name="content" cols="50"
-                              id="content" rows="8"><%=vo.getContent()%>"</textarea></td>
+                              id="content" rows="8"><%=vo.getContent()%></textarea></td>
             </tr>
             <tr>
                 <th>첨부파일:</th>
@@ -137,11 +135,8 @@
             -->
             <tr>
                 <td colspan="2">
-                    <input type="button" value="수정"
-                           onclick="sendData()"/>
-                    <input type="button" value="취소"
-                           onclick="goBack()"/>
-                    <input type="button" value="목록"/>
+                    <input type="button" value="완료" onclick="sendData()"/>
+                    <input type="button" value="취소" onclick="goBack()"/>
                 </td>
             </tr>
             </tbody>
@@ -150,54 +145,31 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script src="./js/summernote-lite.js"></script> <%--자바스크립트 파일 추가--%>
-<%--<script src="./js/lang/summernote-ko-KR.js"></script>--%> <%--언어추가(한글)--%>
+<script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script> <%--ckEditor 파일 추가--%>
+<!-- 실제로 textarea에 에디터를 적용시키는 코드 -->
 <script>
-    $(function (){
-        //무조건 수행하는곳
-        $("#content").summernote({
-            lang: "ko-KR",
-            height: 300,
-            callbacks: {
-                onImageUpload: function (files, editor){
-                    // 에디터에 이미지를 추가될 때 수행하는 곳!
-                    // 이미지는 여러 개 추가할 수 있으므로 files는 배열이다.
-                    for(let i=0; i<files.length; i++)
-                        sendImg(files[i], editor);
-                }
+    let myEditor;
+
+    ClassicEditor
+        .create(document.querySelector('#content'), { // #editor에서 #content로 수정
+            ckfinder: {
+                // Summernote의 이미지 업로드 Controller 경로를 그대로 사용함
+                uploadUrl: 'Controller?type=saveImg'
             }
+        })
+        .then(editor => {
+            console.log('CKEditor가 성공적으로 로드되었습니다.', editor);
+            myEditor = editor; // 생성된 에디터 인스턴스를 변수에 저장
+        })
+        .catch(error => {
+            console.error('CKEditor 로드 중 에러 발생:', error);
         });
 
-    });
-    function sendImg(file, editor) {
-        //서버로 비동기식 통신을 수행하기 위해 준비한다.
-        // 이미지를 서버로 보내기위해 폼객체를 생성하자!
-        let frm = new FormData();
-
-        // 서버로 보낼 이미지파일을 폼객체에 파라미터로 지정
-        frm.append("upload", file);
-
-        // 비동기식 통신
-        $.ajax({
-            url: "Controller?type=saveImg",
-            data: frm, //파일이 들어가 있는곳
-            type: "post", //전송방식
-            contentType: false,
-            processData: false,
-            dataType: "json" //서버로 받을 형식
-        }).done(function (res){
-            // 요청 성공시 수행
-            // 분명 서버의 saveImg.jsp에서 응답하는 json
-            // res로 들어온다. 그 json에 img_url이라는 이름으로
-            // 이미지의 경로를 보내도록 되어 있다. 그것을 받아
-            // editor에 img태그를 넣어주면 된다.
-            $("#content").summernote("editor.insertImage", res.img_url);
-        });
-    }
     function goBack() {
-        // Controller?type=view&b_idx=5&cPage=1 //이전글로 돌아가기
-        location.href="Controller?type=view&PostNum=${param.postNum}&cPage=${param.cPage}"; //el태그로 b_idx값을 가져오고
-                                                                                        //forward되어 넘어간다.
+        const postNum = document.getElementById('hidden_postNum').value;
+        const cPage = document.getElementById('hidden_cPage').value;
+        //location.href = `Controller?type=view&PostNum=${postNum}&cPage=${cPage}`; 템플릿리터럴 인식 불가
+        location.href = "Controller?type=view&PostNum=" + postNum + "&cPage=" + cPage;
     }
 </script>
 <%

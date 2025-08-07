@@ -41,6 +41,11 @@ public class EditAction implements Action {
             // 수정화면으로 이동해야 함!
             // 그럼 먼저 수정하고자 하는 게시물을 얻어내야 한다.
             String PostNum = request.getParameter("PostNum"); //파라미터 얻기!
+
+            String cPage = request.getParameter("cPage");
+            request.setAttribute("PostNum", PostNum);
+            request.setAttribute("cPage", cPage);
+
             BbsVO vo = BbsDAO.getPostNum(PostNum);
             request.setAttribute("vo", vo);
             viewPath = "/bbs/edit.jsp"; //여기서 forward 되므로 이쪽으로 넘어오는
@@ -61,11 +66,10 @@ public class EditAction implements Action {
                 //나머지 파라미터들 얻기 -> (edit.jsp에서 name 확인 얻어내야 한다)
                 String PostNum = mr.getParameter("PostNum");
                 String subject = mr.getParameter("subject");
-                String writer = mr.getParameter("writer");
                 String content = mr.getParameter("content");
                 String cPage = mr.getParameter("cPage");
 
-                //첨부파일이 있다면 fname과 oname을 얻어내야 한다.
+                //첨부파일이 있다면 FileName을 얻어내야 한다.
                 File f = mr.getFile("file");
                 String FileName = null;
                 if( f != null ){
@@ -73,8 +77,13 @@ public class EditAction implements Action {
                 }
 
                 //DB에 수정
-                BbsDAO.edit(PostNum, subject, writer, content, FileName);
-                viewPath = "Controller?type=view&PostNum="+PostNum+"&cPage="+cPage;
+                BbsDAO.edit(PostNum, subject, content, FileName);
+
+                String redirectPath = "Controller?type=view&PostNum="+PostNum+"&cPage="+cPage;
+                //이전에 보던 상세보기(view.jsp) 페이지로 리다이렉트
+                response.sendRedirect(redirectPath);
+
+                return null;
             } catch (Exception e) {
                 e.printStackTrace();
             }

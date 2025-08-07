@@ -84,13 +84,13 @@ public class BbsDAO {
     }
 
     //수정
-    public static int edit(String PostNum, String subject, String writer, String content, String FileName){
+    public static int edit(String PostNum, String subject, String content, String FileName){
 
         Map<String, String> map = new HashMap<>();
         map.put("PostNum", PostNum);
         map.put("subject", subject);
-        map.put("writer", writer);
         map.put("content", content);
+        map.put("FileName", FileName);
 
         if(FileName != null){ //UPDATE절에 구동되지 않게 하기 위해 검사
             map.put("FileName", FileName);
@@ -108,14 +108,15 @@ public class BbsDAO {
     }
 
     //삭제
-    public static int delBbs(String PostNum){
+    public static int delBbs(String PostNum) {
         SqlSession ss = FactoryService.getFactory().openSession();
         int cnt = ss.update("Board.del", PostNum);
-        if(cnt > 0)
+        if (cnt > 0) {
             ss.commit();
-        else
-            ss.close();
+        } else {
+            ss.rollback();
+        }
+        ss.close();
         return cnt;
     }
-
 }
