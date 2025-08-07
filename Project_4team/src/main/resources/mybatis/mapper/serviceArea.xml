@@ -35,8 +35,10 @@
         LargeParking = #{LargeParking},
         DisabledParking = #{DisabledParking},
         Address = #{Address},
+        <if test="lat != null and Lng != null">
         Lat = #{Lat},
         Lng = #{Lng},
+        </if>
         Tel = #{Tel},
         ShopCode = #{ShopCode}
         where

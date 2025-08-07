@@ -170,7 +170,7 @@ public class InitAreaAction implements Action {
             }
 
             //각 휴게소들 위도경도 매핑
-            Geocoding.mapping(SAlist);
+            Geocoding.kakaoGeocoding(SAlist);
 
             // 받아온 리스트 DAO에 전달
             ManageDAO.initSA(SAlist);
