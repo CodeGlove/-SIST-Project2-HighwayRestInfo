@@ -128,7 +128,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const kakaoBtn = document.getElementById('kakaoBtn');
         const emailBtn = document.getElementById('emailBtn');
         const googleIcon = document.getElementById('googleIcon');
         const appleIcon = document.getElementById('appleIcon');
