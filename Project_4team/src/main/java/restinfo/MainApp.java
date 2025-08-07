@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MainApp {
     public static void main(String[] args) {
-        String userKeyword = "천안";
+        String userKeyword = "행담도";
 
         List<Map<String, String>> restAreas = TmapSearchService.searchRestAreas(userKeyword);
 
