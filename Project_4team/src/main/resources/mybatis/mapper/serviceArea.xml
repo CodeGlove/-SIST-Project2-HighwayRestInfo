@@ -26,6 +26,12 @@
         #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
     </insert>
 
+    <select id="inBounds" resultType="mybatis.vo.ServiceAreaVO" parameterType="Map">
+        SELECT * FROM ServiceArea
+        WHERE Lat BETWEEN #{swLat} AND #{neLat}
+        AND Lng BETWEEN #{swLng} AND #{neLng}
+    </select>
+
     <update id="update" parameterType="mybatis.vo.ServiceAreaVO">
         update ServiceArea
         set
@@ -40,6 +46,11 @@
         SAName = #{SAName} and
         SADirection = #{SADirection}
     </update>
+    <select id="searchInsert" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        Select * from ServiceArea where SAName Like concat ('%', #{name}, '%');
+    </select>
+
+
 
 <!--    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,

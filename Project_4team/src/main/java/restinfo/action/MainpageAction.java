@@ -9,4 +9,4 @@ public class MainpageAction implements Action {
 		
 		return "index.jsp";
 	}
-}
+}	
