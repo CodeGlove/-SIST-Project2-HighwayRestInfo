@@ -709,6 +709,55 @@ body {
     border-right: none;
 }
 
+/* 졸음쉼터 간편 정보 스타일 */
+.rest-stop-quick-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+    padding-left: 1rem;
+}
+
+.quick-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.quick-icon {
+    color: #667eea;
+    font-size: 0.9rem;
+    width: 16px;
+    text-align: center;
+}
+
+.quick-text {
+    font-weight: 500;
+}
+
+.rest-stop-tip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    margin-top: 0.2rem;
+}
+
+.tip-icon {
+    color: #667eea;
+    font-size: 0.8rem;
+}
+
+.tip-text {
+    font-size: 0.75rem;
+    color: #667eea;
+    font-weight: 600;
+}
+
 .rest-area-name {
     font-size: 1.1rem;
     font-weight: 600;
@@ -990,5 +1039,31 @@ body {
     #rest-stops .rest-area-info-row {
         min-height: 40px;
         gap: 0.8rem;
+        flex-direction: column;
+    }
+
+    .rest-stop-quick-info {
+        padding-left: 0;
+        padding-top: 0.4rem;
+        border-top: 1px solid #e5e8eb;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.3rem;
+    }
+
+    .quick-info-item {
+        font-size: 0.7rem;
+        flex: 0 0 auto;
+    }
+
+    .rest-stop-tip {
+        flex: 1 1 100%;
+        margin-top: 0.3rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .tip-text {
+        font-size: 0.7rem;
     }
 }
