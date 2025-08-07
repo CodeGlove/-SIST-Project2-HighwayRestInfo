@@ -692,6 +692,23 @@ body {
     border-right: 1px solid #e5e8eb;
 }
 
+/* 졸음쉼터 카드는 높이를 줄임 */
+#rest-stops .rest-area-card {
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+#rest-stops .rest-area-info-row {
+    min-height: 50px;
+    gap: 1rem;
+}
+
+#rest-stops .rest-area-name-section {
+    flex: 1;
+    padding-right: 0;
+    border-right: none;
+}
+
 .rest-area-name {
     font-size: 1.1rem;
     font-weight: 600;
@@ -962,5 +979,16 @@ body {
         margin-top: 0.2rem;
         padding: 0.15rem 0.4rem;
         font-size: 0.7rem;
+    }
+
+    /* 모바일에서 졸음쉼터 카드 추가 스타일 */
+    #rest-stops .rest-area-card {
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+    }
+
+    #rest-stops .rest-area-info-row {
+        min-height: 40px;
+        gap: 0.8rem;
     }
 }
