@@ -8,13 +8,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+    <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
+
     <style>
-        /* style 태그 내용은 기존과 동일 */
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .search-container {
@@ -39,6 +42,10 @@
         .search-container button {
             background-color: #007bff; color: white; cursor: pointer; border-color: #007bff;
         }
+        #cctv-toggle-button {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -56,6 +63,7 @@
     </div>
     <input type="text" id="search-input" placeholder="휴게소 이름 검색">
     <button id="search-button">검색</button>
+    <button id="cctv-toggle-button">CCTV 켜기</button>
 </div>
 
 <div id="map"></div>
@@ -68,12 +76,15 @@
         attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    const markers = L.markerClusterGroup();
-    map.addLayer(markers);
+    const restAreaMarkers = L.markerClusterGroup();
+    map.addLayer(restAreaMarkers);
+
+    const cctvMarkers = L.markerClusterGroup();
 
     let provinceData = null;
     let currentBoundaryLayer = null;
     let isMarkerClickZoom = false;
+    let isCctvVisible = false;
 
     $.getJSON('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json', function(data) {
         provinceData = data;
@@ -87,7 +98,6 @@
         'gyeongsang': { lat: 35.8714, lng: 128.6014, zoom: 8, names: ["경상북도", "경상남도", "대구광역시", "울산광역시", "부산광역시"] }
     };
 
-    // (수정된 부분) 지역 선택 기능 추가
     $('#region-select').on('change', function() {
         const selectedRegion = $(this).val();
         if (currentBoundaryLayer) { map.removeLayer(currentBoundaryLayer); }
@@ -108,8 +118,8 @@
         }
     });
 
-    function addMarkersToMap(data) {
-        markers.clearLayers();
+    function addRestAreaMarkersToMap(data) {
+        restAreaMarkers.clearLayers();
         if (!data || data.length === 0) return;
         data.forEach(ra => {
             const marker = L.marker([ra.Lat, ra.Lng]);
@@ -117,17 +127,53 @@
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
-                const currentZoom = map.getZoom(); // 현재 줌 레벨을 가져옴
+                const currentZoom = map.getZoom();
                 const targetZoom = 14;
-                // 현재 줌 레벨과 목표 줌 레벨 중 더 큰 값을 사용
                 const newZoom = Math.max(currentZoom, targetZoom);
-
-                map.setView(e.latlng, newZoom); // 계산된 줌 레벨로 설정
+                map.setView(e.latlng, newZoom);
                 map.once('zoomend', function() {
                     e.target.openPopup();
                 });
             });
-            markers.addLayer(marker);
+            restAreaMarkers.addLayer(marker);
+        });
+    }
+
+    // CCTV 아이콘 정의
+    const cctvIcon = L.icon({
+        iconUrl: '${pageContext.request.contextPath}/image/cctv_icon.png',// 이 부분에 CCTV 아이콘 이미지 파일 경로를 넣어주세요.
+        iconSize: [38, 38], // 아이콘 크기
+        iconAnchor: [19, 38], // 팝업이 뜨는 위치
+        popupAnchor: [0, -38] // 팝업 위치 보정
+    });
+
+    function addCctvMarkersToMap(data) {
+        cctvMarkers.clearLayers();
+        if (!data || data.length === 0) return;
+        data.forEach(cctv => {
+            const lat = cctv.coordy;
+            const lng = cctv.coordx;
+            const name = cctv.cctvname;
+            const url = cctv.cctvurl;
+
+            // L.marker 생성 시, cctvIcon을 적용
+            const marker = L.marker([lat, lng], { icon: cctvIcon });
+
+            const popupContent = `
+                <div style="width: 320px;">
+                    <b>${name}</b><br>
+                    <video id="cctv-video-${cctv.cctvname}" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup='{}'>
+                        <source src="${url}" type="application/x-rtmp" />
+                    </video>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent, { minWidth: 320 });
+            cctvMarkers.addLayer(marker);
+
+            marker.on('popupopen', function() {
+                videojs(`cctv-video-${cctv.cctvname}`);
+            });
         });
     }
 
@@ -145,9 +191,36 @@
             data: { swLat: sw.lat, swLng: sw.lng, neLat: ne.lat, neLng: ne.lng },
             dataType: 'json'
         }).done(function(data) {
-            addMarkersToMap(data);
+            addRestAreaMarkersToMap(data);
         });
     }
+
+    function loadCctvData() {
+        const bounds = map.getBounds();
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        $.ajax({
+            url: '${pageContext.request.contextPath}/Controller?type=pjyCctv',
+            type: 'GET',
+            data: { swLat: sw.lat, swLng: sw.lng, neLat: ne.lat, neLng: ne.lng },
+            dataType: 'json'
+        }).done(function(data) {
+            addCctvMarkersToMap(data);
+        });
+    }
+
+    $('#cctv-toggle-button').on('click', function() {
+        if (isCctvVisible) {
+            map.removeLayer(cctvMarkers);
+            isCctvVisible = false;
+            $(this).text('CCTV 켜기').css('background-color', '#6c757d');
+        } else {
+            map.addLayer(cctvMarkers);
+            isCctvVisible = true;
+            $(this).text('CCTV 끄기').css('background-color', '#007bff');
+            loadCctvData();
+        }
+    });
 
     $('#search-button').on('click', function() {
         const searchText = $('#search-input').val();
@@ -163,16 +236,13 @@
         })
             .done(function(data) {
                 if (data && data.length > 0) {
-                    addMarkersToMap(data);
+                    addRestAreaMarkersToMap(data);
                     const firstResult = data[0];
                     const position = [firstResult.Lat, firstResult.Lng];
-
                     const currentZoom = map.getZoom();
                     const targetZoom = 15;
                     const newZoom = Math.max(currentZoom, targetZoom);
-
-                    map.setView(position, newZoom); // 계산된 줌 레벨로 설정
-
+                    map.setView(position, newZoom);
                     map.once('zoomend', function() {
                         const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${firstResult.Idx}" target="_blank" style="text-decoration: none; color: inherit;"><b>\${firstResult.SAName}</b><br>\${firstResult.Address}</a>`;
                         L.popup().setLatLng(position).setContent(popupContent).openOn(map);
@@ -183,8 +253,13 @@
             });
     });
 
-    // (수정된 부분) 초기 로딩 로직 변경
-    map.on('moveend', loadRestAreas);
+    map.on('moveend', function() {
+        loadRestAreas();
+        if (isCctvVisible) {
+            loadCctvData();
+        }
+    });
+
     map.once('load', function(){
         loadRestAreas();
     });
