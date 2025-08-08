@@ -11,32 +11,11 @@
         WHERE `DELETE` = 0
     </select>
 
-    <!--전체 게시물 목록을 반환하는 기능-->
-    <!--<select id="list" resultType="mybatis.vo.BbsVO" parameterType="map">
-        SELECT * FROM Board
-        ORDER BY PostNum DESC
-        LIMIT #{Subject}, #{begin}, #{numPerPage}
-    </select>-->
-
-    <!-- 특정 카테고리의 총 게시물 수를 반환하는 기능-->
-    <!--<select id="totalCount" resultType="int" parameterType="String">
-        SELECT COUNT(*) FROM Board
-        WHERE Category = #{category}
-    </select>-->
-
-    <!--특정 카테고리의 목록을 반환하는 기능-->
-    <!--<select id="list" resultType="mybatis.vo.BbsVO" parameterType="map">
-        SELECT * FROM Board
-        WHERE Category = #{category}
-        ORDER BY PostNum DESC
-        LIMIT #{begin}, #{numPerPage}
-    </select>-->
-
     <!--원글 목록: 인자 3개(Subject, begin, end)-->
     <select id="list" parameterType="Map" resultType="mybatis.vo.BbsVO">
         SELECT * FROM(
             SELECT @RN:=@RN+1 AS rnum, a.* FROM( <!--테이블에 있는 모든것을 출력하는데 앞에 숫자를 추가해라-->
-                SELECT * FROM Board
+                SELECT * From Board
                 WHERE `DELETE` = 0 <!--0: 삭제되지 않은 글(1: 삭제한 글)-->
                 <if test="subject != null and subject != ''">
                     AND Subject = #{subject}

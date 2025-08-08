@@ -82,12 +82,20 @@
           <th>내용:</th>
           <td>${vo.content}</td>
         </tr>
-
+        <tr>
+          <td colspan="2" style="text-align: center;">
+            <input type="button" id="btn-like" value="👍" onclick="sendReaction('like')"
+                   <c:if test="${hasReacted}">disabled</c:if> />
+            <span id="likeCount">${vo.thumbsUp}</span>
+            <input type="button" id="btn-hate "value="👎" onclick="sendReaction('hate')"
+                   <c:if test="${hasReacted}">disabled</c:if> />
+            <span id="hateCount">${vo.thumbsDown}</span>
+          </td>
+        </tr>
         <tr>
           <td colspan="2">
             <input type="button" value="수정" onclick="goEdit()"/>
             <input type="button" value="삭제" onclick="goDel()"/> <%--삭제 버튼 지정--%>
-              <%--<input type="button" value="목록" onclick="javascript:location.href='Controller?type=list&cPage=${param.cPage}'"/>--%>
             <input type="button" value="목록" onclick="goList()"/>
           </td>
         </tr>
@@ -172,6 +180,35 @@
     document.ff.action = "download.jsp";
     document.ff.FileName.value = FileName;
     document.ff.submit();
+  }
+
+  function sendReaction(type) {
+    //서버에 보낼 데이터 준비
+    $.ajax({
+      url: '${pageContext.request.contextPath}/Controller', // 요청을 보낼 URL
+      type: 'POST', // 데이터 변경을 유발하므로 POST 방식 사용
+      data: {
+        type: type, PostNum: '${vo.postNum}'} // type: 'like' 또는 'hate' PostNum: 현재 게시물 번호
+    }).done(function () {
+      // ajax 요청 완료시 함수 실행
+      if(type === 'like'){
+        // 화면의 좋아요 숫자1 증가
+        const countSpan = $("#likeCount");
+        const currentCount = parseInt(countSpan.text());
+        countSpan.text(currentCount+1);
+      }else{
+        // 화면의 싫어요 숫자1 증가
+        const countSpan = $("#hateCount");
+        const currentCount = parseInt(countSpan.text());
+        countSpan.text(currentCount+1);
+      }
+      // 누르기 중복 안됨(버튼 비활성화)
+      $("#btn-like").prop("disabled", true);
+      $("#btn-hate").prop("disabled", true);
+    }).fail(function(){
+      //요청 실패시
+      alert("오류가 발생했습니다. 다시 시도해주세요");
+    });
   }
 </script>
 </body>

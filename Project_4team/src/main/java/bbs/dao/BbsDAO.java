@@ -36,13 +36,6 @@ public class BbsDAO {
 
         return ar;
     }
-    /*
-    public static List<BbsVO> getList(Map<String, Object> map){
-        SqlSession ss = FactoryService.getFactory().openSession(); //DAO 세션 열기
-        List<BbsVO> list = ss.selectList("Board.list", map); //category, begin, numPerPage를 Map에 담아 전달
-        ss.close();
-        return list;
-    }*/
 
     //저장
     public static int add(String subject, String writer,
@@ -111,6 +104,36 @@ public class BbsDAO {
     public static int delBbs(String PostNum) {
         SqlSession ss = FactoryService.getFactory().openSession();
         int cnt = ss.update("Board.del", PostNum);
+        if (cnt > 0) {
+            ss.commit();
+        } else {
+            ss.rollback();
+        }
+        ss.close();
+        return cnt;
+    }
+
+    //좋아요 증가
+    public static int addLike(String PostNum){
+        SqlSession ss = FactoryService.getFactory().openSession();
+
+        //System.out.println("2. BbsDAO.addLike ok!!! (PostNum: " + PostNum + ")");
+        int cnt = ss.update("Board.Like", PostNum);
+        if (cnt > 0) {
+            //System.out.println("3. DB update ok!!! commit ing.");
+            ss.commit();
+        } else {
+            //System.out.println("3. DB update fail!!! rollback ing. (cnt: " + cnt + ")");
+            ss.rollback();
+        }
+        ss.close();
+        return cnt;
+    }
+
+    //싫어요 증가
+    public static int addHate(String PostNum){
+        SqlSession ss = FactoryService.getFactory().openSession();
+        int cnt = ss.update("Board.Hate", PostNum);
         if (cnt > 0) {
             ss.commit();
         } else {

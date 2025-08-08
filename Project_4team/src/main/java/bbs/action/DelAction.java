@@ -19,9 +19,13 @@ public class DelAction implements Action {
         // 파라미터로 넘어온 게시물 번호와 페이지 번호 받기
         String postNum = request.getParameter("PostNum");
         String cPage = request.getParameter("cPage");
-
+        System.out.println("-------------------------------------");
+        System.out.println(postNum+"check");
+        System.out.println(cPage);
         // 삭제할 게시물의 정보 가져오기(작성자 확인용)
         BbsVO vo = BbsDAO.getPostNum(postNum);
+        System.out.println(vo);
+        System.out.println("vo가져왔는가");
 
         // 권한 확인(로그인x || 관리자x || 본인작성x 일경우)
         if (loginUser == null || (!loginUser.getAuthority().equals("1")

@@ -170,7 +170,8 @@
     //alert(`삭제할 글 번호: ${postNum}\n현재 페이지: ${cPage}`);
     if(confirm("정말로 삭제하시겠습니까?")){
       //"type=del"과 함께 PostNum, cPage를 전달하여 Controller 호출
-      location.href=`Controller?type=del&PostNum=${postNum}&cPage=${cPage}`;
+      console.log(postNum, cPage)
+      location.href = "Controller?type=del&PostNum=" + postNum + "&cPage=" + cPage;
     }
   }
 </script>
