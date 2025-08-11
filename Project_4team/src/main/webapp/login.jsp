@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/LoginStyle.css" rel="stylesheet">
+
     <style>
         @font-face {
             font-family: 'PretendardVariable';
@@ -22,7 +23,7 @@
 </head>
 <body>
     <!-- Back to Home Link -->
-    <a href="index.jsp" class="back-home">
+    <a href="Controller" class="back-home">
         <i class="fas fa-arrow-left"></i>
         홈으로 돌아가기
     </a>
@@ -45,11 +46,7 @@
             </div>
         </div>
 
-        <!-- Authentication Tabs -->
-        <div class="auth-tabs">
-            <button class="tab-btn active" data-tab="password">Password</button>
-            <button class="tab-btn" data-tab="webauthn">WebAuthn</button>
-        </div>
+
 
         <!-- Login Form -->
         <form class="login-form" id="loginForm">
@@ -57,7 +54,7 @@
                 <div class="input-container">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" id="username" name="username" class="form-input"
-                           placeholder="username, Email or phone" required>
+                           placeholder="사용자명, 이메일 또는 전화번호" required>
                 </div>
             </div>
 
@@ -65,7 +62,7 @@
                 <div class="input-container">
                     <i class="fas fa-lock input-icon"></i>
                     <input type="password" id="password" name="password" class="form-input"
-                           placeholder="Password" required>
+                           placeholder="비밀번호" required>
                     <button type="button" class="password-toggle" id="passwordToggle">
                         <i class="fas fa-eye-slash"></i>
                     </button>
@@ -76,29 +73,41 @@
                 <label class="auto-signin">
                     <input type="checkbox" name="autoSignin" id="autoSignin">
                     <span class="checkmark"></span>
-                    Auto sign in
+                    자동 로그인
                 </label>
-                <a href="#" class="forgot-link">Forgot password?</a>
+                <a href="#" class="forgot-link">비밀번호를 잊으셨나요?</a>
             </div>
 
             <button type="submit" class="login-btn">
-                Sign In
+                로그인
             </button>
         </form>
 
         <!-- Sign Up Link -->
         <div class="signup-link">
-            No account? <a href="Controller?type=register" id="signupLink">sign up now</a>
+            계정이 없으신가요? <a href="Controller?type=register" id="signupLink">회원가입</a>
         </div>
 
         <!-- Social Login -->
-        <div class="social-login">
-            <a href="#" class="social-icon" id="googleLogin">
-                <i class="fab fa-google"></i>
-            </a>
-            <a href="#" class="social-icon" id="githubLogin">
-                <i class="fab fa-github"></i>
-            </a>
+        <div class="social-login-section">
+            <div class="social-title">SNS 간편 로그인</div>
+            <div class="social-login">
+                <a href="#" class="social-icon kakao" id="kakaoLogin">
+                    <i class="fas fa-comment"></i>
+                </a>
+                <a href="#" class="social-icon naver" id="naverLogin">
+                    <span class="naver-n">N</span>
+                </a>
+                <a href="#" class="social-icon google" id="googleLogin">
+                    <i class="fab fa-google"></i>
+                </a>
+                <a href="#" class="social-icon apple" id="appleLogin">
+                    <i class="fab fa-apple"></i>
+                </a>
+                <a href="#" class="social-icon facebook" id="facebookLogin">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -109,10 +118,12 @@
             const passwordInput = document.getElementById('password');
             const passwordToggle = document.getElementById('passwordToggle');
             const autoSignin = document.getElementById('autoSignin');
+            const kakaoLogin = document.getElementById('kakaoLogin');
+            const naverLogin = document.getElementById('naverLogin');
             const googleLogin = document.getElementById('googleLogin');
-            const githubLogin = document.getElementById('githubLogin');
+            const appleLogin = document.getElementById('appleLogin');
+            const facebookLogin = document.getElementById('facebookLogin');
             const signupLink = document.getElementById('signupLink');
-            const tabBtns = document.querySelectorAll('.tab-btn');
 
             //********* 한결: 뒤로가기 및 앞으로가기 시 입력필드 초기화
             usernameInput.value = '';
@@ -126,13 +137,7 @@
                 }
             });
 
-            // Tab switching
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+
 
             // Password toggle
             passwordToggle.addEventListener('click', function () {
@@ -253,14 +258,29 @@
             }
 
             // Social login handlers
+            kakaoLogin.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('카카오 로그인 기능이 구현될 예정입니다.');
+            });
+
+            naverLogin.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('네이버 로그인 기능이 구현될 예정입니다.');
+            });
+
             googleLogin.addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('Google 로그인 기능이 구현될 예정입니다.');
             });
 
-            githubLogin.addEventListener('click', function(e) {
+            appleLogin.addEventListener('click', function(e) {
                 e.preventDefault();
-                alert('GitHub 로그인 기능이 구현될 예정입니다.');
+                alert('Apple 로그인 기능이 구현될 예정입니다.');
+            });
+
+            facebookLogin.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Facebook 로그인 기능이 구현될 예정입니다.');
             });
 
             // Auto sign in checkbox
