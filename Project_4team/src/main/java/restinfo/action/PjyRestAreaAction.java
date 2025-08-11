@@ -36,7 +36,6 @@ public class PjyRestAreaAction implements Action {
 
         } else if ("POST".equalsIgnoreCase(method)) {
             // --- POST 요청 처리 (이름으로 검색) ---
-            // ★★★ 중요: JSP의 검색 AJAX 호출 type을 'POST'로 유지
             System.out.println("POST 요청 처리 시작: searchRestArea");
 
             String text = request.getParameter("searchText");
