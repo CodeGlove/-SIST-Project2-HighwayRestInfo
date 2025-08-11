@@ -28,9 +28,9 @@
     <!--원글 저장-->
     <insert id="add" parameterType="map">
         INSERT INTO Board(subject, writer, content, FileName, category,
-                            writeDate, ThumbsUp, ThumbsDown, `Delete`, Pwd)
+                            writeDate, `Delete`, Pwd)
                     VALUES(#{subject}, #{writer}, #{content}, #{FileName}, #{category},
-                            NOW(), 0, 0, 0, #{Pwd})
+                            NOW(), 0, #{Pwd})
     </insert>
 
     <!--원글 보기-->

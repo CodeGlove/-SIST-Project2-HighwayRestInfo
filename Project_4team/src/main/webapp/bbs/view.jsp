@@ -50,11 +50,12 @@
 
 </head>
 <body>
-<%--<%
-  Object obj = request.getAttribute("vo");
-  if(obj != null){
-    BbsVO vo = (BbsVO) obj;
-%>--%> <%--위의 스크립트릿안에 내용을 아래 JSTL 문법으로 바꿈--%>
+  <!-- Back to Home Link -->
+  <a href="Controller" class="back-home">
+    <i class="fas fa-arrow-left"></i>
+    홈으로 돌아가기
+  </a>
+
 <c:if test="${requestScope.vo ne null}"> <%--ne은 '!='와 같다--%>
   <c:set var="vo" value="${requestScope.vo}"/>
   <div id="bbs">

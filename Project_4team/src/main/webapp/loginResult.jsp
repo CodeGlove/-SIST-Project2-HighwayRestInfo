@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
+  <%--<style>
     @font-face {
       font-family: 'PretendardVariable';
       src: url('fonts/PretendardVariable.woff2') format('woff2-variations');
@@ -444,10 +444,11 @@
       text-decoration: none; /* a 태그의 밑줄 제거 */
       color: inherit;        /* 글자색을 부모 요소의 색으로 강제 상속 (디자인 유지) */
     }
-  </style>
+  </style>--%>
 </head>
 <body>
 <!-- Header -->
+
 <header class="header">
   <div class="nav-container">
     <a href="#" class="logo">
@@ -501,7 +502,9 @@
   </section>
 
   <!-- Search Section -->
-  <section class="search-section slide-up">
+  <%--********** 변경된 UI 적용--%>
+
+  <%--<section class="search-section slide-up">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #222; font-size: 1.8rem;">고속도로 정보 검색</h2>
     <div class="search-container">
       <input type="text" class="search-input" placeholder="검색어를 입력하세요 (예: 휴게소, 주유소, 음식점)">
@@ -519,7 +522,7 @@
       <a href="#" class="search-tag"><i class="fas fa-parking"></i>주차장</a>
       <a href="#" class="search-tag"><i class="fas fa-wifi"></i>WiFi</a>
     </div>
-  </section>
+  </section>--%>
 
   <!-- Features Section -->
   <section class="features">
@@ -574,7 +577,87 @@
   </section>
 </main>
 
+<%--************ 바뀐 UI 적용--%>
 <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 스크롤 애니메이션 초기화
+    initializeScrollAnimation();
+
+    // 길찾기 폼 초기화
+    initializeRouteForm();
+  });
+
+  // 스크롤 애니메이션 초기화
+  function initializeScrollAnimation() {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // 관찰할 요소들
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = 'all 0.6s ease-out';
+      observer.observe(card);
+    });
+  }
+
+  // 길찾기 폼 초기화
+  function initializeRouteForm() {
+    const routeForm = document.getElementById('routeForm');
+    const searchBtn = document.getElementById('searchRouteBtn');
+
+    if (routeForm && searchBtn) {
+      // 폼 제출 이벤트 처리
+      routeForm.addEventListener('submit', function (e) {
+        const originInput = document.getElementById('origin');
+        const destinationInput = document.getElementById('destination');
+
+        // 입력값 검증
+        if (!originInput.value.trim() || !destinationInput.value.trim()) {
+          e.preventDefault();
+          alert('출발지와 목적지를 모두 입력해주세요.');
+          return false;
+        }
+
+        // 로딩 상태 표시
+        setLoadingState(searchBtn, true);
+
+        // 폼 제출을 계속 진행
+        return true;
+      });
+    }
+  }
+
+  // 로딩 상태 설정
+  function setLoadingState(button, isLoading) {
+    if (isLoading) {
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 검색 중...';
+      button.style.opacity = '0.7';
+    } else {
+      button.disabled = false;
+      button.innerHTML = '<i class="fas fa-search"></i> 길찾기';
+      button.style.opacity = '1';
+    }
+  }
+
+
+</script>
+
+<!-- Footer Include -->
+<jsp:include page="footer.jsp" />
+<%--<script>
   document.addEventListener('DOMContentLoaded', function() {
     // 검색 기능
     const searchBtn = document.querySelector('.search-btn');
@@ -635,6 +718,6 @@
     alert(userName + '님 환영합니다. 👋');
     </c:if>
   });
-</script>
+</script>--%>
 </body>
 </html>
