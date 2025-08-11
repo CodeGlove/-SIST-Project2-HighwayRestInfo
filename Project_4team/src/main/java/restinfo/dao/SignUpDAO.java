@@ -5,12 +5,14 @@ import mybatis.vo.UserVO;
 import org.apache.ibatis.session.SqlSession;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SignUpDAO {
-    public static int add(String id, String Hpwd, String name, String platform) {
+    public static int add(String id,String NickName, String Hpwd, String name, String platform) {
         Map<String, String> m = new HashMap<>();
         m.put("ID", id);
+        m.put("NickName", NickName);
         m.put("Pwd", Hpwd);
         m.put("Name", name);
         m.put("platform",platform);
@@ -39,4 +41,10 @@ public class SignUpDAO {
         return vo;
     }
 
+    public static List<String> check(String nickname){
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<String>res = ss.selectList("restinfo.searchNickName",nickname);
+        ss.close();
+        return res;
+    }
 }

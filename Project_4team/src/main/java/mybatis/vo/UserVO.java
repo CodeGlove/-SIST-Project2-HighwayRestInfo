@@ -1,7 +1,7 @@
 package mybatis.vo;
 
 public class UserVO {
-    private String ID, Pwd, Name, Home, Authority, Interset;
+    private String ID, NickName, Pwd, Name, Home, Authority, Interset;
 
     public String getAuthority() {
         return Authority;
@@ -17,6 +17,14 @@ public class UserVO {
 
     public void setID(String ID) {
         this.ID = ID;
+    }
+
+    public String getNickName() {
+        return NickName;
+    }
+
+    public void setNickName(String nickName) {
+        NickName = nickName;
     }
 
     public String getPwd() {
