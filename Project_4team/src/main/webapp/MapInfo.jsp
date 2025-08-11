@@ -46,6 +46,20 @@
             background-color: #6c757d;
             border-color: #6c757d;
         }
+
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+                width: 90%;
+                left: 5%;
+                gap: 5px;
+            }
+            .search-container input, .search-container select, .search-container button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
     </style>
 </head>
 <body>
@@ -141,41 +155,75 @@
 
     // CCTV 아이콘 정의
     const cctvIcon = L.icon({
-        iconUrl: '${pageContext.request.contextPath}/image/cctv_icon.png',// 이 부분에 CCTV 아이콘 이미지 파일 경로를 넣어주세요.
-        iconSize: [38, 38], // 아이콘 크기
-        iconAnchor: [19, 38], // 팝업이 뜨는 위치
-        popupAnchor: [0, -38] // 팝업 위치 보정
+        iconUrl: '${pageContext.request.contextPath}/image/cctv_icon.png',
+        iconSize: [38, 38],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
     });
 
+    // JSP 파일의 addCctvMarkersToMap 함수 (전체 교체)
+    // JSP 파일의 addCctvMarkersToMap 함수 (전체 교체)
     function addCctvMarkersToMap(data) {
         cctvMarkers.clearLayers();
-        if (!data || data.length === 0) return;
-        data.forEach(cctv => {
-            const lat = cctv.coordy;
-            const lng = cctv.coordx;
-            const name = cctv.cctvname;
-            const url = cctv.cctvurl;
+        if (!data || data.length === 0 || !data.response || !data.response.data) {
+            console.log("CCTV 데이터가 없거나 형식이 올바르지 않습니다.");
+            return;
+        }
 
-            // L.marker 생성 시, cctvIcon을 적용
+        const cctvList = Array.isArray(data.response.data) ? data.response.data : [data.response.data];
+
+        cctvList.forEach(cctv => {
+            const lat = parseFloat(cctv.coordy);
+            const lng = parseFloat(cctv.coordx);
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            const name = cctv.cctvname.replace(/;/g, '');
+            // 이 cctv.cctvurl은 임시 URL입니다.
+            const temporaryUrl = cctv.cctvurl;
             const marker = L.marker([lat, lng], { icon: cctvIcon });
+            const videoId = name.replace(/\s/g, '-');
 
+            // 팝업 내용에 비디오 플레이어를 미리 만들지만, 소스는 비워둡니다.
             const popupContent = `
-                <div style="width: 320px;">
-                    <b>${name}</b><br>
-                    <video id="cctv-video-${cctv.cctvname}" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup='{}'>
-                        <source src="${url}" type="application/x-rtmp" />
-                    </video>
-                </div>
-            `;
-
+            <div style="width: 320px;">
+                <b>${name}</b><br>
+                <video id="cctv-video-${videoId}" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup='{}'>
+                    <source type="application/x-mpegURL" />
+                </video>
+            </div>
+        `;
             marker.bindPopup(popupContent, { minWidth: 320 });
             cctvMarkers.addLayer(marker);
 
+            // 팝업이 열릴 때 새로운 Action을 호출해서 진짜 영상 URL을 가져옵니다.
             marker.on('popupopen', function() {
-                videojs(`cctv-video-${cctv.cctvname}`);
+                const videoElement = document.getElementById(`cctv-video-${videoId}`);
+                // 로딩 이미지를 표시합니다.
+                videoElement.poster = '${pageContext.request.contextPath}/image/loading.gif';
+
+                $.ajax({
+                    url: '${pageContext.request.contextPath}/Controller?type=getVideoUrl',
+                    type: 'GET',
+                    data: { temporaryUrl: temporaryUrl },
+                    dataType: 'text' // 서버에서 텍스트(URL)를 받기 때문에 'text'로 설정
+                }).done(function(realUrl) {
+                    // 성공적으로 진짜 URL을 받으면 videojs 소스를 업데이트합니다.
+                    console.log("서버로부터 받은 실제 영상 URL:", realUrl);
+                    // Video.js에 명시적으로 소스 설정 (CORS 회피)
+                    videojs(videoElement.id).src({
+                        src: realUrl,
+                        type: 'application/x-mpegURL'
+                    });
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    // 실패 시 에러 메시지나 이미지를 표시합니다.
+                    console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
+                    videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
+                });
             });
         });
     }
+
+
 
     function loadRestAreas() {
         if (isMarkerClickZoom) {
@@ -202,10 +250,19 @@
         $.ajax({
             url: '${pageContext.request.contextPath}/Controller?type=pjyCctv',
             type: 'GET',
-            data: { swLat: sw.lat, swLng: sw.lng, neLat: ne.lat, neLng: ne.lng },
+            data: {
+                minX: sw.lng,
+                minY: sw.lat,
+                maxX: ne.lng,
+                maxY: ne.lat
+            },
             dataType: 'json'
         }).done(function(data) {
+            console.log("CCTV 데이터 로드 성공:", data);
             addCctvMarkersToMap(data);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("CCTV 데이터 로딩 실패:", textStatus, errorThrown);
+            console.log("서버 응답:", jqXHR.responseText);
         });
     }
 
@@ -213,11 +270,11 @@
         if (isCctvVisible) {
             map.removeLayer(cctvMarkers);
             isCctvVisible = false;
-            $(this).text('CCTV 켜기').css('background-color', '#6c757d');
+            $(this).text('CCTV 켜기').css('background-color', '#6c757d').css('border-color', '#6c757d');
         } else {
             map.addLayer(cctvMarkers);
             isCctvVisible = true;
-            $(this).text('CCTV 끄기').css('background-color', '#007bff');
+            $(this).text('CCTV 끄기').css('background-color', '#007bff').css('border-color', '#007bff');
             loadCctvData();
         }
     });
