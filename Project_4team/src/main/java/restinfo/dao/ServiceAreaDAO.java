@@ -11,7 +11,7 @@ import java.util.Map;
 public class ServiceAreaDAO {
     public static List<ServiceAreaVO> getAll() {
         SqlSession ss = FactoryService.getFactory().openSession();
-        List<ServiceAreaVO> list = ss.selectList("restinfo.all");
+        List<ServiceAreaVO> list = ss.selectList("SA.all");
         ss.close();
 
         return list;
@@ -26,7 +26,7 @@ public class ServiceAreaDAO {
         m.put("lat", lat);  // double 타입
         m.put("lng", lng);  // double 타입
 
-        cnt = ss.update("restinfo.xY", m);
+        cnt = ss.update("SA.xY", m);
         if (cnt > 0) {
             ss.commit();
         } else {
@@ -34,5 +34,27 @@ public class ServiceAreaDAO {
         }
         ss.close();
         return cnt;
+    }
+
+    public static List<ServiceAreaVO> inBounds(double swLat, double swLng, double neLat, double neLng) {
+        Map<String, Double> m = new HashMap<>();
+        m.put("swLat", swLat);
+        m.put("swLng", swLng);
+        m.put("neLat", neLat);
+        m.put("neLng", neLng);
+
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<ServiceAreaVO> list = ss.selectList("SA.inBounds", m);
+        ss.close();
+
+        return list;
+    }
+
+    public static List<ServiceAreaVO> Search(String text) {
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<ServiceAreaVO> list = ss.selectList("SA.searchInsert", text);
+        ss.close();
+        return list;
+
     }
 }
