@@ -15,6 +15,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class KakaoCallbackAction implements Action {
 
@@ -34,6 +38,9 @@ public class KakaoCallbackAction implements Action {
 //        }
 
         String code = request.getParameter("code");
+
+        System.out.println("code = " + code); // 디버깅용 로그
+        
         String accessToken = "";
         String tokenUrl = "https://kauth.kakao.com/oauth/token";
 
@@ -126,6 +133,9 @@ public class KakaoCallbackAction implements Action {
 
                 UserVO vo = new UserVO();
 
+                // 닉네임 만들기
+                makeNickName(vo);
+
                 // 세션에 로그인 정보를 저장합니다.
                 request.getSession().setAttribute("id", String.valueOf(id)); // ID는 Long 타입이므로 문자열로 변환합니다.
                 vo.setID(email);
@@ -134,7 +144,7 @@ public class KakaoCallbackAction implements Action {
                 request.getSession().setAttribute("login_provider", "kakao");
                 request.getSession().setAttribute("access_token", accessToken);
 
-                SignUpDAO.add(email, String.valueOf(id), name, "KAKAO");
+                SignUpDAO.add(email,vo.getNickName(), String.valueOf(id), name, "KAKAO");
             }
             else{
                 request.getSession().setAttribute("loginUser",CheckVO);
@@ -147,5 +157,25 @@ public class KakaoCallbackAction implements Action {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void makeNickName(UserVO vo) {
+
+        // 닉네임을 비교하기 위해 기존의 DB에서 닉네임값들 불러오기
+        List<String> nickNames = SignUpDAO.check("Kakao");
+        Set<Integer> set = new HashSet<>();
+
+        // 각각 닉네임에서 뒤의 숫자만 얻어내기
+        for (int i = 0; i < nickNames.size(); i++) {
+            set.add(Integer.parseInt(nickNames.get(i).substring(5)));
+        }
+
+        int newNumber;
+
+        do { // set구조에 값이 들어갈 때까지(중복되지 않는 수가 들어갈 때까지) 반복
+            newNumber = (int)(Math.random() * 90000) + 10000;  // 10000 ~ 99999
+        } while (set.contains(newNumber));
+
+        vo.setNickName("Kakao" + newNumber);
     }
 }

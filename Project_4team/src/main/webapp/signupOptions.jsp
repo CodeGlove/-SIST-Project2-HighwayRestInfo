@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
           rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="css/register_1.css" rel="stylesheet">
+    <link href="css/register_1.css" rel="stylesheet">    <link href="css/footerStyle.css" rel="stylesheet">
     <style>
         @font-face {
             font-family: 'PretendardVariable';
@@ -28,7 +28,7 @@
 </head>
 <body>
 <!-- Back to Home Link -->
-<a href="index.jsp" class="back-home">
+<a href="Controller" class="back-home">
     <i class="fas fa-arrow-left"></i>
     홈으로 돌아가기
 </a>
@@ -63,7 +63,7 @@
                 // state 값 생성 (네이버와 동일한 로직)
                 String kakaoState = (String) session.getAttribute("kakao_state");
                 if (kakaoState == null) {
-                    SecureRandom randomK = new SecureRandom();
+                    SecureRandom randomK = new SecureRandom(); // math.random과 다른 진짜 규칙을 갖지 않는 난수
                     kakaoState = new BigInteger(130, randomK).toString();
                     session.setAttribute("kakao_state", kakaoState); // 세션에 저장
                     System.out.println("storedStateMY1:"+ kakaoState);
@@ -199,5 +199,6 @@
         });
     });
 </script>
+
 </body>
 </html>
