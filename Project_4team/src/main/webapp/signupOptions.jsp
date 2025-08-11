@@ -63,7 +63,7 @@
                 // state 값 생성 (네이버와 동일한 로직)
                 String kakaoState = (String) session.getAttribute("kakao_state");
                 if (kakaoState == null) {
-                    SecureRandom randomK = new SecureRandom();
+                    SecureRandom randomK = new SecureRandom(); // math.random과 다른 진짜 규칙을 갖지 않는 난수
                     kakaoState = new BigInteger(130, randomK).toString();
                     session.setAttribute("kakao_state", kakaoState); // 세션에 저장
                     System.out.println("storedStateMY1:"+ kakaoState);
