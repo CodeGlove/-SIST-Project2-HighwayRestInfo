@@ -5,6 +5,8 @@
 <head>
   <meta charset="UTF-8">
   <title>휴게소 혼잡도 조회</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="css/footerStyle.css" rel="stylesheet">
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .container { max-width: 800px; margin: auto; }
@@ -39,5 +41,9 @@
   </c:if>
 
 </div>
+
+<!-- Footer Include -->
+<jsp:include page="footer.jsp" />
+
 </body>
 </html>
