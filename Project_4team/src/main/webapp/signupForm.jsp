@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
           rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="css/RegisterStyle.css" rel="stylesheet">
+    <link href="css/RegisterStyle.css" rel="stylesheet">    <link href="css/footerStyle.css" rel="stylesheet">
     <style>
         @font-face {
             font-family: 'PretendardVariable';
@@ -145,7 +145,7 @@
 </head>
 <body>
 <!-- Back to Home Link -->
-<a href="index.jsp" class="back-home">
+<a href="Controller" class="back-home">
     <i class="fas fa-arrow-left"></i>
     홈으로 돌아가기
 </a>
@@ -600,5 +600,7 @@
 
     });
 </script>
+
+
 </body>
 </html>

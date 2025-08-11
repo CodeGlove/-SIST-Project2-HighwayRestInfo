@@ -88,7 +88,6 @@
         #map {
             width: 100%;
             height: 400px;
-            margin-top: 20px;
             border-radius: 4px;
             border: 1px solid #ddd;
         }
@@ -763,7 +762,7 @@
         }
     }
 
-        /**
+    /**
      * Section만 출력하는 Directions API 호출
      *
      * @param {Object} startCoords 출발지 좌표 정보
@@ -772,7 +771,7 @@
     function callDirectionsAPIForSection(startCoords, endCoords) {
         try {
             console.log("Section 추출용 Directions API 호출 시작...");
-            
+
             var params = new URLSearchParams();
             params.append('action', 'directions');
             params.append('startX', startCoords.x);
@@ -789,28 +788,28 @@
                 },
                 body: params.toString()
             })
-            .then(response => response.text())
-            .then(data => {
-                if (data.trim().startsWith('<')) {
-                    showError("서버에서 HTML 응답을 받았습니다.");
-                    return;
-                }
-                
-                try {
-                    var result = JSON.parse(data);
-                    if (result.error) {
-                        showError("Directions API 오류: " + result.error);
-                    } else {
-                        // Section만 출력
-                        showResult(extractOnlySections(result));
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim().startsWith('<')) {
+                        showError("서버에서 HTML 응답을 받았습니다.");
+                        return;
                     }
-                } catch (e) {
-                    showError("응답 파싱 오류: " + e.message);
-                }
-            })
-            .catch(error => {
-                showError("Directions API 요청 오류: " + error.message);
-            });
+
+                    try {
+                        var result = JSON.parse(data);
+                        if (result.error) {
+                            showError("Directions API 오류: " + result.error);
+                        } else {
+                            // Section만 출력
+                            showResult(extractOnlySections(result));
+                        }
+                    } catch (e) {
+                        showError("응답 파싱 오류: " + e.message);
+                    }
+                })
+                .catch(error => {
+                    showError("Directions API 요청 오류: " + error.message);
+                });
 
         } catch (error) {
             showError("Directions API 호출 오류: " + error.message);
@@ -897,27 +896,27 @@
                 },
                 body: params.toString()
             })
-            .then(response => response.text())
-            .then(data => {
-                if (data.trim().startsWith('<')) {
-                    showError("서버에서 HTML 응답을 받았습니다.");
-                    return;
-                }
-                
-                try {
-                    var result = JSON.parse(data);
-                    if (result.error) {
-                        showError("휴게소 검색 오류: " + result.error);
-                    } else {
-                        displayRestAreaResult(result);
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim().startsWith('<')) {
+                        showError("서버에서 HTML 응답을 받았습니다.");
+                        return;
                     }
-                } catch (e) {
-                    showError("응답 파싱 오류: " + e.message);
-                }
-            })
-            .catch(error => {
-                showError("휴게소 검색 요청 오류: " + error.message);
-            });
+
+                    try {
+                        var result = JSON.parse(data);
+                        if (result.error) {
+                            showError("휴게소 검색 오류: " + result.error);
+                        } else {
+                            displayRestAreaResult(result);
+                        }
+                    } catch (e) {
+                        showError("응답 파싱 오류: " + e.message);
+                    }
+                })
+                .catch(error => {
+                    showError("휴게소 검색 요청 오류: " + error.message);
+                });
 
         } catch (error) {
             showError("휴게소 검색 호출 오류: " + error.message);
@@ -931,10 +930,10 @@
      */
     function displayRestAreaResult(searchResult) {
         var resultInfo = "🏪 휴게소 검색 결과:\n\n";
-        
+
         if (searchResult.places && searchResult.places.length > 0) {
             resultInfo += "총 " + searchResult.places.length + "개의 휴게소를 찾았습니다.\n\n";
-            
+
             for (var i = 0; i < searchResult.places.length; i++) {
                 var place = searchResult.places[i];
                 resultInfo += "휴게소 " + (i + 1) + ":\n";
@@ -942,11 +941,11 @@
                 resultInfo += "- 주소: " + place.address + "\n";
                 resultInfo += "- 거리: " + (place.distance / 1000).toFixed(2) + " km\n";
                 resultInfo += "- 카테고리: " + place.category + "\n";
-                
+
                 if (place.roadAddress) {
                     resultInfo += "- 도로명주소: " + place.roadAddress + "\n";
                 }
-                
+
                 resultInfo += "\n";
             }
         } else {
@@ -957,7 +956,7 @@
             resultInfo += "- '고속도로 휴게소'\n";
             resultInfo += "- '주유소'\n";
         }
-        
+
         showResult(resultInfo);
     }
 

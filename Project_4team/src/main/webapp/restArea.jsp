@@ -22,18 +22,19 @@
 
     <!-- CSS 파일 링크 -->
     <link rel="stylesheet" href="css/restareaStyle.css">
+    <link href="css/footerStyle.css" rel="stylesheet">
 </head>
 <body>
 <!-- 헤더 -->
 <header class="header">
     <div class="nav-container">
-        <a href="index.jsp" class="logo">
+        <a href="Controller" class="logo">
             <div class="logo-icon">
                 <i class="fas fa-road"></i>
             </div>
             HighwayGuide
         </a>
-        <a href="kakaoMap.jsp" class="back-btn">
+        <a href="Controller" class="back-btn">
             <i class="fas fa-arrow-left"></i>
             길찾기로 돌아가기
         </a>
@@ -680,5 +681,9 @@
         });
     }
 </script>
+
+<!-- Footer Include -->
+<jsp:include page="footer.jsp" />
+
 </body>
 </html>

@@ -9,130 +9,67 @@ public class RestAreaAction implements Action {
 
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
-        // kakaoMap.jsp에서 전달받은 데이터 처리
-        String restAreasStr = request.getParameter("restAreasStr");
-        String restStopsStr = request.getParameter("restStopsStr");
-        String origin = request.getParameter("origin");
-        String destination = request.getParameter("destination");
-        String distanceStr = request.getParameter("distance");
-        String durationStr = request.getParameter("duration");
-        String taxiFareStr = request.getParameter("taxiFare");
-        String tollFareStr = request.getParameter("tollFare");
-        String restAreaDurationsStr = request.getParameter("restAreaDurations");
-        String restStopDurationsStr = request.getParameter("restStopDurations");
-        String serviceAreaOnlyDurationsStr = request.getParameter("serviceAreaOnlyDurations");
+        // KakaoMapAction에서 setAttribute로 전달받은 데이터 처리
 
-        List<String> restAreas = new ArrayList<>();
-        List<String> restStops = new ArrayList<>();
-        List<Integer> restAreaDurations = new ArrayList<>();
-        List<Integer> restStopDurations = new ArrayList<>();
+        // Attribute에서 직접 List 객체 가져오기
+        @SuppressWarnings("unchecked")
+        List<String> allRestAreas = (List<String>) request.getAttribute("allRestAreas");
+        @SuppressWarnings("unchecked")
+        List<String> restAreas = (List<String>) request.getAttribute("restAreas");
+        @SuppressWarnings("unchecked")
+        List<String> restStops = (List<String>) request.getAttribute("restStops");
+        @SuppressWarnings("unchecked")
+        List<Integer> allRestAreaDurations = (List<Integer>) request.getAttribute("allRestAreaDurations");
+        @SuppressWarnings("unchecked")
+        List<Integer> restAreaDurations = (List<Integer>) request.getAttribute("restAreaDurations");
+        @SuppressWarnings("unchecked")
+        List<Integer> restStopDurations = (List<Integer>) request.getAttribute("restStopDurations");
+
+        // 문자열 데이터 가져오기
+        String allRestAreasStr = (String) request.getAttribute("allRestAreasStr");
+        String restAreasStr = (String) request.getAttribute("restAreasStr");
+        String restStopsStr = (String) request.getAttribute("restStopsStr");
+        String origin = (String) request.getAttribute("origin");
+        String destination = (String) request.getAttribute("destination");
+
+        // 숫자 데이터 가져오기
+        Integer distance = (Integer) request.getAttribute("distance");
+        Integer duration = (Integer) request.getAttribute("duration");
+        Integer taxiFare = (Integer) request.getAttribute("taxiFare");
+        Integer tollFare = (Integer) request.getAttribute("tollFare");
+
+        // 기본값 설정
+        if (allRestAreas == null)
+            allRestAreas = new ArrayList<>();
+        if (restAreas == null)
+            restAreas = new ArrayList<>();
+        if (restStops == null)
+            restStops = new ArrayList<>();
+        if (allRestAreaDurations == null)
+            allRestAreaDurations = new ArrayList<>();
+        if (restAreaDurations == null)
+            restAreaDurations = new ArrayList<>();
+        if (restStopDurations == null)
+            restStopDurations = new ArrayList<>();
+
+        // 통합 방식인지 확인 (allRestAreas가 있으면 통합 방식)
+        boolean isUnifiedMode = (allRestAreas != null && !allRestAreas.isEmpty());
+
+        // serviceAreaOnlyDurations 계산
         List<Integer> serviceAreaOnlyDurations = new ArrayList<>();
+        if (!restAreas.isEmpty() && !restAreaDurations.isEmpty()) {
+            // 첫 번째 휴게소는 출발지부터의 시간
+            if (!restAreaDurations.isEmpty()) {
+                serviceAreaOnlyDurations.add(restAreaDurations.get(0));
+            }
 
-        // 휴게소 문자열을 리스트로 변환
-        if (restAreasStr != null && !restAreasStr.trim().isEmpty()) {
-            String[] areas = restAreasStr.split(", ");
-            for (String area : areas) {
-                if (!area.trim().isEmpty()) {
-                    restAreas.add(area.trim());
-                }
+            // 나머지 휴게소들은 이전 휴게소와의 간격
+            for (int i = 1; i < restAreaDurations.size(); i++) {
+                serviceAreaOnlyDurations.add(restAreaDurations.get(i));
             }
         }
 
-        // 졸음쉼터 문자열을 리스트로 변환
-        if (restStopsStr != null && !restStopsStr.trim().isEmpty()) {
-            String[] stops = restStopsStr.split(", ");
-            for (String stop : stops) {
-                if (!stop.trim().isEmpty()) {
-                    restStops.add(stop.trim());
-                }
-            }
-        }
-
-        // 휴게소 소요시간 문자열을 리스트로 변환
-        if (restAreaDurationsStr != null && !restAreaDurationsStr.trim().isEmpty()) {
-            // 배열 형태 제거 (예: "[18185]" -> "18185")
-            String cleanStr = restAreaDurationsStr.replaceAll("[\\[\\]]", "");
-            String[] durations = cleanStr.split(", ");
-            for (String duration : durations) {
-                if (!duration.trim().isEmpty()) {
-                    try {
-                        restAreaDurations.add(Integer.parseInt(duration.trim()));
-                    } catch (NumberFormatException e) {
-                        System.out.println("휴게소 소요시간 변환 오류: " + e.getMessage() + " (값: " + duration.trim() + ")");
-                    }
-                }
-            }
-        }
-
-        // 졸음쉼터 소요시간 문자열을 리스트로 변환
-        if (restStopDurationsStr != null && !restStopDurationsStr.trim().isEmpty()) {
-            // 배열 형태 제거 (예: "[18185]" -> "18185")
-            String cleanStr = restStopDurationsStr.replaceAll("[\\[\\]]", "");
-            String[] durations = cleanStr.split(", ");
-            for (String duration : durations) {
-                if (!duration.trim().isEmpty()) {
-                    try {
-                        restStopDurations.add(Integer.parseInt(duration.trim()));
-                    } catch (NumberFormatException e) {
-                        System.out.println("졸음쉼터 소요시간 변환 오류: " + e.getMessage() + " (값: " + duration.trim() + ")");
-                    }
-                }
-            }
-        }
-
-        // 휴게소 전용 소요시간 문자열을 리스트로 변환
-        if (serviceAreaOnlyDurationsStr != null && !serviceAreaOnlyDurationsStr.trim().isEmpty()) {
-            String cleanStr = serviceAreaOnlyDurationsStr.replaceAll("[\\[\\]]", "");
-            String[] durations = cleanStr.split(", ");
-            for (String duration : durations) {
-                if (!duration.trim().isEmpty()) {
-                    try {
-                        serviceAreaOnlyDurations.add(Integer.parseInt(duration.trim()));
-                    } catch (NumberFormatException e) {
-                        System.out.println("휴게소 전용 소요시간 변환 오류: " + e.getMessage() + " (값: " + duration.trim() + ")");
-                    }
-                }
-            }
-        }
-
-        // 통합 방식 데이터 처리
-        String allRestAreasStr = request.getParameter("allRestAreasStr");
-        String allRestAreaDurationsStr = request.getParameter("allRestAreaDurations");
-
-        List<String> allRestAreas = new ArrayList<>();
-        List<Integer> allRestAreaDurations = new ArrayList<>();
-
-        // 전체 휴게소/졸음쉼터 문자열을 리스트로 변환
-        if (allRestAreasStr != null && !allRestAreasStr.trim().isEmpty()) {
-            String[] areas = allRestAreasStr.split(", ");
-            for (String area : areas) {
-                if (!area.trim().isEmpty()) {
-                    allRestAreas.add(area.trim());
-                }
-            }
-        }
-
-        // 전체 휴게소/졸음쉼터 소요시간 문자열을 리스트로 변환
-        if (allRestAreaDurationsStr != null && !allRestAreaDurationsStr.trim().isEmpty()) {
-            // 배열 형태 제거 (예: "[18185]" -> "18185")
-            String cleanStr = allRestAreaDurationsStr.replaceAll("[\\[\\]]", "");
-            String[] durations = cleanStr.split(", ");
-            for (String duration : durations) {
-                if (!duration.trim().isEmpty()) {
-                    try {
-                        allRestAreaDurations.add(Integer.parseInt(duration.trim()));
-                    } catch (NumberFormatException e) {
-                        System.out
-                                .println("전체 휴게소/졸음쉼터 소요시간 변환 오류: " + e.getMessage() + " (값: " + duration.trim() + ")");
-                    }
-                }
-            }
-        }
-
-        // 통합 방식인지 확인 (allRestAreasStr이 있으면 통합 방식)
-        boolean isUnifiedMode = (allRestAreasStr != null && !allRestAreasStr.trim().isEmpty());
-
-        // request에 저장
+        // request에 데이터 다시 저장 (JSP에서 사용하기 위해)
         request.setAttribute("isUnifiedMode", isUnifiedMode);
         request.setAttribute("allRestAreas", allRestAreas);
         request.setAttribute("restAreas", restAreas);
@@ -146,58 +83,21 @@ public class RestAreaAction implements Action {
         request.setAttribute("serviceAreaOnlyDurations", serviceAreaOnlyDurations);
         request.setAttribute("origin", origin);
         request.setAttribute("destination", destination);
-
-        // serviceAreaOnlyDurations가 비어있으면 restAreaDurations를 기반으로 임시 계산
-        if (serviceAreaOnlyDurations.isEmpty() && !restAreas.isEmpty() && !restAreaDurations.isEmpty()) {
-            System.out.println("serviceAreaOnlyDurations가 비어있어서 임시 계산 실행");
-
-            // 첫 번째 휴게소는 출발지부터의 시간
-            if (!restAreaDurations.isEmpty()) {
-                serviceAreaOnlyDurations.add(restAreaDurations.get(0));
-            }
-
-            // 나머지 휴게소들은 이전 휴게소와의 간격
-            for (int i = 1; i < restAreaDurations.size(); i++) {
-                serviceAreaOnlyDurations.add(restAreaDurations.get(i));
-            }
-
-            System.out.println("임시 계산된 serviceAreaOnlyDurations: " + serviceAreaOnlyDurations);
-
-            // request에 업데이트된 값 다시 설정
-            request.setAttribute("serviceAreaOnlyDurations", serviceAreaOnlyDurations);
-        }
+        request.setAttribute("distance", distance);
+        request.setAttribute("duration", duration);
+        request.setAttribute("taxiFare", taxiFare);
+        request.setAttribute("tollFare", tollFare);
 
         // 디버깅 로그
         System.out.println("=== RestAreaAction 디버깅 ===");
-        System.out.println("allRestAreasStr: " + allRestAreasStr);
-        System.out.println("restAreasStr: " + restAreasStr);
+        System.out.println("allRestAreas: " + allRestAreas);
         System.out.println("restAreas: " + restAreas);
-        System.out.println("serviceAreaOnlyDurationsStr: " + serviceAreaOnlyDurationsStr);
-        System.out.println("serviceAreaOnlyDurations: " + serviceAreaOnlyDurations);
+        System.out.println("allRestAreaDurations: " + allRestAreaDurations);
+        System.out.println("origin: " + origin);
+        System.out.println("destination: " + destination);
+        System.out.println("distance: " + distance);
+        System.out.println("duration: " + duration);
         System.out.println("=== RestAreaAction 완료 ===");
-
-        // 거리, 시간, 통행료 정보 처리 및 저장
-        try {
-            if (distanceStr != null && !distanceStr.trim().isEmpty()) {
-                int distance = Integer.parseInt(distanceStr);
-                request.setAttribute("distance", distance);
-            }
-            if (durationStr != null && !durationStr.trim().isEmpty()) {
-                int duration = Integer.parseInt(durationStr);
-                request.setAttribute("duration", duration);
-            }
-            if (taxiFareStr != null && !taxiFareStr.trim().isEmpty()) {
-                int taxiFare = Integer.parseInt(taxiFareStr);
-                request.setAttribute("taxiFare", taxiFare);
-            }
-            if (tollFareStr != null && !tollFareStr.trim().isEmpty()) {
-                int tollFare = Integer.parseInt(tollFareStr);
-                request.setAttribute("tollFare", tollFare);
-            }
-        } catch (NumberFormatException e) {
-            // 숫자 변환 실패 시 기본값 사용
-            System.out.println("숫자 변환 오류: " + e.getMessage());
-        }
 
         return "restArea.jsp";
     }

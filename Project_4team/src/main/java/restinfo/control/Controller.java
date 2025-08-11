@@ -111,7 +111,19 @@ public class Controller extends HttpServlet {
         // 3. 담당자에게 실제 작업 실행을 시킴
         String viewPath = action.execute(request, response);
 
-        // 4. viewPath가 null이 아닐 경우에만 페이지 이동(forward)
+        // 4. 특별한 경우 처리: KakaoMapAction에서 RestAreaAction으로 포워딩
+        if ("FORWARD_TO_RESTAREA".equals(viewPath)) {
+            // RestAreaAction을 실행
+            Action restAreaAction = actionMap.get("restArea");
+            if (restAreaAction != null) {
+                viewPath = restAreaAction.execute(request, response);
+            } else {
+                // RestAreaAction이 없으면 에러 페이지로
+                viewPath = "error.jsp";
+            }
+        }
+
+        // 5. viewPath가 null이 아닐 경우에만 페이지 이동(forward)
         // (AJAX 통신은 null을 리턴하므로 이 부분은 실행되지 않음)
         if (viewPath != null) {
             RequestDispatcher disp = request.getRequestDispatcher(viewPath);

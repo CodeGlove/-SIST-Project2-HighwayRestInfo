@@ -19,491 +19,410 @@ import java.util.Map;
 
 public class KakaoMapAction implements Action {
 
-	@Override
-	public String execute(HttpServletRequest request, HttpServletResponse response)
-			throws UnsupportedEncodingException {
-		// POST 요청 처리
-		if ("POST".equalsIgnoreCase(request.getMethod())) {
-			// 폼에서 입력받은 데이터 추출
-			String origin = request.getParameter("origin");
-			String destination = request.getParameter("destination");
-			String waypoints = request.getParameter("waypoints");
-			String priority = request.getParameter("priority");
-
-			// 필수 입력값 검증
-			if (origin != null && destination != null && !origin.trim().isEmpty() && !destination.trim().isEmpty()) {
-				try {
-					// 카카오 API 키 설정
-					String apiKey = "2bb9195b03b5b17418309109544a85c4";
-
-					// 1단계: 주소를 좌표로 변환
-					String originCoords = getCoordinates(origin.trim(), apiKey);
-					String destinationCoords = getCoordinates(destination.trim(), apiKey);
-
-					// 좌표 변환 실패 시 에러 메시지 표시
-					if (originCoords == null || destinationCoords == null) {
-						request.setAttribute("error", "주소 변환 실패");
-						request.setAttribute("errorMessage", "입력한 주소를 좌표로 변환할 수 없습니다. 정확한 주소를 입력해주세요.");
-						return "kakaoMap.jsp";
-					}
-
-					// 2단계: 경유지 좌표 변환 (선택사항)
-					String waypointsCoords = null;
-					if (waypoints != null && !waypoints.trim().isEmpty()) {
-						// |로 구분된 경유지 주소들을 배열로 분리
-						String[] waypointAddresses = waypoints.split("\\|");
-						StringBuilder waypointsBuilder = new StringBuilder();
-
-						// 각 경유지 주소를 좌표로 변환
-						for (int i = 0; i < waypointAddresses.length; i++) {
-							String waypointCoords = getCoordinates(waypointAddresses[i].trim(), apiKey);
-							if (waypointCoords != null) {
-								if (waypointsBuilder.length() > 0) {
-									waypointsBuilder.append("|");
-								}
-								waypointsBuilder.append(waypointCoords);
-							}
-						}
-
-						if (waypointsBuilder.length() > 0) {
-							waypointsCoords = waypointsBuilder.toString();
-						}
-					}
-
-					// 3단계: 변환된 좌표 정보를 request에 저장
-					request.setAttribute("origin", origin);
-					request.setAttribute("originCoords", originCoords);
-					request.setAttribute("destination", destination);
-					request.setAttribute("destinationCoords", destinationCoords);
-					if (waypointsCoords != null) {
-						request.setAttribute("waypoints", waypoints);
-						request.setAttribute("waypointsCoords", waypointsCoords);
-					}
-
-					// 4단계: 카카오 모빌리티 길찾기 API URL 구성
-					StringBuilder urlBuilder = new StringBuilder();
-					urlBuilder.append("https://apis-navi.kakaomobility.com/v1/directions");
-					urlBuilder.append("?origin=").append(URLEncoder.encode(originCoords, StandardCharsets.UTF_8));
-					urlBuilder.append("&destination=")
-							.append(URLEncoder.encode(destinationCoords, StandardCharsets.UTF_8));
-
-					// 경유지가 있는 경우 URL에 추가
-					if (waypointsCoords != null && !waypointsCoords.trim().isEmpty()) {
-						urlBuilder.append("&waypoints=")
-								.append(URLEncoder.encode(waypointsCoords, StandardCharsets.UTF_8));
-					}
-
-					// 우선순위가 설정된 경우 URL에 추가
-					if (priority != null && !priority.trim().isEmpty()) {
-						urlBuilder.append("&priority=").append(priority);
-					}
-
-					// 추가 파라미터들 설정
-					urlBuilder.append("&summary=false"); // 상세 정보 포함
-					urlBuilder.append("&car_fuel=GASOLINE"); // 연료 타입
-					urlBuilder.append("&car_hipass=false"); // 하이패스 사용 여부
-					urlBuilder.append("&alternatives=false"); // 대안 경로 없음
-					urlBuilder.append("&road_details=false"); // 도로 상세 정보 없음
-
-					// 5단계: HTTP 연결 설정 및 API 호출
-					URL url = new URL(urlBuilder.toString());
-					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-					// HTTP 헤더 설정
-					conn.setRequestMethod("GET");
-					conn.setRequestProperty("Authorization", "KakaoAK " + apiKey);
-					conn.setRequestProperty("Content-Type", "application/json");
-
-					// 6단계: 응답 읽기
-					int responseCode = conn.getResponseCode();
-					System.out.println(responseCode);
-					BufferedReader in;
-
-					// 성공/실패에 따라 적절한 스트림 선택
-					if (responseCode >= 200 && responseCode < 300) {
-						in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-					} else {
-						in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-					}
-
-					// 응답 데이터 읽기
-					String inputLine;
-					StringBuilder response2 = new StringBuilder();
-					while ((inputLine = in.readLine()) != null) {
-						response2.append(inputLine);
-					}
-					in.close();
-					conn.disconnect();
-
-					// 7단계: 성공 응답 처리 및 결과 표시
-					if (responseCode >= 200 && responseCode < 300) {
-						String responseText = response2.toString();
-
-						try {
-							// JSON 파싱
-							JSONObject jsonResponse = new JSONObject(responseText);
-
-							// 8단계: 요약 정보 표시
-							if (jsonResponse.has("routes") && jsonResponse.getJSONArray("routes").length() > 0) {
-								JSONObject route = jsonResponse.getJSONArray("routes").getJSONObject(0);
-								// guides 배열에서 name 값들을 추출 (휴게소와 졸음쉼터를 순서대로 합쳐서 저장)
-								List<String> allRestAreas = new ArrayList<>(); // 모든 휴게소/졸음쉼터 리스트 (순서대로)
-								List<String> restAreas = new ArrayList<>(); // 휴게소 리스트
-								List<String> restStops = new ArrayList<>(); // 졸음쉼터 리스트
-								JSONArray sections = jsonResponse.getJSONArray("routes").getJSONObject(0)
-										.getJSONArray("sections");
-
-								for (int i = 0; i < sections.length(); i++) {
-									JSONObject section = sections.getJSONObject(i);
-									if (section.has("guides")) {
-										JSONArray guides = section.getJSONArray("guides");
-										for (int j = 0; j < guides.length(); j++) {
-											JSONObject guide = guides.getJSONObject(j);
-											if (guide.has("name") && !guide.getString("name").isEmpty()) {
-												String guideName = guide.getString("name");
-												System.out.println("발견된 guide name: " + guideName); // 디버깅용
-												// 휴게소와 졸음쉼터를 구분하여 저장하면서 순서대로 allRestAreas에도 추가
-												if (guideName.contains("휴게소") || guideName.contains("서비스") ||
-														guideName.contains("REST") || guideName.contains("SERVICE")) {
-													restAreas.add(guideName);
-													allRestAreas.add(guideName);
-													System.out.println("휴게소 추가: " + guideName); // 디버깅용
-												} else if (guideName.contains("졸음쉼터")) {
-													restStops.add(guideName);
-													allRestAreas.add(guideName);
-													System.out.println("졸음쉼터 추가: " + guideName); // 디버깅용
-												}
-											}
-										}
-									}
-								}
-
-								// 모든 휴게소/졸음쉼터의 소요시간 계산
-								List<Integer> allRestAreaDurations = calculateDurationsToRestAreas(sections,
-										allRestAreas);
-								List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
-								List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
-
-								// 휴게소만의 소요시간은 RestAreaAction에서 처리
-
-								// 각각의 리스트를 문자열로 변환
-								String allRestAreasStr = String.join(", ", allRestAreas);
-								String restAreasStr = String.join(", ", restAreas);
-								String restStopsStr = String.join(", ", restStops);
-
-								// 소요시간 리스트를 문자열로 변환 (배열 형태 제거)
-								String allRestAreaDurationsStr = "";
-								if (!allRestAreaDurations.isEmpty()) {
-									StringBuilder sb = new StringBuilder();
-									for (int i = 0; i < allRestAreaDurations.size(); i++) {
-										if (i > 0)
-											sb.append(", ");
-										sb.append(allRestAreaDurations.get(i));
-									}
-									allRestAreaDurationsStr = sb.toString();
-								}
-
-								String restAreaDurationsStr = "";
-								if (!restAreaDurations.isEmpty()) {
-									StringBuilder sb = new StringBuilder();
-									for (int i = 0; i < restAreaDurations.size(); i++) {
-										if (i > 0)
-											sb.append(", ");
-										sb.append(restAreaDurations.get(i));
-									}
-									restAreaDurationsStr = sb.toString();
-								}
-
-								String restStopDurationsStr = "";
-								if (!restStopDurations.isEmpty()) {
-									StringBuilder sb = new StringBuilder();
-									for (int i = 0; i < restStopDurations.size(); i++) {
-										if (i > 0)
-											sb.append(", ");
-										sb.append(restStopDurations.get(i));
-									}
-									restStopDurationsStr = sb.toString();
-								}
-
-								// 디버깅용 로그 출력
-								System.out.println("=== 휴게소 추출 결과 ===");
-								System.out.println("전체 휴게소/졸음쉼터 개수: " + allRestAreas.size());
-								System.out.println("휴게소 개수: " + restAreas.size());
-								System.out.println("졸음쉼터 개수: " + restStops.size());
-								System.out.println("전체 휴게소/졸음쉼터 목록: " + allRestAreasStr);
-								System.out.println("휴게소 목록: " + restAreasStr);
-								System.out.println("졸음쉼터 목록: " + restStopsStr);
-								System.out.println("전체 휴게소/졸음쉼터까지 소요시간: " + allRestAreaDurations);
-								System.out.println("휴게소까지 소요시간: " + restAreaDurations);
-								System.out.println("졸음쉼터까지 소요시간: " + restStopDurations);
-								System.out.println("========================");
-
-								// request에 저장
-								request.setAttribute("allRestAreas", allRestAreas);
-								request.setAttribute("restAreas", restAreas);
-								request.setAttribute("restStops", restStops);
-								request.setAttribute("allRestAreasStr", allRestAreasStr);
-								request.setAttribute("restAreasStr", restAreasStr);
-								request.setAttribute("restStopsStr", restStopsStr);
-								request.setAttribute("allRestAreaDurations", allRestAreaDurations);
-								request.setAttribute("restAreaDurations", restAreaDurations);
-								request.setAttribute("restStopDurations", restStopDurations);
-
-								request.setAttribute("origin", origin);
-								request.setAttribute("destination", destination);
-
-								// 거리, 시간, 통행료 정보 저장
-								if (route.has("summary")) {
-									JSONObject summary = route.getJSONObject("summary");
-									request.setAttribute("distance", summary.optInt("distance", 0));
-									request.setAttribute("duration", summary.optInt("duration", 0));
-
-									if (summary.has("fare")) {
-										JSONObject fare = summary.getJSONObject("fare");
-										request.setAttribute("taxiFare", fare.optInt("taxi", 0));
-										request.setAttribute("tollFare", fare.optInt("toll", 0));
-									}
-								}
-								if (route.has("summary")) {
-									JSONObject summary = route.getJSONObject("summary");
-
-									// 요약 정보를 개별 속성으로 request에 저장
-									request.setAttribute("summary", summary);
-									request.setAttribute("distance", summary.optInt("distance", 0));
-									request.setAttribute("duration", summary.optInt("duration", 0));
-
-									// fare 정보도 개별로 저장
-									if (summary.has("fare")) {
-										JSONObject fare = summary.getJSONObject("fare");
-										request.setAttribute("taxiFare", fare.optInt("taxi", 0));
-										request.setAttribute("tollFare", fare.optInt("toll", 0));
-									}
-
-									// 9단계: 상세 경로 정보 표시
-									if (route.has("sections")) {
-										JSONArray sectionsJson = route.getJSONArray("sections");
-										List<Map<String, Object>> sectionsList = new ArrayList<>();
-
-										// JSONArray를 List<Map>으로 변환
-										for (int i = 0; i < sectionsJson.length(); i++) {
-											JSONObject sectionJson = sectionsJson.getJSONObject(i);
-											Map<String, Object> sectionMap = new HashMap<>();
-
-											// 기본 정보
-											sectionMap.put("distance", sectionJson.optInt("distance", 0));
-											sectionMap.put("duration", sectionJson.optInt("duration", 0));
-
-											// roads 정보가 있는 경우
-											if (sectionJson.has("roads")) {
-												JSONArray roadsJson = sectionJson.getJSONArray("roads");
-												List<Map<String, Object>> roadsList = new ArrayList<>();
-
-												for (int j = 0; j < roadsJson.length(); j++) {
-													JSONObject roadJson = roadsJson.getJSONObject(j);
-													Map<String, Object> roadMap = new HashMap<>();
-													roadMap.put("name", roadJson.optString("name", ""));
-													roadMap.put("distance", roadJson.optInt("distance", 0));
-													roadsList.add(roadMap);
-												}
-
-												sectionMap.put("roads", roadsList);
-											}
-
-											sectionsList.add(sectionMap);
-										}
-
-										request.setAttribute("sections", sectionsList);
-									}
-								}
-							}
-
-							// 10단계: 전체 JSON 응답 저장 (디버깅용)
-							request.setAttribute("jsonResponse", jsonResponse);
-
-						} catch (Exception jsonException) {
-							// JSON 파싱 오류 처리
-							request.setAttribute("error", "JSON 파싱 오류");
-							request.setAttribute("errorMessage", jsonException.getMessage());
-							request.setAttribute("responseLength", responseText.length());
-						}
-					} else {
-						// API 호출 실패 처리
-						request.setAttribute("error", "API 호출 실패");
-						request.setAttribute("responseCode", responseCode);
-						request.setAttribute("errorResponse", response2.toString());
-					}
-
-				} catch (Exception e) {
-					// 전체 예외 처리
-					request.setAttribute("error", "오류 발생");
-					request.setAttribute("errorMessage", e.getMessage());
-				}
-			} else {
-				// 필수 입력값 누락 처리
-				request.setAttribute("error", "입력 오류");
-				request.setAttribute("errorMessage", "출발지와 목적지를 모두 입력해주세요.");
-			}
-		}
-
-		return "kakaoMap.jsp";
-	}
-
-	/**
-	 * 주소를 좌표로 변환하는 메서드
-	 *
-	 * @param address 변환할 주소 (한글)
-	 * @param apiKey  카카오 API 키
-	 * @return "경도,위도" 형태의 좌표 문자열, 실패시 null
-	 */
-	private String getCoordinates(String address, String apiKey) {
-		// 1단계: 실제 카카오 Geocoding API 호출
-		try {
-			// 주소를 UTF-8로 URL 인코딩
-			String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
-			// 카카오 로컬 API 주소 검색 엔드포인트
-			String geocodingUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + encodedAddress;
-
-			// HTTP 연결 설정
-			URL url = new URL(geocodingUrl);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Authorization", "KakaoAK " + apiKey);
-
-			// 응답 코드 확인
-			int responseCode = conn.getResponseCode();
-			BufferedReader in;
-
-			// 성공/실패에 따라 적절한 스트림 선택
-			if (responseCode >= 200 && responseCode < 300) {
-				in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-			} else {
-				in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-			}
-
-			// 응답 데이터 읽기
-			String inputLine;
-			StringBuilder response = new StringBuilder();
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-			in.close();
-			conn.disconnect();
-
-			// 성공 응답인 경우 JSON 파싱
-			if (responseCode >= 200 && responseCode < 300) {
-				JSONObject jsonResponse = new JSONObject(response.toString());
-				// documents 배열이 있고 첫 번째 결과가 있는지 확인
-				if (jsonResponse.has("documents") && jsonResponse.getJSONArray("documents").length() > 0) {
-					JSONObject document = jsonResponse.getJSONArray("documents").getJSONObject(0);
-					String x = document.getString("x"); // 경도
-					String y = document.getString("y"); // 위도
-					return x + "," + y; // "경도,위도" 형태로 반환
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		// 2단계: API 호출 실패 시 하드코딩된 좌표 사용 (백업)
-		if (address.contains("강남") || address.contains("테헤란로") || address.contains("강남역")) {
-			return "127.0276,37.4979"; // 강남역 근처 좌표
-		} else if (address.contains("서초") || address.contains("서초대로")) {
-			return "127.0075,37.5013"; // 서초역 근처 좌표
-		} else if (address.contains("서울역")) {
-			return "126.9707,37.5547"; // 서울역 좌표
-		} else if (address.contains("홍대입구")) {
-			return "126.9242,37.5572"; // 홍대입구역 좌표
-		} else if (address.contains("역")) {
-			return "127.0276,37.4979"; // 역이 포함된 경우 강남역으로 처리
-		}
-
-		return null; // 모든 방법이 실패한 경우
-	}
-
-	/**
-	 * 휴게소/졸음쉼터 간의 소요시간을 계산하는 메서드
-	 *
-	 * @param sections  경로의 sections 배열
-	 * @param restAreas 휴게소/졸음쉼터 이름 리스트
-	 * @return 각 휴게소/졸음쉼터 간의 소요시간 리스트 (초 단위)
-	 */
-	private List<Integer> calculateDurationsToRestAreas(JSONArray sections, List<String> restAreas) {
-		List<Integer> durations = new ArrayList<>();
-		Map<String, Integer> restAreaDurations = new HashMap<>(); // 휴게소별 소요시간 저장
-		List<String> foundRestAreas = new ArrayList<>(); // 발견된 순서대로 저장
-		int currentDuration = 0; // 누적 소요시간
-		int lastRestAreaDuration = 0; // 이전 휴게소까지의 소요시간
-
-		System.out.println("=== 소요시간 계산 디버깅 ===");
-		System.out.println("찾을 휴게소/졸음쉼터 목록: " + restAreas);
-
-		// 모든 sections의 guides를 순서대로 확인하면서 휴게소/졸음쉼터 발견 시 소요시간 계산
-		for (int i = 0; i < sections.length(); i++) {
-			JSONObject section = sections.getJSONObject(i);
-
-			if (section.has("guides")) {
-				JSONArray guides = section.getJSONArray("guides");
-				for (int j = 0; j < guides.length(); j++) {
-					JSONObject guide = guides.getJSONObject(j);
-
-					// 각 guide의 duration을 누적
-					int guideDuration = guide.optInt("duration", 0);
-					currentDuration += guideDuration;
-
-					if (guide.has("name") && !guide.getString("name").isEmpty()) {
-						String guideName = guide.getString("name");
-
-						// 현재 guide가 휴게소/졸음쉼터인지 확인
-						boolean isRestArea = false;
-						if (restAreas.contains(guideName)) {
-							isRestArea = true;
-						} else if (guideName.contains("휴게소") || guideName.contains("서비스") ||
-								guideName.contains("REST") || guideName.contains("SERVICE")) {
-							isRestArea = true;
-						} else if (guideName.contains("졸음쉼터")) {
-							isRestArea = true;
-						}
-
-						// 휴게소/졸음쉼터를 발견한 경우
-						if (isRestArea && restAreas.contains(guideName)) {
-							// 이미 발견된 휴게소가 아닌 경우에만 처리
-							if (!foundRestAreas.contains(guideName)) {
-								foundRestAreas.add(guideName);
-
-								// 첫 번째 휴게소는 출발지부터의 소요시간
-								if (foundRestAreas.size() == 1) {
-									restAreaDurations.put(guideName, currentDuration);
-									System.out.println(
-											"첫 번째 발견! 출발지 → '" + guideName + "'까지 소요시간: " + currentDuration + "초");
-								} else {
-									// 두 번째 휴게소부터는 이전 휴게소부터의 소요시간
-									int segmentDuration = currentDuration - lastRestAreaDuration;
-									restAreaDurations.put(guideName, segmentDuration);
-									System.out.println("'" + foundRestAreas.get(foundRestAreas.size() - 2) + "' → '"
-											+ guideName + "'까지 소요시간: " + segmentDuration + "초");
-								}
-
-								lastRestAreaDuration = currentDuration;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// restAreas 리스트의 순서대로 소요시간을 반환
-		for (String restArea : restAreas) {
-			if (restAreaDurations.containsKey(restArea)) {
-				durations.add(restAreaDurations.get(restArea));
-				System.out.println("최종 결과 - '" + restArea + "': " + restAreaDurations.get(restArea) + "초");
-			} else {
-				durations.add(0);
-				System.out.println("경고: '" + restArea + "'를 경로에서 찾을 수 없습니다.");
-			}
-		}
-
-		System.out.println("=== 디버깅 완료 ===");
-		return durations;
-	}
+    @Override
+    public String execute(HttpServletRequest request, HttpServletResponse response)
+            throws UnsupportedEncodingException {
+        String origin = request.getParameter("origin");
+        String destination = request.getParameter("destination");
+        String waypoints = request.getParameter("waypoints");
+        String priority = request.getParameter("priority");
+        // 요청 후 어떤 Action으로 포워딩할지 결정하는 파라미터
+        // "restArea"인 경우 RestAreaAction으로 자동 포워딩됨
+        String forwardTo = request.getParameter("forwardTo");
+
+        try {
+            // 카카오 API 키 설정
+            String apiKey = "2bb9195b03b5b17418309109544a85c4";
+
+            // 주소를 좌표로 변환
+            String originCoords = getCoordinates(origin.trim(), apiKey);
+            String destinationCoords = getCoordinates(destination.trim(), apiKey);
+
+            if (originCoords == null || destinationCoords == null) {
+                // 에러 정보를 request에 저장
+                request.setAttribute("error", "주소 변환 실패");
+                request.setAttribute("errorMessage", "입력한 주소를 좌표로 변환할 수 없습니다. 정확한 주소를 입력해주세요.");
+                request.setAttribute("origin", origin);
+                request.setAttribute("destination", destination);
+                // forwardTo와 관계없이 index.jsp로 돌아가기
+                return "index.jsp";
+            }
+            // 경유지 좌표 변환
+            String waypointsCoords = processWaypoints(waypoints, apiKey);
+            // 카카오 모빌리티 API 호출
+            JSONObject routeData = callKakaoMobilityAPI(originCoords, destinationCoords, waypointsCoords, priority,
+                    apiKey);
+            // 경로 데이터 처리 및 저장
+            processRouteData(request, routeData, origin, destination, waypoints, waypointsCoords);
+
+            // forwardTo가 "restArea"이면 RestAreaAction으로 포워딩
+            if ("restArea".equalsIgnoreCase(forwardTo)) {
+                // 특별한 문자열을 반환하여 Controller가 RestAreaAction을 실행하도록 함
+                // Controller에서 이 문자열을 받으면 RestAreaAction을 실행
+                // 데이터는 이미 processRouteData에서 request에 저장됨
+                return "FORWARD_TO_RESTAREA";
+            }
+
+            // 일반적인 경우 (forwardTo가 없거나 다른 값)에는 Controller로 이동
+            return "Controller";
+
+        } catch (Exception e) {
+            if ("restArea".equalsIgnoreCase(forwardTo)) {
+                sendJsonError(response, 500, "서버 오류", "요청 처리 중 오류가 발생했습니다.");
+                return null;
+            }
+            request.setAttribute("error", "서버 오류");
+            request.setAttribute("errorMessage", e.getMessage());
+            return "Controller";
+        }
+    }
+
+    // 입력값 검증
+    private boolean isValidInput(String origin, String destination) {
+        return origin != null && destination != null &&
+                !origin.trim().isEmpty() && !destination.trim().isEmpty();
+    }
+
+    // JSON 에러 응답 전송
+    private void sendJsonError(HttpServletResponse response, int status, String error, String message) {
+        response.setStatus(status);
+        response.setContentType("application/json; charset=UTF-8");
+        try {
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("error", error);
+            errorJson.put("message", message);
+            response.getWriter().write(errorJson.toString());
+            response.getWriter().flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 경유지 처리
+    private String processWaypoints(String waypoints, String apiKey) {
+        if (waypoints == null || waypoints.trim().isEmpty()) {
+            return null;
+        }
+
+        String[] waypointAddresses = waypoints.split("\\|");
+        StringBuilder waypointsBuilder = new StringBuilder();
+
+        for (String waypointAddress : waypointAddresses) {
+            String waypointCoords = getCoordinates(waypointAddress.trim(), apiKey);
+            if (waypointCoords != null) {
+                if (waypointsBuilder.length() > 0) {
+                    waypointsBuilder.append("|");
+                }
+                waypointsBuilder.append(waypointCoords);
+            }
+        }
+
+        return waypointsBuilder.length() > 0 ? waypointsBuilder.toString() : null;
+    }
+
+    // 카카오 모빌리티 API 호출
+    private JSONObject callKakaoMobilityAPI(String originCoords, String destinationCoords,
+            String waypointsCoords, String priority, String apiKey) {
+        try {
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append("https://apis-navi.kakaomobility.com/v1/directions");
+            urlBuilder.append("?origin=").append(URLEncoder.encode(originCoords, StandardCharsets.UTF_8));
+            urlBuilder.append("&destination=").append(URLEncoder.encode(destinationCoords, StandardCharsets.UTF_8));
+
+            if (waypointsCoords != null && !waypointsCoords.trim().isEmpty()) {
+                urlBuilder.append("&waypoints=").append(URLEncoder.encode(waypointsCoords, StandardCharsets.UTF_8));
+            }
+
+            if (priority != null && !priority.trim().isEmpty()) {
+                urlBuilder.append("&priority=").append(priority);
+            }
+
+            urlBuilder
+                    .append("&summary=false&car_fuel=GASOLINE&car_hipass=false&alternatives=false&road_details=false");
+
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "KakaoAK " + apiKey);
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            int responseCode = conn.getResponseCode();
+            BufferedReader in;
+
+            if (responseCode >= 200 && responseCode < 300) {
+                in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            } else {
+                in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+            }
+
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            conn.disconnect();
+
+            if (responseCode >= 200 && responseCode < 300) {
+                return new JSONObject(response.toString());
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // 경로 데이터 처리
+    private void processRouteData(HttpServletRequest request, JSONObject routeData,
+            String origin, String destination, String waypoints, String waypointsCoords) {
+        try {
+            if (routeData.has("routes") && routeData.getJSONArray("routes").length() > 0) {
+                JSONObject route = routeData.getJSONArray("routes").getJSONObject(0);
+                JSONArray sections = route.getJSONArray("sections");
+
+                // 휴게소 정보 추출
+                List<String> allRestAreas = new ArrayList<>();
+                List<String> restAreas = new ArrayList<>();
+                List<String> restStops = new ArrayList<>();
+
+                extractRestAreas(sections, allRestAreas, restAreas, restStops);
+
+                // 소요시간 계산
+                List<Integer> allRestAreaDurations = calculateDurationsToRestAreas(sections, allRestAreas);
+                List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
+                List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
+
+                // request에 데이터 저장
+                saveRouteDataToRequest(request, route, sections, allRestAreas, restAreas, restStops,
+                        allRestAreaDurations, restAreaDurations, restStopDurations,
+                        origin, destination, waypoints, waypointsCoords, routeData);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 휴게소 정보 추출
+    private void extractRestAreas(JSONArray sections, List<String> allRestAreas,
+            List<String> restAreas, List<String> restStops) {
+        for (int i = 0; i < sections.length(); i++) {
+            JSONObject section = sections.getJSONObject(i);
+            if (section.has("guides")) {
+                JSONArray guides = section.getJSONArray("guides");
+                for (int j = 0; j < guides.length(); j++) {
+                    JSONObject guide = guides.getJSONObject(j);
+                    if (guide.has("name") && !guide.getString("name").isEmpty()) {
+                        String guideName = guide.getString("name");
+
+                        if (guideName.contains("휴게소") || guideName.contains("서비스") ||
+                                guideName.contains("REST") || guideName.contains("SERVICE")) {
+                            restAreas.add(guideName);
+                            allRestAreas.add(guideName);
+                        } else if (guideName.contains("졸음쉼터")) {
+                            restStops.add(guideName);
+                            allRestAreas.add(guideName);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // request에 경로 데이터 저장
+    private void saveRouteDataToRequest(HttpServletRequest request, JSONObject route, JSONArray sections,
+            List<String> allRestAreas, List<String> restAreas, List<String> restStops,
+            List<Integer> allRestAreaDurations, List<Integer> restAreaDurations,
+            List<Integer> restStopDurations, String origin, String destination,
+            String waypoints, String waypointsCoords, JSONObject routeData) {
+
+        // 기본 정보
+        request.setAttribute("origin", origin);
+        request.setAttribute("destination", destination);
+        request.setAttribute("waypoints", waypoints);
+        request.setAttribute("waypointsCoords", waypointsCoords);
+
+        // 휴게소 정보
+        request.setAttribute("allRestAreas", allRestAreas);
+        request.setAttribute("restAreas", restAreas);
+        request.setAttribute("restStops", restStops);
+        request.setAttribute("allRestAreasStr", String.join(", ", allRestAreas));
+        request.setAttribute("restAreasStr", String.join(", ", restAreas));
+        request.setAttribute("restStopsStr", String.join(", ", restStops));
+
+        // 소요시간 정보
+        request.setAttribute("allRestAreaDurations", allRestAreaDurations);
+        request.setAttribute("restAreaDurations", restAreaDurations);
+        request.setAttribute("restStopDurations", restStopDurations);
+
+        // 요약 정보
+        if (route.has("summary")) {
+            JSONObject summary = route.getJSONObject("summary");
+            request.setAttribute("summary", summary);
+            request.setAttribute("distance", summary.optInt("distance", 0));
+            request.setAttribute("duration", summary.optInt("duration", 0));
+
+            if (summary.has("fare")) {
+                JSONObject fare = summary.getJSONObject("fare");
+                request.setAttribute("taxiFare", fare.optInt("taxi", 0));
+                request.setAttribute("tollFare", fare.optInt("toll", 0));
+            }
+        }
+
+        // 상세 경로 정보
+        if (route.has("sections")) {
+            request.setAttribute("sections", convertSectionsToMap(sections));
+        }
+
+        // 전체 JSON 응답 (디버깅용)
+        request.setAttribute("jsonResponse", routeData);
+    }
+
+    // sections를 Map으로 변환
+    private List<Map<String, Object>> convertSectionsToMap(JSONArray sections) {
+        List<Map<String, Object>> sectionsList = new ArrayList<>();
+
+        for (int i = 0; i < sections.length(); i++) {
+            JSONObject sectionJson = sections.getJSONObject(i);
+            Map<String, Object> sectionMap = new HashMap<>();
+
+            sectionMap.put("distance", sectionJson.optInt("distance", 0));
+            sectionMap.put("duration", sectionJson.optInt("duration", 0));
+
+            if (sectionJson.has("roads")) {
+                JSONArray roadsJson = sectionJson.getJSONArray("roads");
+                List<Map<String, Object>> roadsList = new ArrayList<>();
+
+                for (int j = 0; j < roadsJson.length(); j++) {
+                    JSONObject roadJson = roadsJson.getJSONObject(j);
+                    Map<String, Object> roadMap = new HashMap<>();
+                    roadMap.put("name", roadJson.optString("name", ""));
+                    roadMap.put("distance", roadJson.optInt("distance", 0));
+                    roadsList.add(roadMap);
+                }
+
+                sectionMap.put("roads", roadsList);
+            }
+
+            sectionsList.add(sectionMap);
+        }
+
+        return sectionsList;
+    }
+
+    /**
+     * 주소를 좌표로 변환하는 메서드
+     *
+     * @param address 변환할 주소 (한글)
+     * @param apiKey  카카오 API 키
+     * @return "경도,위도" 형태의 좌표 문자열, 실패시 null
+     */
+    private String getCoordinates(String address, String apiKey) {
+        try {
+            String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+            String geocodingUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + encodedAddress;
+
+            URL url = new URL(geocodingUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "KakaoAK " + apiKey);
+
+            int responseCode = conn.getResponseCode();
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            conn.disconnect();
+
+            if (responseCode >= 200 && responseCode < 300) {
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                if (jsonResponse.has("documents") && jsonResponse.getJSONArray("documents").length() > 0) {
+                    JSONObject document = jsonResponse.getJSONArray("documents").getJSONObject(0);
+                    String x = document.getString("x");
+                    String y = document.getString("y");
+                    return x + "," + y;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * 휴게소/졸음쉼터 간의 소요시간을 계산하는 메서드
+     *
+     * @param sections  경로의 sections 배열
+     * @param restAreas 휴게소/졸음쉼터 이름 리스트
+     * @return 각 휴게소/졸음쉼터 간의 소요시간 리스트 (초 단위)
+     */
+    private List<Integer> calculateDurationsToRestAreas(JSONArray sections, List<String> restAreas) {
+        List<Integer> durations = new ArrayList<>();
+        Map<String, Integer> restAreaDurations = new HashMap<>();
+        List<String> foundRestAreas = new ArrayList<>();
+        int currentDuration = 0;
+        int lastRestAreaDuration = 0;
+
+        for (int i = 0; i < sections.length(); i++) {
+            JSONObject section = sections.getJSONObject(i);
+
+            if (section.has("guides")) {
+                JSONArray guides = section.getJSONArray("guides");
+                for (int j = 0; j < guides.length(); j++) {
+                    JSONObject guide = guides.getJSONObject(j);
+
+                    int guideDuration = guide.optInt("duration", 0);
+                    currentDuration += guideDuration;
+
+                    if (guide.has("name") && !guide.getString("name").isEmpty()) {
+                        String guideName = guide.getString("name");
+
+                        boolean isRestArea = false;
+                        if (restAreas.contains(guideName)) {
+                            isRestArea = true;
+                        } else if (guideName.contains("휴게소") || guideName.contains("서비스") ||
+                                guideName.contains("REST") || guideName.contains("SERVICE")) {
+                            isRestArea = true;
+                        } else if (guideName.contains("졸음쉼터")) {
+                            isRestArea = true;
+                        }
+
+                        if (isRestArea && restAreas.contains(guideName)) {
+                            if (!foundRestAreas.contains(guideName)) {
+                                foundRestAreas.add(guideName);
+
+                                if (foundRestAreas.size() == 1) {
+                                    restAreaDurations.put(guideName, currentDuration);
+                                } else {
+                                    int segmentDuration = currentDuration - lastRestAreaDuration;
+                                    restAreaDurations.put(guideName, segmentDuration);
+                                }
+
+                                lastRestAreaDuration = currentDuration;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (String restArea : restAreas) {
+            if (restAreaDurations.containsKey(restArea)) {
+                durations.add(restAreaDurations.get(restArea));
+            } else {
+                durations.add(0);
+            }
+        }
+
+        return durations;
+    }
 
 }
