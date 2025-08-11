@@ -21,11 +21,9 @@ public class LikeAction implements Action {
         if (votedPosts == null) {
             votedPosts = new HashSet<>();
         }
-        votedPosts.add(postNum);
-        session.setAttribute("votedPosts", votedPosts);
-
-        //session.getAttribute("liked");
-        BbsDAO.addLike(postNum); //DB에 좋아요 +1
+        votedPosts.add(postNum); //votedPosts(Set)에 좋아요 누른 게시물번호가 추가된다.
+        session.setAttribute("votedPosts", votedPosts); //해당 세션에 저장한다.(해당 게시물에 투표했다는 의미)
+        BbsDAO.addLike(postNum); //DB에서 thumbsUp 컬럼에 좋아요 +1 증가
 
         //System.out.println("4. LikeAction Ok2!!!");
         //System.out.println("-----------------------");

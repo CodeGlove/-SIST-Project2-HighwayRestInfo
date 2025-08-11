@@ -29,7 +29,8 @@ public class ViewAction implements Action {
 
         // 이전에 좋아요, 싫어요를 눌렀는지 확인
         boolean hasReacted = false; //기본값: 반응 안함
-        Set<String> votedPosts = (Set<String>) session.getAttribute("votedPosts");
+        Set<String> votedPosts = (Set<String>) session.getAttribute("votedPosts"); //사용자가 투표한
+                                                                                    //게시물번호
 
         //Set구조가 존재하고, 현재 게시물번호(PostNum)을 포함할경우
         if(votedPosts != null && votedPosts.contains(postNum)){

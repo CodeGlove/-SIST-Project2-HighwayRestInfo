@@ -181,7 +181,7 @@
     document.ff.FileName.value = FileName;
     document.ff.submit();
   }
-
+  //리액션 실행 코드
   function sendReaction(type) {
     //서버에 보낼 데이터 준비
     $.ajax({
@@ -192,12 +192,12 @@
     }).done(function () {
       // ajax 요청 완료시 함수 실행
       if(type === 'like'){
-        // 화면의 좋아요 숫자1 증가
+        // 화면에 좋아요 숫자1 증가
         const countSpan = $("#likeCount");
         const currentCount = parseInt(countSpan.text());
         countSpan.text(currentCount+1);
       }else{
-        // 화면의 싫어요 숫자1 증가
+        // 화면에 싫어요 숫자1 증가
         const countSpan = $("#hateCount");
         const currentCount = parseInt(countSpan.text());
         countSpan.text(currentCount+1);
