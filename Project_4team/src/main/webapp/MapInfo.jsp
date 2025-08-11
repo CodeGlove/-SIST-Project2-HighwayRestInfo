@@ -39,6 +39,13 @@
         .search-container button {
             background-color: #007bff; color: white; cursor: pointer; border-color: #007bff;
         }
+        .leaflet-popup-content-wrapper:hover {
+            background-color: #f1f1f1; /* 연한 회색 */
+        }
+
+        .leaflet-popup-content a {
+            color: #0056b3; /* 기존보다 약간 진한 파란색 (원하는 색상으로 변경 가능) */
+        }
     </style>
 </head>
 <body>
@@ -113,7 +120,7 @@
         if (!data || data.length === 0) return;
         data.forEach(ra => {
             const marker = L.marker([ra.Lat, ra.Lng]);
-            const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${ra.Idx}" target="_blank" style="text-decoration: none; color: inherit;"><b>\${ra.SAName}</b><br>\${ra.Address}</a>`;
+            const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${ra.Idx}"><b>\${ra.SAName}</b><br>\${ra.Address}</a>`;
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
