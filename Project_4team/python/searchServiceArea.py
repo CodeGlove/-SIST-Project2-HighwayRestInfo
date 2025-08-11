@@ -100,6 +100,14 @@ for keyword in keywords:
                     except:
                         print("전화번호를 찾을 수 없습니다.")
 
+                    # 별점 정보 추출
+                    rating = "별점 정보 없음"
+                    try:
+                        rating_element = driver.find_element(By.CSS_SELECTOR, '.PXMot.LXIwF')
+                        rating = rating_element.get_attribute('value')
+                        print(f"별점: {rating}")
+                    except:
+                        print("별점 정보를 찾을 수 없습니다.")
                     # 리뷰 탭 클릭
                     try:
                         # 모든 탭 메뉴 요소 찾기
@@ -186,6 +194,7 @@ for keyword in keywords:
                                     '리뷰내용': review_text,
                                     '리뷰사진URL': review_image,
                                     '작성날짜': date,
+                                    '별점': rating,
                                     '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 })
                                 

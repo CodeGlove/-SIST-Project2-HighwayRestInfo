@@ -112,21 +112,24 @@
                 <i class="fas fa-route"></i>
             </div>
             <div class="card-title">휴게시설</div>
-            <div class="only-sa">휴게소만 표시</div>
+            <button class="only-sa" onclick="toggleRestStops(this)">
+                <i class="fas fa-utensils button-icon"></i>
+                <span class="button-text">휴게소만 표시</span>
+            </button>
         </div>
 
         <c:choose>
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
-                        <div class="rest-area-card clickable"
+                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}"
                              onclick="showRestAreaInfo('${restArea}', ${status.index})">
                             <div class="rest-area-info-row">
                                 <!-- 휴게시설명 섹션 -->
                                 <div class="rest-area-name-section">
                                     <div class="rest-area-name">
                                         <i class="fas fa-map-marker-alt"></i>
-                                        <c:out value="${restArea}"/>
+                                        <span class="facility-name"><c:out value="${restArea}"/></span>
                                     </div>
                                     <div class="rest-area-rating">
                                         <span class="rating-label">별점</span>
@@ -137,6 +140,7 @@
                                             <i class="fas fa-star star"></i>
                                             <i class="fas fa-star star empty"></i>
                                         </div>
+
                                     </div>
                                     <!-- 소요시간 표시 -->
                                     <c:if test="${not empty allRestAreaDurations and status.index < allRestAreaDurations.size()}">
@@ -172,28 +176,32 @@
                                 <div class="info-sections-row">
                                     <!-- 편의시설 섹션 -->
                                     <div class="content-section">
-                                        <div class="section-title">
-                                            <i class="fas fa-list"></i>
-                                            편의시설
-                                        </div>
-                                        <div class="facilities-grid">
-                                            <div class="facility-item">
-                                                <i class="fas fa-baby facility-icon"></i>
-                                                <span>수유실</span>
-                                            </div>
-                                            <div class="facility-item">
-                                                <i class="fas fa-first-aid facility-icon"></i>
-                                                <span>약국</span>
-                                            </div>
-                                            <div class="facility-item">
-                                                <i class="fas fa-bus facility-icon"></i>
-                                                <span>버스환승</span>
-                                            </div>
-                                            <div class="facility-item">
-                                                <i class="fas fa-credit-card facility-icon"></i>
-                                                <span>ATM</span>
-                                            </div>
-                                        </div>
+                                        <c:choose>
+                                            <c:when test="${restArea.contains('휴게소')}">
+                                                <div class="section-title">
+                                                    <i class="fas fa-list"></i>
+                                                    편의시설
+                                                </div>
+                                                <div class="facilities-grid">
+                                                    <div class="facility-item">
+                                                        <i class="fas fa-baby facility-icon"></i>
+                                                        <span>수유실</span>
+                                                    </div>
+                                                    <div class="facility-item">
+                                                        <i class="fas fa-first-aid facility-icon"></i>
+                                                        <span>약국</span>
+                                                    </div>
+                                                    <div class="facility-item">
+                                                        <i class="fas fa-bus facility-icon"></i>
+                                                        <span>버스환승</span>
+                                                    </div>
+                                                    <div class="facility-item">
+                                                        <i class="fas fa-credit-card facility-icon"></i>
+                                                        <span>ATM</span>
+                                                    </div>
+                                                </div>
+                                            </c:when>
+                                        </c:choose>
                                     </div>
 
                                     <!-- 주유비/운영시간 섹션 -->
@@ -213,18 +221,6 @@
                                                     <div class="fuel-price">LPG: 1,074원</div>
                                                 </div>
                                             </c:when>
-                                            <c:otherwise>
-                                                <div class="section-title-with-date">
-                                                    <div class="section-title-left">
-                                                        <i class="fas fa-clock"></i>
-                                                        운영시간
-                                                    </div>
-                                                    <div class="section-title-date">무료 이용</div>
-                                                </div>
-                                                <div class="fuel-info">
-                                                    <div class="fuel-price">24시간 운영</div>
-                                                </div>
-                                            </c:otherwise>
                                         </c:choose>
                                     </div>
 
@@ -240,15 +236,6 @@
                                                     참치김치찌개
                                                 </div>
                                             </c:when>
-                                            <c:otherwise>
-                                                <div class="section-title">
-                                                    <i class="fas fa-exclamation-triangle"></i>
-                                                    안전수칙
-                                                </div>
-                                                <div class="menu-item">
-                                                    15-20분 휴식 권장
-                                                </div>
-                                            </c:otherwise>
                                         </c:choose>
                                     </div>
                                 </div>
@@ -495,6 +482,185 @@
 
         modal.style.display = 'block';
     }
+
+    // 휴게소만 표시 토글 기능
+    function toggleRestStops(button) {
+        const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
+        const serviceAreaCards = document.querySelectorAll('.rest-area-card.service-area');
+        const buttonText = button.querySelector('.button-text');
+        const buttonIcon = button.querySelector('.button-icon');
+        const isActive = button.classList.contains('active');
+
+        // 서버에서 전달받은 소요시간 데이터
+
+        const allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
+
+        // RestAreaAction에서 계산된 휴게소 전용 소요시간 사용
+        const serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
+
+
+        if (isActive) {
+            // 모든 시설 표시 - 소요시간 먼저 복원, 그 다음 리스트 표시
+
+            buttonText.textContent = '휴게소만 표시';
+            buttonIcon.className = 'fas fa-utensils button-icon';
+            button.classList.remove('active');
+
+            // 1단계: 소요시간 먼저 복원
+            restoreOriginalDurations(serviceAreaCards, allRestAreaDurations);
+
+            // 2단계: 소요시간 복원 완료 후 리스트 나타나기 애니메이션
+            setTimeout(() => {
+                // 확장 애니메이션으로 나타나기 (공간 채우며 등장)
+                restStopCards.forEach((card, index) => {
+                    // 스택드 애니메이션으로 순차적 등장
+                    setTimeout(() => {
+                        card.style.display = 'block';
+
+                        // 1단계: 확장 시작 (높이 0에서 시작)
+                        card.classList.add('expanding');
+
+                        // 더 부드러운 타이밍으로 애니메이션 시작
+                        setTimeout(() => {
+                            // 2단계: 확장과 페이드인
+                            card.classList.remove('expanding');
+                            card.classList.add('visible');
+
+                            // 완료 후 클래스 정리
+                            setTimeout(() => {
+                                card.classList.remove('visible');
+                                // 원래 스타일로 복원
+                                card.style.maxHeight = '';
+                                card.style.marginBottom = '';
+                                card.style.padding = '';
+                            }, 700); // 더 긴 시간
+                        }, 50); // 약간의 딜레이로 더 자연스럽게
+                    }, index * 150); // 더 여유로운 순차적 딜레이
+                });
+            }, 500); // 소요시간 복원 완료 후 대기
+        } else {
+            // 휴게소만 표시 - 소요시간 먼저 변경, 그 다음 리스트 변경
+
+            buttonText.textContent = '전체 표시';
+            buttonIcon.className = 'fas fa-eye button-icon';
+            button.classList.add('active');
+
+            // 1단계: 소요시간 먼저 업데이트 (300ms)
+            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
+
+            // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
+            setTimeout(() => {
+                // 콜랩스 애니메이션으로 사라지기 (빈 공간 채우기)
+                restStopCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        // 1단계: 페이드아웃과 스케일 다운 (더 부드럽게)
+                        card.classList.add('animating-out');
+
+                        setTimeout(() => {
+                            // 2단계: 콜랩스 (높이와 마진 줄이기) - 더 긴 시간
+                            card.classList.remove('animating-out');
+                            card.classList.add('collapsing');
+
+                            setTimeout(() => {
+                                // 3단계: 완전히 숨기기
+                                card.style.display = 'none';
+                                card.classList.remove('collapsing');
+                                // 스타일 정리
+                                card.style.maxHeight = '';
+                                card.style.marginBottom = '';
+                                card.style.padding = '';
+                            }, 800); // 콜랩스 애니메이션 시간 증가
+                        }, 300); // 페이드아웃 후 콜랩스 시작 - 더 여유롭게
+                    }, index * 120); // 순차적 사라짐 - 더 여유로운 간격
+                });
+            }, 600); // 소요시간 업데이트 완료 후 대기
+        }
+    }
+
+    // 휴게소끼리 소요시간으로 업데이트 (부드러운 애니메이션)
+    function updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations) {
+
+        if (!window.originalDurations) {
+            // 원본 소요시간 저장
+            window.originalDurations = [];
+            const allCards = document.querySelectorAll('.rest-area-card');
+            allCards.forEach(card => {
+                const durationElement = card.querySelector('.duration-text');
+                if (durationElement) {
+                    window.originalDurations.push({
+                        element: durationElement,
+                        originalText: durationElement.innerHTML
+                    });
+                }
+            });
+        }
+
+        let serviceAreaIndex = 0;
+        serviceAreaCards.forEach((card, index) => {
+            const durationElement = card.querySelector('.duration-text');
+            if (durationElement && serviceAreaIndex < serviceAreaOnlyDurations.length) {
+                const duration = serviceAreaOnlyDurations[serviceAreaIndex];
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
+
+                let newTimeText = '';
+                if (serviceAreaIndex === 0) {
+                    newTimeText = '출발지부터 ';
+                } else {
+                    newTimeText = '이전 휴게소부터 ';
+                }
+
+                if (hours > 0) newTimeText += hours + '시간';
+                if (minutes > 0) newTimeText += minutes + '분';
+
+                // 부드러운 텍스트 변경 애니메이션 (더 자연스럽게)
+                setTimeout(() => {
+                    durationElement.classList.add('updating');
+
+                    setTimeout(() => {
+                        durationElement.innerHTML = newTimeText;
+
+                        setTimeout(() => {
+                            durationElement.classList.remove('updating');
+                        }, 250); // 더 긴 시간
+                    }, 200); // 더 여유로운 타이밍
+                }, index * 150); // 순차적 업데이트 - 더 여유로운 간격
+
+                serviceAreaIndex++;
+            }
+        });
+    }
+
+    // 원래 소요시간으로 복원 (부드러운 애니메이션)
+    function restoreOriginalDurations(serviceAreaCards, allRestAreaDurations) {
+        if (window.originalDurations) {
+            const serviceAreaElements = [];
+            serviceAreaCards.forEach(card => {
+                const durationElement = card.querySelector('.duration-text');
+                if (durationElement) {
+                    serviceAreaElements.push(durationElement);
+                }
+            });
+
+            serviceAreaElements.forEach((element, index) => {
+                const originalItem = window.originalDurations.find(item => item.element === element);
+                if (originalItem && originalItem.originalText) {
+                    setTimeout(() => {
+                        element.classList.add('updating');
+
+                        setTimeout(() => {
+                            element.innerHTML = originalItem.originalText;
+
+                            setTimeout(() => {
+                                element.classList.remove('updating');
+                            }, 250); // 더 긴 시간
+                        }, 200); // 더 여유로운 타이밍
+                    }, index * 120); // 순차적 복원 - 더 여유로운 간격
+                }
+            });
+        }
+    }
+
 
     // 모달 닫기
     function closeModal() {

@@ -184,6 +184,8 @@ public class KakaoMapAction implements Action {
 								List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
 								List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
 
+								// 휴게소만의 소요시간은 RestAreaAction에서 처리
+
 								// 각각의 리스트를 문자열로 변환
 								String allRestAreasStr = String.join(", ", allRestAreas);
 								String restAreasStr = String.join(", ", restAreas);
@@ -246,6 +248,7 @@ public class KakaoMapAction implements Action {
 								request.setAttribute("allRestAreaDurations", allRestAreaDurations);
 								request.setAttribute("restAreaDurations", restAreaDurations);
 								request.setAttribute("restStopDurations", restStopDurations);
+
 								request.setAttribute("origin", origin);
 								request.setAttribute("destination", destination);
 
@@ -502,4 +505,5 @@ public class KakaoMapAction implements Action {
 		System.out.println("=== 디버깅 완료 ===");
 		return durations;
 	}
+
 }

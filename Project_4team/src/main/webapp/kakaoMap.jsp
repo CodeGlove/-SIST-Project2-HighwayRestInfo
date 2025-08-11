@@ -58,7 +58,7 @@
                     <i class="fas fa-map-marker-alt"></i> <!-- 위치 아이콘 -->
                     <input type="text" id="origin" name="origin" class="form-input" <!-- 출발지 입력 필드 -->
                     placeholder="출발지를 입력하세요 (예: 서울특별시 강남구 테헤란로 152)" <!-- 플레이스홀더 -->
-                    value="서울특별시 강남구 테헤란로 152" required> <!-- 기본값 및 필수 입력 -->
+                    value='서울특별시 강남구 테헤란로 152'> <!-- 기본값 및 필수 입력 -->
                 </div>
             </div>
 
@@ -227,7 +227,6 @@
                 </c:if>
             </div>
         </c:if>
-
 
 
         <!-- 휴게소 정보 표시 -->
