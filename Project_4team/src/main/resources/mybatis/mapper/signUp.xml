@@ -7,9 +7,10 @@
         insert into User (ID, NickName, Pwd, Authority,Name, platform, Cancel)
         values (#{ID}, #{NickName}, #{Pwd}, 0,#{Name}, #{platform}, 0)
 
+
     </insert>
     <select id="selectID" resultType="mybatis.vo.UserVO" parameterType="Map">
-        select * from User where ID =#{email} and platform=#{platform}
+        select * from User where ID     
     </select>
 
     <select id="searchNickName" parameterType="String" resultType="String">
