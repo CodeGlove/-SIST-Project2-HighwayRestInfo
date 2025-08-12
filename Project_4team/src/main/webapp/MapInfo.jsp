@@ -230,7 +230,7 @@
             marker.on('popupopen', function() {
                 const videoElement = document.getElementById(videoId);
                 if (videoElement) {
-                    videoElement.poster = '${pageContext.request.contextPath}/image/loading.gif';
+
 
                     $.ajax({
                         url: '${pageContext.request.contextPath}/Controller?type=getVideoUrl',
@@ -294,7 +294,7 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=pjyCctv',
+            url: '${pageContext.request.contextPath}/Controller?type=Cctv',
             type: 'GET',
             data: {
                 minX: sw.lng,
