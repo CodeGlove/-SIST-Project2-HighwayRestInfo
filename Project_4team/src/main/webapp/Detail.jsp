@@ -7,6 +7,6 @@
 </head>
 <body>
 휴게소 이름: ${vo.SAName}
-<%--앙아아아아앙--%>
+
 </body>
 </html>
