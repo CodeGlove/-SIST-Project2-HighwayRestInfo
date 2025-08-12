@@ -155,11 +155,20 @@
         }
     });
 
+    //휴게소 아이콘 정의
+    const restIcon = L.icon({
+        iconUrl: '${pageContext.request.contextPath}/image/rest_icon2.png',
+        iconSize: [40, 40],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+    });
+
     function addRestAreaMarkersToMap(data) {
         restAreaMarkers.clearLayers();
         if (!data || data.length === 0) return;
         data.forEach(ra => {
-            const marker = L.marker([ra.Lat, ra.Lng]);
+            const marker = L.marker([ra.Lat, ra.Lng], { icon: restIcon });
+
             // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
             const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
             marker.bindPopup(popupContent);
@@ -176,6 +185,8 @@
             restAreaMarkers.addLayer(marker);
         });
     }
+
+
 
     // CCTV 아이콘 정의
     const cctvIcon = L.icon({
