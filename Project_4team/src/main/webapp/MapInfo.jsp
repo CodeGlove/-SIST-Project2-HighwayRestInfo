@@ -75,6 +75,16 @@
         attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap</a> contributors'
     }).addTo(map);
 
+    $(window).on('load', function () {
+        console.log("window.load 이벤트 발생! 페이지의 모든 리소스(이미지 등) 로딩 완료.");
+        // window.load 이벤트가 발생했더라도, 아주 짧은 지연(0.1초)을 주어
+        // Leaflet이 내부적으로 좌표 등을 계산할 시간을 확실히 보장해줍니다.
+        setTimeout(function () {
+            console.log("초기 휴게소 데이터를 로드합니다.");
+            loadRestAreas();
+        }, 100);
+    });
+
     const markers = L.markerClusterGroup();
     map.addLayer(markers);
 
@@ -195,6 +205,7 @@
     map.once('load', function(){
         loadRestAreas();
     });
+
 </script>
 
 </body>
