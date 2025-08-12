@@ -2,6 +2,15 @@ package mybatis.vo;
 
 public class UserVO {
     private String ID, NickName, Pwd, Name, Home, Authority, Interset;
+    private int Idx;
+
+    public int getIdx() {
+        return Idx;
+    }
+
+    public void setIdx(int idx) {
+        Idx = idx;
+    }
 
     public String getAuthority() {
         return Authority;
