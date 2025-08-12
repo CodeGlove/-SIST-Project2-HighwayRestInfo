@@ -29,7 +29,7 @@
         <nav>
             <ul class="nav-links">
                 <li><a href="#">회사 소개</a></li>
-                <li><a href="#">공지사항</a></li>
+                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li> <%--08.04-한결 수정--%>
                 <li><a href="#">고객센터</a></li>
                 <li><a href="#">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
@@ -38,8 +38,17 @@
         <div class="auth-buttons">
             <a href="#" class="btn btn-login">KOR</a>
             <a href="#" class="btn btn-login">ENG</a>
-            <a href="Controller?type=login" class="btn btn-login">로그인</a>
-            <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+            <%--***** 로그인 되지 않은 경우 --%>
+            <c:if test="${empty sessionScope.loginUser}">
+                <a href="Controller?type=login" class="btn btn-login">로그인</a>
+                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+            </c:if>
+
+            <%--***** 로그인된 경우 --%>
+            <c:if test="${not empty sessionScope.loginUser}">
+                <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
+                <a href="Controller?type=#" class="btn btn-register">마이페이지</a>
+            </c:if>
         </div>
     </div>
 </header>
@@ -174,6 +183,7 @@
             });
         }, observerOptions);
 
+        // 관찰할 요소들
         document.querySelectorAll('.feature-card').forEach(card => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(30px)';
