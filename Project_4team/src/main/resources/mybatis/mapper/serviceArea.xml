@@ -61,7 +61,7 @@
 
 
 
-<!--    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
+<!-- 아아아아   <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
         Address, Tel, ShopCode)
         values
