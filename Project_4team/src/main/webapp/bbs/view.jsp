@@ -50,11 +50,6 @@
 
 </head>
 <body>
-  <!-- Back to Home Link -->
-  <a href="Controller" class="back-home">
-    <i class="fas fa-arrow-left"></i>
-    홈으로 돌아가기
-  </a>
 
 <c:if test="${requestScope.vo ne null}"> <%--ne은 '!='와 같다--%>
   <c:set var="vo" value="${requestScope.vo}"/>
@@ -87,10 +82,10 @@
           <td colspan="2" style="text-align: center;">
             <input type="button" id="btn-like" value="👍" onclick="sendReaction('like')"
                    <c:if test="${hasReacted}">disabled</c:if> />
-            <span id="likeCount">${vo.thumbsUp}</span>
-            <input type="button" id="btn-hate "value="👎" onclick="sendReaction('hate')"
+            <span id="likeCount">${likeCount}</span>
+            <input type="button" id="btn-hate" value="👎" onclick="sendReaction('hate')"
                    <c:if test="${hasReacted}">disabled</c:if> />
-            <span id="hateCount">${vo.thumbsDown}</span>
+            <span id="hateCount">${hateCount}</span>
           </td>
         </tr>
         <tr>
@@ -182,8 +177,89 @@
     document.ff.FileName.value = FileName;
     document.ff.submit();
   }
+
   //리액션 실행 코드
   function sendReaction(type) {
+    // 1. 함수가 시작되자마자 두 버튼을 '즉시' 비활성화 (가장 중요!)
+    //    - 서버 응답을 기다리지 않고 바로 UI를 잠가서 중복 클릭을 원천 차단합니다.
+    $("#btn-like").prop("disabled", true);
+    $("#btn-hate").prop("disabled", true);
+
+    // 2. 화면의 숫자 업데이트
+    //    - 서버가 성공할 것을 '미리 가정'하고 사용자에게 즉각적인 피드백을 줍니다.
+    if (type === 'like') {
+      const countSpan = $("#likeCount");
+      const currentCount = parseInt(countSpan.text(), 10);
+      countSpan.text(currentCount + 1);
+    } else { // 'hate'일 경우
+      const countSpan = $("#hateCount");
+      const currentCount = parseInt(countSpan.text(), 10);
+      countSpan.text(currentCount + 1);
+    }
+
+    // 3. 서버에 조용히 요청 보내기
+    //    - 이제 이 AJAX 호출은 백그라운드에서 DB에 데이터를 기록하는 역할만 합니다.
+    $.ajax({
+      url: '${pageContext.request.contextPath}/Controller',
+      type: 'POST',
+      data: {
+        type: type,
+        PostNum: '${vo.postNum}'
+      }
+    })
+      .fail(function() {
+        // 혹시라도 서버 요청이 실패하면 사용자에게 알리고, 새로고침을 유도합니다.
+        alert("데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
+        location.reload(); // 페이지를 새로고침하여 정확한 상태를 다시 불러옴
+      });
+  }
+
+  /*function sendReaction(type) {
+    console.log("1. sendReaction 함수 시작. 타입:", type);
+
+    // 버튼이 이미 비활성화 상태이면 아무것도 하지 않음 (중복 클릭 방지)
+    if ($("#btn-like").prop("disabled")) {
+      console.log("already btn disabled, close this method.");
+      return;
+    }
+
+    $.ajax({
+      url: '${pageContext.request.contextPath}/Controller',
+      type: 'POST',
+      data: {
+        type: type,
+        PostNum: '${vo.postNum}'
+      }
+    })
+      .done(function() {
+        // 서버와 통신이 '성공'했을 때 이 부분이 실행됩니다.
+        console.log("2. AJAX Request Success!!! (.done ). UI will updated.");
+
+        // 화면의 숫자 업데이트
+        if (type === 'like') {
+          const countSpan = $("#likeCount");
+          const currentCount = parseInt(countSpan.text(), 10);
+          countSpan.text(currentCount + 1);
+        } else { // 'hate'일 경우
+          const countSpan = $("#hateCount");
+          const currentCount = parseInt(countSpan.text(), 10);
+          countSpan.text(currentCount + 1);
+        }
+
+        // 두 버튼 모두 즉시 비활성화
+        $("#btn-like").prop("disabled", true);
+        $("#btn-hate").prop("disabled", true);
+        console.log("3. btn disabled success!!!.");
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        // 서버와 통신이 '실패'했을 때 이 부분이 실행됩니다.
+        console.error("AJAX 요청 실패:", textStatus, errorThrown);
+        alert("request ~ing error");
+      });
+  }*/
+
+  //********* 기존 코드 **********
+  /*function sendReaction(type) {
     //서버에 보낼 데이터 준비
     $.ajax({
       url: '${pageContext.request.contextPath}/Controller', // 요청을 보낼 URL
@@ -210,7 +286,7 @@
       //요청 실패시
       alert("오류가 발생했습니다. 다시 시도해주세요");
     });
-  }
+  }*/
 </script>
 </body>
 </html>

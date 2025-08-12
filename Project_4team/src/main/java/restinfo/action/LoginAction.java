@@ -26,6 +26,7 @@ public class LoginAction implements Action {
 
 		boolean loginSuccess = false;
 		String message = "";
+		String redirectURL = ""; //리다이렉트 URL 담을 변수
 
 		//로그인 처리
 		if(vo != null && BCrypt.checkpw(pwd, vo.getPwd())) { //vo가 존재하고 비밀번호 일치하면 로그인 성공
@@ -33,6 +34,21 @@ public class LoginAction implements Action {
 			loginSuccess = true;
 			HttpSession session = request.getSession();//세션 생성
 			session.setAttribute("loginUser", vo); //세션에 vo객체 저장
+			//세션에 저장된 사용자 정보 확인
+			System.out.println("---------Session Check----------");
+			UserVO sessionVO = (UserVO) session.getAttribute("loginUser");
+			if (sessionVO != null) {
+				System.out.println("세션에 저장된 객체: " + sessionVO.toString());
+				System.out.println("회원번호(idx): " + sessionVO.getIdx());
+				System.out.println("이름(name): " + sessionVO.getName());
+			} else {
+				System.out.println("오류: 세션에 객체가 저장되지 않았습니다.");
+			}
+			if (vo.getAuthority() != null && Integer.valueOf(vo.getAuthority()) == 1) {
+				redirectURL = "manage.jsp"; //관리자 페이지
+			} else {
+				redirectURL = "index.jsp"; //일반 사용자 페이지
+			}
 		} else {
 			//로그인 실패
 			loginSuccess = false;
@@ -49,10 +65,13 @@ public class LoginAction implements Action {
 			PrintWriter out = response.getWriter();
 
 			// JSON 형식 문자열 생성
-			String jsonResponse = String.format("{\"status\": \"%s\", \"message\": \"%s\"}",
+			String jsonResponse = String.format("{\"status\": \"%s\", \"message\": \"%s\", \"redirectURL\": \"%s\"}",
 					loginSuccess ? "success" : "fail",
-					message);
+					message,
+					redirectURL);
 
+			//응답한 JSON을 서버 콘솔에서 확인
+			System.out.println("LoginAction 최종 응답 JSON: " + jsonResponse);
 			//클라이언트로 응답 전송
 			out.print(jsonResponse);
 			out.flush();

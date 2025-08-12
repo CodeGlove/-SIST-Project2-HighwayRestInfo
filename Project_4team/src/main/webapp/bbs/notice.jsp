@@ -82,6 +82,12 @@
   </style>
 </head>
 <body>
+<!-- Back to Home Link -->
+<a href="Controller?" class="back-home">
+  <i class="fas fa-arrow-left"></i>
+  홈으로 돌아가기
+</a>
+
 <div id="bbs">
   <table summary="공지사항 목록">
     <caption>공지사항</caption>

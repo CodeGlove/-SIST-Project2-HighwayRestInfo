@@ -1,7 +1,9 @@
 package bbs.action;
 
 import bbs.dao.BbsDAO;
+import bbs.dao.LikeHateDAO;
 import mybatis.vo.BbsVO;
+import mybatis.vo.UserVO;
 import restinfo.action.Action;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,32 +17,32 @@ public class ViewAction implements Action {
     public String execute(HttpServletRequest request, HttpServletResponse response) {
         //파라미터 받기
         String postNum = request.getParameter("PostNum"); //기본키
-        //String cPage = request.getParameter("cPage"); //목록보기에 사용할 페이지 값
-
         //한번이라도 읽은 게시물들은 list에 담아서 HttpSession에 저장해 둔다.
         //그럼 우선 HttpSession으로 부터 list를 얻어내자
-        HttpSession session = request.getSession();
 
-        //session에 "read_list"라는 이름으로 저장된 객체를 얻어내자
-        Object obj = session.getAttribute("read_list");
-        if(obj == null){ //세션 얻어내서 세션에 read_list라는 놈이 있다면 list에 저장하고 없다면 세션에 저장
-            session.setAttribute("read_list", new ArrayList<BbsVO>());
-        }
 
-        // 이전에 좋아요, 싫어요를 눌렀는지 확인
-        boolean hasReacted = false; //기본값: 반응 안함
-        Set<String> votedPosts = (Set<String>) session.getAttribute("votedPosts"); //사용자가 투표한
-                                                                                    //게시물번호
-
-        //Set구조가 존재하고, 현재 게시물번호(PostNum)을 포함할경우
-        if(votedPosts != null && votedPosts.contains(postNum)){
-            hasReacted = true; //게시물번호를 담고 있다면 눌렀다는 것으로 간주
-        }
         //게시물 정보를 가져와서 view로 전달
         BbsVO vo = BbsDAO.getPostNum(postNum); //사용자가 선택한 게시물을 검색해 온다.
         request.setAttribute("vo", vo);
-        request.setAttribute("hasReacted", hasReacted);
 
+        //좋아요, 싫어요 수 가져오기
+        int likeCount = LikeHateDAO.getLikeCount(postNum);
+        int hateCount = LikeHateDAO.getHateCount(postNum);
+        // 결과를 request에 저장
+        request.setAttribute("likeCount", likeCount);
+        request.setAttribute("hateCount", hateCount);
+
+        // 현재 사용자의 반응 여부 확인
+        HttpSession session = request.getSession();
+        UserVO loginUser = (UserVO) session.getAttribute("loginUser"); // 실제 세션 이름 확인
+
+        // 로그인 상태일 때만 반응 여부를 DB에서 확인
+        if (loginUser != null) {
+            int userKey = loginUser.getIdx(); // 로그인한 사용자의 고유 키(idx) 가져오기
+            boolean hasReacted = LikeHateDAO.checkReaction(postNum, userKey); // LikeHateDAO를 호출하여 이 글에 반응했는지 확인
+            request.setAttribute("hasReacted", hasReacted); // 확인된 결과를 "hasReacted"라는 이름으로 request에 저장
+        }
+        // view.jsp로 forward
         return "bbs/view.jsp";
     }
 }

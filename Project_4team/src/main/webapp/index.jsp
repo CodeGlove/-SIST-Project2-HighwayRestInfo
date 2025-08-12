@@ -38,8 +38,17 @@
         <div class="auth-buttons">
             <a href="#" class="btn btn-login">KOR</a>
             <a href="#" class="btn btn-login">ENG</a>
-            <a href="Controller?type=login" class="btn btn-login">로그인</a>
-            <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+            <%--***** 로그인 되지 않은 경우 --%>
+            <c:if test="${empty sessionScope.loginUser}">
+                <a href="Controller?type=login" class="btn btn-login">로그인</a>
+                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+            </c:if>
+
+            <%--***** 로그인된 경우 --%>
+            <c:if test="${not empty sessionScope.loginUser}">
+                <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
+                <a href="Controller?type=#" class="btn btn-register">마이페이지</a>
+            </c:if>
         </div>
     </div>
 </header>
