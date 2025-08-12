@@ -73,6 +73,13 @@
                 box-sizing: border-box;
             }
         }
+        .leaflet-popup-content-wrapper:hover {
+            background-color: #f1f1f1; /* 연한 회색 */
+        }
+
+        .leaflet-popup-content a {
+            color: #0056b3; /* 기존보다 약간 진한 파란색 (원하는 색상으로 변경 가능) */
+        }
     </style>
 </head>
 <body>
@@ -107,6 +114,18 @@
     map.addLayer(restAreaMarkers);
 
     const cctvMarkers = L.markerClusterGroup();
+    $(window).on('load', function () {
+        console.log("window.load 이벤트 발생! 페이지의 모든 리소스(이미지 등) 로딩 완료.");
+        // window.load 이벤트가 발생했더라도, 아주 짧은 지연(0.1초)을 주어
+        // Leaflet이 내부적으로 좌표 등을 계산할 시간을 확실히 보장해줍니다.
+        setTimeout(function () {
+            console.log("초기 휴게소 데이터를 로드합니다.");
+            loadRestAreas();
+        }, 100);
+    });
+
+    const markers = L.markerClusterGroup();
+    map.addLayer(markers);
 
     let provinceData = null;
     let currentBoundaryLayer = null;
@@ -152,6 +171,7 @@
             const marker = L.marker([ra.Lat, ra.Lng]);
             // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
             const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
+            const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${ra.Idx}"><b>\${ra.SAName}</b><br>\${ra.Address}</a>`;
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
@@ -356,6 +376,7 @@
     map.once('load', function(){
         loadRestAreas();
     });
+
 </script>
 
 </body>

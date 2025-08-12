@@ -55,6 +55,10 @@
         Select * from ServiceArea where SAName Like concat ('%', #{name}, '%');
     </select>
 
+    <select id="getOne" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        Select * from ServiceArea where Idx = #{idx}
+    </select>
+
 
 
 <!--    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
