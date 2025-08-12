@@ -6,16 +6,29 @@
     <title>나만의 대한민국 지도</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Leaflet 라이브러리 (최신 안정 버전) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet.markercluster 라이브러리 -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- jQuery: AJAX 요청을 위해 필요 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+    <!--
+        [중요] video.js와 HLS 관련 라이브러리 버전 통일 및 정리
+        - video.js는 최신 안정 버전인 8.6.1 사용
+        - HLS 플러그인은 videojs-contrib-hls 대신
+          videojs/http-streaming을 사용 (video.js 7.x 이상부터 권장됨)
+    -->
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
+
 
     <style>
         html, body { height: 100%; margin: 0; }
@@ -137,7 +150,8 @@
         if (!data || data.length === 0) return;
         data.forEach(ra => {
             const marker = L.marker([ra.Lat, ra.Lng]);
-            const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${ra.Idx}" target="_blank" style="text-decoration: none; color: inherit;"><b>\${ra.SAName}</b><br>\${ra.Address}</a>`;
+            // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
+            const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
@@ -161,69 +175,91 @@
         popupAnchor: [0, -38]
     });
 
-    // JSP 파일의 addCctvMarkersToMap 함수 (전체 교체)
+
     // JSP 파일의 addCctvMarkersToMap 함수 (전체 교체)
     function addCctvMarkersToMap(data) {
+        // 기존 마커 레이어를 모두 지웁니다.
         cctvMarkers.clearLayers();
-        if (!data || data.length === 0 || !data.response || !data.response.data) {
+
+        // 데이터가 없거나 형식이 올바르지 않으면 함수를 종료합니다.
+        if (!data || !data.response || !data.response.data) {
             console.log("CCTV 데이터가 없거나 형식이 올바르지 않습니다.");
             return;
         }
 
+        // 데이터를 배열로 정규화합니다.
         const cctvList = Array.isArray(data.response.data) ? data.response.data : [data.response.data];
 
+        // 각 CCTV 데이터에 대해 마커를 생성하고 맵에 추가합니다.
         cctvList.forEach(cctv => {
             const lat = parseFloat(cctv.coordy);
             const lng = parseFloat(cctv.coordx);
             if (isNaN(lat) || isNaN(lng)) return;
 
+            // CCTV 이름에서 `;` 제거
             const name = cctv.cctvname.replace(/;/g, '');
-            // 이 cctv.cctvurl은 임시 URL입니다.
+
+            // CSS 선택자에 유효하지 않은 모든 문자를 제거하여 videoId 생성
+            const sanitizedName = name.replace(/[^a-zA-Z0-9-]/g, '-');
+            const videoId = "cctv-video-" + sanitizedName;
+
             const temporaryUrl = cctv.cctvurl;
             const marker = L.marker([lat, lng], { icon: cctvIcon });
-            const videoId = name.replace(/\s/g, '-');
 
-            // 팝업 내용에 비디오 플레이어를 미리 만들지만, 소스는 비워둡니다.
-            const popupContent = `
-            <div style="width: 320px;">
-                <b>${name}</b><br>
-                <video id="cctv-video-${videoId}" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup='{}'>
-                    <source type="application/x-mpegURL" />
-                </video>
-            </div>
-        `;
+            const popupContent =
+                '<div style="width: 320px;">' +
+                '<b>' + name + '</b><br>' +
+                '<video id="' + videoId + '" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup=\'{}\'>' +
+                '<source type="application/x-mpegURL" />' +
+                '</video>' +
+                '</div>';
             marker.bindPopup(popupContent, { minWidth: 320 });
             cctvMarkers.addLayer(marker);
 
-            // 팝업이 열릴 때 새로운 Action을 호출해서 진짜 영상 URL을 가져옵니다.
+            // 팝업이 열릴 때마다 새로운 AJAX 요청을 보내서 진짜 영상 URL을 가져옵니다.
             marker.on('popupopen', function() {
-                const videoElement = document.getElementById(`cctv-video-${videoId}`);
-                // 로딩 이미지를 표시합니다.
-                videoElement.poster = '${pageContext.request.contextPath}/image/loading.gif';
+                const videoElement = document.getElementById(videoId);
+                if (videoElement) {
+                    videoElement.poster = '${pageContext.request.contextPath}/image/loading.gif';
 
-                $.ajax({
-                    url: '${pageContext.request.contextPath}/Controller?type=getVideoUrl',
-                    type: 'GET',
-                    data: { temporaryUrl: temporaryUrl },
-                    dataType: 'text' // 서버에서 텍스트(URL)를 받기 때문에 'text'로 설정
-                }).done(function(realUrl) {
-                    // 성공적으로 진짜 URL을 받으면 videojs 소스를 업데이트합니다.
-                    console.log("서버로부터 받은 실제 영상 URL:", realUrl);
-                    // Video.js에 명시적으로 소스 설정 (CORS 회피)
-                    videojs(videoElement.id).src({
-                        src: realUrl,
-                        type: 'application/x-mpegURL'
+                    $.ajax({
+                        url: '${pageContext.request.contextPath}/Controller?type=getVideoUrl',
+                        type: 'GET',
+                        data: { temporaryUrl: temporaryUrl },
+                        dataType: 'text'
+                    }).done(function(realUrl) {
+                        if (realUrl && realUrl.length > 0) {
+                            console.log("서버로부터 받은 실제 영상 URL:", realUrl);
+                            videojs(videoElement.id).src({
+                                src: realUrl,
+                                type: 'application/x-mpegURL'
+                            });
+                        } else {
+                            console.error("영상 URL이 유효하지 않습니다.");
+                            videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
+                        }
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
+                        videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
                     });
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    // 실패 시 에러 메시지나 이미지를 표시합니다.
-                    console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
-                    videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
-                });
+                } else {
+                    console.error('Video element not found:', videoId);
+                }
+            });
+
+            // 팝업이 닫힐 때 video.js 플레이어를 종료합니다.
+            marker.on('popupclose', function() {
+                const videoElement = document.getElementById(videoId);
+                if (videoElement) {
+                    const player = videojs(videoElement.id);
+                    if (player) {
+                        player.dispose();
+                        console.log('Video.js player disposed for:', videoId);
+                    }
+                }
             });
         });
     }
-
-
 
     function loadRestAreas() {
         if (isMarkerClickZoom) {
@@ -301,7 +337,7 @@
                     const newZoom = Math.max(currentZoom, targetZoom);
                     map.setView(position, newZoom);
                     map.once('zoomend', function() {
-                        const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${firstResult.Idx}" target="_blank" style="text-decoration: none; color: inherit;"><b>\${firstResult.SAName}</b><br>\${firstResult.Address}</a>`;
+                        const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + firstResult.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + firstResult.SAName + '</b><br>' + firstResult.Address + '</a>';
                         L.popup().setLatLng(position).setContent(popupContent).openOn(map);
                     });
                 } else {

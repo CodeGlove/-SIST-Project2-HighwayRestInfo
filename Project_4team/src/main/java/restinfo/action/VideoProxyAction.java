@@ -2,9 +2,7 @@ package restinfo.action;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -21,35 +19,31 @@ public class VideoProxyAction implements Action {
         }
 
         try {
-            System.out.println("프록시 요청 시작: " + temporaryUrl); // 요청 시작 로그
+            System.out.println("프록시 요청 시작: " + temporaryUrl);
 
             URL url = new URL(temporaryUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
+            conn.setInstanceFollowRedirects(true); // 리다이렉션 자동 추적 설정
 
-            BufferedReader rd;
+            // 연결을 시도하고 응답 코드를 확인합니다.
             int responseCode = conn.getResponseCode();
 
-            if (responseCode >= 200 && responseCode <= 300) {
-                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            // 응답 코드가 정상 범위(200-399)일 때만 최종 URL을 가져옵니다.
+            if (responseCode >= 200 && responseCode <= 399) {
+                String finalUrl = conn.getURL().toString();
+                System.out.println("프록시 응답 (최종 URL): " + finalUrl);
+                response.setContentType("text/plain;charset=UTF-8");
+                response.getWriter().write(finalUrl);
             } else {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                System.err.println("프록시 요청 실패! 응답 코드: " + responseCode); // 실패 로그
+                // 오류 응답을 받은 경우, 에러 로그를 남기고 클라이언트에 빈 문자열 반환
+                System.err.println("프록시 요청 실패! 응답 코드: " + responseCode);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setContentType("text/plain;charset=UTF-8");
+                response.getWriter().write(""); // 빈 문자열 반환
             }
 
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = rd.readLine()) != null) {
-                sb.append(line);
-            }
-            rd.close();
             conn.disconnect();
-
-            // 서버 콘솔에 반환되는 실제 URL을 출력합니다.
-            System.out.println("프록시 응답: " + sb.toString());
-
-            response.setContentType("text/plain;charset=UTF-8");
-            response.getWriter().write(sb.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
