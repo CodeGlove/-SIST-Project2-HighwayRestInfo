@@ -16,6 +16,16 @@ public class ServiceAreaDAO {
 
         return list;
     }
+    public static ServiceAreaVO getOneArea(String idx){
+        // idx는 클릭한 휴게소의 값임 그걸로 찾아서 휴게소 정보 갖고온 후
+        //pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
+        SqlSession ss =FactoryService.getFactory().openSession();
+        ServiceAreaVO vo = ss.selectOne("SA.getOne",idx);
+        ss.close();
+
+
+        return vo;
+    }
 
     public static int updateXY(String idx, double lat, double lng) {
         int cnt = 0;
