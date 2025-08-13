@@ -24,10 +24,10 @@ public class SignUpAction implements Action {
         System.out.println(name);
 
         try {
-            UserVO CheckVO = SignUpDAO.check(email,"SOCIAL");
+            UserVO CheckVO = SignUpDAO.check(email,"ORIGIN");
             String str= makeNickName();
             if(CheckVO==null) {
-                int cnt = SignUpDAO.add(email, str, hashpwd, name, "SOCIAL");
+                int cnt = SignUpDAO.add(email, str, hashpwd, name, "ORIGIN");
                 if (cnt > 0) {
                     System.out.println("완료");
                 } else {
@@ -45,12 +45,12 @@ public class SignUpAction implements Action {
     private String makeNickName() {
 
         // 닉네임을 비교하기 위해 기존의 DB에서 닉네임값들 불러오기
-        List<String> nickNames = SignUpDAO.check("Social");
+        List<String> nickNames = SignUpDAO.check("User");
         Set<Integer> set = new HashSet<>();
 
         // 각각 닉네임에서 뒤의 숫자만 얻어내기
         for (int i = 0; i < nickNames.size(); i++) {
-            set.add(Integer.parseInt(nickNames.get(i).substring(6)));
+            set.add(Integer.parseInt(nickNames.get(i).substring(4)));
         }
 
         int newNumber;
@@ -59,7 +59,7 @@ public class SignUpAction implements Action {
             newNumber = (int)(Math.random() * 90000) + 10000;  // 10000 ~ 99999
         } while (set.contains(newNumber));
 
-        return "Social" + newNumber;
+        return "User" + newNumber;
     }
 
 }
