@@ -5,7 +5,7 @@
 <mapper namespace="restinfo">
     <select id="login" parameterType="String" resultType="mybatis.vo.UserVO">
         select * from User
-        WHERE ID = #{ID}
+        WHERE ID = #{ID} and NickName LIKE CONCAT('User', '%');
     </select>
 
 </mapper>
