@@ -169,37 +169,32 @@
                 return;
             }
 
-            // ****** fetch API를 사용해서 서버와 실제 통신 ******
-            fetch('Controller?type=login', {
-                method: 'POST',
-                body: new URLSearchParams(formData)
-            }).then(response => {
-                //서버 응답이 정상이 아닐때 에러처리
-                if (!response.ok) {
-                    throw new Error('서버 응답 오류가 발생했습니다.');
-                }
-                return response.json(); //응답을 JSON 형태로 파싱한다.
-            }).then(data => {
-                //서버로부터 받은 JSON 결과에 따라 처리
-                if (data.status === 'success') {
-                    alert("로그인이 완료되었습니다!");
-                    window.location.href = 'Controller'; //성공시 index 화면으로 이동
-                } else {
-                    alert(data.message || "로그인에 실패했습니다."); //실패시 서버가 보낸 메시지를 alert창으로 보여줌
-                }
-            }).catch(error => {
-                // 통신 실패시 예외 처리
-                console.error("Login Error:", error);
-                alert("로그인 처리 중 오류가 발생했습니다.");
-            });
+                // ****** fetch API를 사용해서 서버와 실제 통신 ******
+                fetch('Controller?type=login', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                }).then(response => {
+                    //서버 응답이 정상이 아닐때 에러처리
+                    if (!response.ok) {
+                        throw new Error('서버 응답 오류가 발생했습니다.');
+                    }
+                    return response.json(); //응답을 JSON 형태로 파싱한다.
+                }).then(data => {
+                    //서버로부터 받은 JSON 결과에 따라 처리
+                    if (data.status === 'success') {
+                        alert("로그인이 완료되었습니다!");
 
-            // Success - simulate login
-            /*showSuccess('로그인 중입니다...');
-            setTimeout(() => {
-                alert('로그인이 완료되었습니다!');
-                window.location.href = 'index.jsp';
-            }, 1500);*/
-        });
+                        //서버가 알려준 redirectURL 값으로 페이지 이동
+                        window.location.href = data.redirectURL; //성공시 index 화면으로 이동
+                    } else {
+                        alert(data.message || "로그인에 실패했습니다."); //실패시 서버가 보낸 메시지를 alert창으로 보여줌
+                    }
+                }).catch(error => {
+                    // 통신 실패시 예외 처리
+                    console.error("Login Error:", error);
+                    alert("로그인 처리 중 오류가 발생했습니다.");
+                });
+            });
 
         // Email validation
         function isValidEmail(email) {

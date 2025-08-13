@@ -13,7 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/indexStyle.css" rel="stylesheet">
     <link href="css/footerStyle.css" rel="stylesheet">
-    
+
 
 
 </head>
@@ -31,7 +31,7 @@
         <nav>
             <ul class="nav-links">
                 <li><a href="#">회사 소개</a></li>
-                <li><a href="#">공지사항</a></li>
+                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li> <%--08.04-한결 수정--%>
                 <li><a href="#">고객센터</a></li>
                 <li><a href="#">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
@@ -40,16 +40,17 @@
         <div class="auth-buttons">
             <a href="#" class="btn btn-login">KOR</a>
             <a href="#" class="btn btn-login">ENG</a>
-            <c:choose>
-                <c:when test="${sessionScope.loginUser == null}">
-                    <a href="Controller?type=login" class="btn btn-login">로그인</a>
-                    <a href="Controller?type=register" class="btn btn-register">회원가입</a>
-                </c:when>
-                <c:otherwise>
-                    <a href="Controller?type=logout" class="btn btn-login">로그아웃</a>
-                    <a href="Controller?type=mypage" class="btn btn-register">내정보</a>
-                </c:otherwise>
-            </c:choose>
+            <%--***** 로그인 되지 않은 경우 --%>
+            <c:if test="${empty sessionScope.loginUser}">
+                <a href="Controller?type=login" class="btn btn-login">로그인</a>
+                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+            </c:if>
+
+            <%--***** 로그인된 경우 --%>
+            <c:if test="${not empty sessionScope.loginUser}">
+                <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
+                <a href="Controller?type=#" class="btn btn-register">마이페이지</a>
+            </c:if>
         </div>
     </div>
 </header>
@@ -83,14 +84,14 @@
                            value="<c:out value='${origin}'/>" required autocomplete="off">
                     <div id="origin-suggestions" class="suggestions-dropdown"></div>
                 </div>
-                
+
                 <!-- 목적지 입력 섹션 -->
                 <div class="input-wrapper">
                     <input type="text" name="destination" id="destination" class="search-input" placeholder="목적지를 입력하세요"
                            value="<c:out value='${destination}'/>" required autocomplete="off">
                     <div id="destination-suggestions" class="suggestions-dropdown"></div>
                 </div>
-                
+
                 <!-- 폼 제출 후 KakaoMapAction에서 경로 계산 완료 후 RestAreaAction으로 자동 포워딩하도록 지시하는 숨겨진 필드 -->
                 <input type="hidden" name="forwardTo" value="restArea">
                 <button type="submit" class="search-btn" id="searchRouteBtn"><i class="fas fa-search"></i> 길찾기</button>
@@ -197,6 +198,7 @@
             });
         }, observerOptions);
 
+        // 관찰할 요소들
         document.querySelectorAll('.feature-card').forEach(card => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(30px)';
@@ -230,7 +232,7 @@
                 return true;
             });
         }
-        
+
 
     }
 
@@ -238,7 +240,7 @@
     function initializeAutocomplete() {
         // 출발지 자동완성 설정
         setupAutocomplete('origin', 'origin-suggestions');
-        
+
         // 목적지 자동완성 설정
         setupAutocomplete('destination', 'destination-suggestions');
     }
@@ -247,7 +249,7 @@
     function setupAutocomplete(inputId, dropdownId) {
         const input = document.getElementById(inputId);
         const dropdown = document.getElementById(dropdownId);
-        
+
         if (!input || !dropdown) {
             return;
         }
@@ -261,7 +263,7 @@
 
             // 디바운싱: 300ms 후에 검색
             clearTimeout(searchTimeout);
-            
+
             if (query.length < 2) {
                 hideDropdown(dropdown);
                 return;
@@ -289,7 +291,7 @@
         // 키보드 네비게이션
         input.addEventListener('keydown', function(e) {
             const items = dropdown.querySelectorAll('.suggestion-item');
-            
+
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 currentSelection = Math.min(currentSelection + 1, items.length - 1);
@@ -314,7 +316,7 @@
     function searchPlaces(query, dropdown) {
         // 로딩 표시
         showLoading(dropdown);
-        
+
         // SearchAddress API 호출
         fetch('Controller?type=searchAddress&keyword=' + encodeURIComponent(query))
             .then(response => {
@@ -372,7 +374,7 @@
         suggestions.forEach((item, index) => {
             const placeName = escapeHtml(item.place_name);
             const placeAddress = escapeHtml(item.road_address_name || item.address_name);
-            
+
             html += '<div class="suggestion-item" data-index="' + index + '" onclick="selectSuggestionByClick(this)">' +
                     '<div class="place-name">' + placeName + '</div>' +
                     '<div class="place-address">' + placeAddress + '</div>' +
@@ -397,21 +399,21 @@
 
     // 제안 선택 (클릭)
     function selectSuggestionByClick(element) {
-        // closest() 메서드: 현재 요소부터 시작해서 부모 요소들을 차례로 올라가며 
+        // closest() 메서드: 현재 요소부터 시작해서 부모 요소들을 차례로 올라가며
         // 지정된 CSS 선택자와 일치하는 첫 번째 요소를 찾는 메서드
-        
-        // 클릭된 제안 항목(element)에서 부모 요소들을 거슬러 올라가며 
+
+        // 클릭된 제안 항목(element)에서 부모 요소들을 거슬러 올라가며
         // 'suggestions-dropdown' 클래스를 가진 드롭다운 컨테이너를 찾음
         const dropdown = element.closest('.suggestions-dropdown');
-        
+
         // 찾은 드롭다운에서 다시 부모 요소들을 거슬러 올라가며
         // 'input-wrapper' 클래스를 가진 입력 필드 래퍼를 찾음
         const inputWrapper = dropdown.closest('.input-wrapper');
-        
+
         // 래퍼 내에서 'search-input' 클래스를 가진 실제 검색 입력 필드를 찾음
         // querySelector()는 해당 요소의 자식 요소들 중에서 선택자와 일치하는 첫 번째 요소를 찾음
         const input = inputWrapper.querySelector('.search-input');
-        
+
         selectSuggestion(input, dropdown, element);
     }
 
@@ -420,13 +422,13 @@
         const suggestions = JSON.parse(dropdown.dataset.suggestions || '[]');
         const index = parseInt(selectedElement.dataset.index);
         const selectedItem = suggestions[index];
-        
+
         if (selectedItem) {
             // 도로명 주소 우선, 없으면 지번 주소
             const address = selectedItem.road_address_name || selectedItem.address_name;
             input.value = address;
         }
-        
+
         hideDropdown(dropdown);
     }
 
