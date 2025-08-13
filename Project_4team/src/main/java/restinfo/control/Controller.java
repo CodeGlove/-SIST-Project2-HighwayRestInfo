@@ -1,4 +1,5 @@
 package restinfo.control;
+
 import restinfo.action.Action;
 
 import javax.servlet.*;
@@ -13,52 +14,51 @@ import java.util.Properties;
 
 @WebServlet("/Controller")
 public class Controller extends HttpServlet {
-    //useBodyEncodingForURI="true"*******
+    // useBodyEncodingForURI="true"*******
     // Properties파일의 경로를 저장하자!
     private String myParam = "/WEB-INF/action.properties";
-    
+
     // 위의 myParam이라는 값이 action.properties의 경로를 가지고
     // 그 파일의 내용(클래스의 경로)들을 가져와서 객체로 생성한 후
     // 생성된 객체의 주소를 아래의 Map구조에 저장한다.
     private Map<String, Action> actionMap;
-    
-    public Controller(){
+
+    public Controller() {
         actionMap = new HashMap<>();
     }
-    
+
     @Override
     public void init() throws ServletException {
         // 생성자 다음으로 딱! 한번 수행하는 함수
         // 첫 요청자에 의해 단 한번만 수행하는 곳이다.
-        
+
         // 현재 서블릿이 생성될 때 멤버변수인 myParam값이 존재한다.
         // 그 myParam이 가지고 있는 값을 절대경로 만들어야 한다.
         // jsp에서는 application이라는 내장객체가 존재했지만 서블릿에서는
         // 직접 얻어내야 한다.
         ServletContext application = this.getServletContext();
-        
+
         String realPath = application.getRealPath(myParam);
-        //System.out.println(realPath);
-        
-        //절대경로화 시킨 이유는
+        // System.out.println(realPath);
+
+        // 절대경로화 시킨 이유는
         // 해당 파일의 내용(클래스 경로)을 스트림을 이용하여
         // 읽어와서 Properties객체에 담기 위함이다.
         Properties prop = new Properties();
-        //prop.setProperty("index", "emp.action.IndexAction");
-        //위처럼 저장을 해야하지만 이렇게 하면 기능이 하나 생길때마다
+        // prop.setProperty("index", "emp.action.IndexAction");
+        // 위처럼 저장을 해야하지만 이렇게 하면 기능이 하나 생길때마다
         // 소스를 수정해야 하는 번거로움이 있다.
-        
-        //Properties의 load함수를 이용하여 내용들을 읽기한다. 이때 필요한
+
+        // Properties의 load함수를 이용하여 내용들을 읽기한다. 이때 필요한
         // 객체가 InputStream이다.
         FileInputStream fis = null;
         try {
-            //action.properties파일과 연결되는 스트림 준비
+            // action.properties파일과 연결되는 스트림 준비
             fis = new FileInputStream(realPath);
-            
-            prop.load(fis);// action.properties파일의 내용들을
-            // 읽어서 비어있던 Properties객체에 키와 값을 쌍으로
-            // 저장한다.  예)  "index" ---> "emp.action.IndexAction"
+            prop.load(fis);
+            System.out.println("Action 설정 로드 완료: " + prop.size() + "개 액션");
         } catch (Exception e) {
+            System.err.println("action.properties 로드 실패!");
             e.printStackTrace();
         }
         // 생성할 객체들의 경로가 모두 Properties객체로 저장된 상태다.
@@ -67,38 +67,35 @@ public class Controller extends HttpServlet {
         // Properties에 저장된 키들을 모두 가져와서
         // 반복자(Iterator)로 수행해야 한다.
         Iterator<Object> it = prop.keySet().iterator();
-        
+
         // 키들을 모두 얻었으니 키에 연결된 클래스 경로들을 하나씩
         // 얻어내어 객체를 생성한 후 actionMap에 저장한다.
-        while(it.hasNext()){
-            //먼저 키를 하나 얻어내어 문자열로 반환
-            String key = (String)it.next();
-            
-            //위에서 얻어낸 키와 연결된 값(value: 클래스 경로)을 얻어낸다.
+        while (it.hasNext()) {
+            // 먼저 키를 하나 얻어내어 문자열로 반환
+            String key = (String) it.next();
+
+            // 위에서 얻어낸 키와 연결된 값(value: 클래스 경로)을 얻어낸다.
             String value = prop.getProperty(key);// "emp.action.IndexAction"
-            
+
             try {
                 Object obj = Class.forName(value).newInstance();
-                // 쉽게 말해서 Class를 통해 정확한 클래스의
-                // 경로가 있다면 위와 같이 객첼르 생성할 수 있다.
-                
-                //생성된 객체를  Action으로 형 변환시켜서
-                // actionMap에 저장하자!
-                actionMap.put(key, (Action)obj);
+                actionMap.put(key, (Action) obj);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Action 생성 실패: " + key + " -> " + value);
             }
-        }//while의 끝
+        } // while의 끝
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         // GET 요청은 POST로 넘겨서 모든 처리를 한 곳에서 관리
         doPost(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         // 1. POST 요청의 한글 깨짐을 막기 위해 인코딩 설정
         request.setCharacterEncoding("UTF-8");
 
@@ -106,7 +103,15 @@ public class Controller extends HttpServlet {
         String type = request.getParameter("type");
         if (type == null)
             type = "mainpage";
+
         Action action = actionMap.get(type);
+        System.out.println("요청 처리: " + type + " -> " + (action != null ? action.getClass().getSimpleName() : "NULL"));
+
+        if (action == null) {
+            System.out.println("ERROR: " + type + "에 해당하는 Action을 찾을 수 없습니다!");
+            response.sendError(500, "Action not found: " + type);
+            return;
+        }
 
         // 3. 담당자에게 실제 작업 실행을 시킴
         String viewPath = action.execute(request, response);
