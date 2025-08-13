@@ -234,70 +234,95 @@
     </main>
 
     <script>
-        // 도넛 차트 그리기 함수
-        function drawDonutChart(canvasId, data, colors) {
+        // 도넛 차트 그리기 함수 (간단한 순차 애니메이션)
+        function drawDonutChartWithAnimation(canvasId, data, colors) {
             const canvas = document.getElementById(canvasId);
             const ctx = canvas.getContext('2d');
             const total = data.reduce((a, b) => a + b, 0); // 전체 합계
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const radius = 100; // 바깥 반지름
-            const innerRadius = 60; // 안쪽 반지름
+            const innerRadius = 50; // 안쪽 반지름
 
-            let startAngle = -Math.PI / 2; // 12시 방향에서 시작
+            // 애니메이션 설정
+            const durationPerSlice = 800; // 각 아이템당 애니메이션 시간 (0.8초)
+            const startTime = performance.now(); // 시작 시간
+            
+            // 각 조각의 각도 계산
+            const sliceAngles = [];
+            let currentAngle = -Math.PI / 2; // 12시 방향 시작
+            
+            for (let i = 0; i < data.length; i++) {
+                const sliceAngle = (data[i] / total) * 2 * Math.PI;
+                sliceAngles.push({
+                    start: currentAngle,
+                    end: currentAngle + sliceAngle
+                });
+                currentAngle += sliceAngle;
+            }
 
-            // 각 아이템별로 도넛의 부분을 그림
-            data.forEach((value, i) => {
-                const sliceAngle = (value / total) * 2 * Math.PI; // 해당 아이템의 각도
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
-                ctx.arc(centerX, centerY, innerRadius, startAngle + sliceAngle, startAngle, true);
-                ctx.closePath();
+            // 애니메이션 프레임 그리기
+            function drawFrame() {
+                const elapsed = performance.now() - startTime;
                 
-                // 그라데이션 효과 - 3번째 아이템
-                if (i === 2) {
-                    // 수직 선형 그라데이션 생성 - 20단계 보라색 그라데이션
-                    const grad = ctx.createLinearGradient(centerX, centerY - radius, centerX, centerY + radius);
+                // 캔버스 지우기
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 각 조각 그리기
+                for (let i = 0; i < sliceAngles.length; i++) {
+                    const slice = sliceAngles[i];
                     
-                    // 시작 색상 (밝은 보라색)
-                    const startColor = { r: 139, g: 92, b: 246 }; // #8B5CF6
-                    // 끝 색상 (파란색)
-                    const endColor = { r: 102, g: 126, b: 234 }; // #667eea
+                    // 현재 조각의 시작 시간과 진행률
+                    const sliceStartTime = i * durationPerSlice;
+                    const sliceElapsed = elapsed - sliceStartTime;
+                    const progress = Math.max(0, Math.min(sliceElapsed / durationPerSlice, 1));
                     
-                    // 20단계 그라데이션 생성
-                    for (let step = 0; step <= 20; step++) {
-                        const ratio = step / 20;
-                        const r = Math.round(startColor.r + (endColor.r - startColor.r) * ratio);
-                        const g = Math.round(startColor.g + (endColor.g - startColor.g) * ratio);
-                        const b = Math.round(startColor.b + (endColor.b - startColor.b) * ratio);
-                        
-                        // 디버깅용 콘솔 로그
-                        console.log(`Step ${step}: r=${r}, g=${g}, b=${b}`);
-                        
-                        // 변수 스코프 문제 해결을 위해 직접 문자열 생성
-                        const color = 'rgb(' + r + ', ' + g + ', ' + b + ')';
-                        grad.addColorStop(ratio, color);
+                    // 현재 그려야 할 끝 각도
+                    const currentEnd = slice.start + (slice.end - slice.start) * progress;
+                    
+                    // 도넛 조각 그리기
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, slice.start, currentEnd);
+                    ctx.arc(centerX, centerY, innerRadius, currentEnd, slice.start, true);
+                    ctx.closePath();
+                    
+                    // 색상 설정 (3번째 아이템만 그라데이션)
+                    if (i === 2) {
+                        const grad = ctx.createLinearGradient(centerX, centerY - radius, centerX, centerY + radius);
+                        grad.addColorStop(0, '#8B5CF6');   // 보라색
+                        grad.addColorStop(1, '#667eea');   // 파란색
+                        ctx.fillStyle = grad;
+                    } else {
+                        ctx.fillStyle = colors[i];
                     }
                     
-                    ctx.fillStyle = grad;
-                } else {
-                    ctx.fillStyle = colors[i];
+                    ctx.fill();
                 }
-
-                ctx.fill();
-                startAngle += sliceAngle;
-            });
+                
+                // 애니메이션 계속 여부 확인
+                const totalDuration = sliceAngles.length * durationPerSlice;
+                if (elapsed < totalDuration) {
+                    requestAnimationFrame(drawFrame);
+                }
+            }
+            
+            // 애니메이션 시작
+            requestAnimationFrame(drawFrame);
         }
 
         // AJAX로 회원 데이터 가져오기
         async function fetchMemberData() {
-            try {
-                const response = await fetch('Controller?type=getStatus', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
+          try {
+        const response = await fetch('Controller', {
+            method: 'POST',
+            // Content-Type 기본값으로 사용하기 때문에
+            // headers 제거 : application/x-www-form-urlencoded
+
+            body: new URLSearchParams({
+                type: 'getStatus',
+                chartType: 'donut'
+            })
+        });
                 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -320,8 +345,8 @@
             const memberData = await fetchMemberData();
             const colors = ['#FEE500', '#03C75A', '#8B5CF6']; // 카카오, 네이버, 보라색
 
-            // 도넛 차트 그리기 호출
-            drawDonutChart('donutChart', memberData, colors);
+            // 애니메이션이 포함된 도넛 차트 그리기 호출
+            drawDonutChartWithAnimation('donutChart', memberData, colors);
         });
     </script>
 
