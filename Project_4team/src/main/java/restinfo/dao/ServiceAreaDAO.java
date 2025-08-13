@@ -26,7 +26,6 @@ public class ServiceAreaDAO {
 
         return vo;
     }
-
     public static int updateXY(String idx, double lat, double lng) {
         int cnt = 0;
         SqlSession ss = FactoryService.getFactory().openSession();

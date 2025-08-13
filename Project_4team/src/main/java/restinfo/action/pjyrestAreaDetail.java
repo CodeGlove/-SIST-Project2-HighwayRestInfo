@@ -7,8 +7,8 @@ import restinfo.dao.ServiceAreaDAO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 
+import java.io.PrintWriter;
 
 public class pjyrestAreaDetail implements Action{
     @Override

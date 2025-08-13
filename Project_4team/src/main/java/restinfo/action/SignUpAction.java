@@ -7,7 +7,8 @@ import restinfo.dao.SignUpDAO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignUpAction implements Action {
     @Override
@@ -26,8 +27,7 @@ public class SignUpAction implements Action {
         try {
             UserVO CheckVO = SignUpDAO.check(email,"SOCIAL");
             if(CheckVO==null) {
-                String str = makeNickName();
-                int cnt = SignUpDAO.add(email, str, hashpwd, name, "SOCIAL");
+                int cnt = SignUpDAO.add(email, "닉네임 넣을 부분", hashpwd, name, "SOCIAL");
                 if (cnt > 0) {
                     System.out.println("완료");
                 } else {
@@ -41,6 +41,7 @@ public class SignUpAction implements Action {
 
         return null;
     }
+
     private String makeNickName() {
 
         // 닉네임을 비교하기 위해 기존의 DB에서 닉네임값들 불러오기
@@ -60,4 +61,5 @@ public class SignUpAction implements Action {
 
         return "Social" + newNumber;
     }
+
 }
