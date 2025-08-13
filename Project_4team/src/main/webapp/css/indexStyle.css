@@ -382,6 +382,12 @@ body {
     position: relative;
 }
 
+/* 자동완성 입력 래퍼 */
+.input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
 .search-input {
     width: 250px;
     padding: 1rem 1.5rem;
@@ -395,6 +401,160 @@ body {
 .search-input:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* 자동완성 드롭다운 */
+.suggestions-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+    display: none;
+    backdrop-filter: blur(8px);
+    animation: dropdownSlideIn 0.2s ease-out;
+}
+
+.suggestions-dropdown.show {
+    display: block;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 자동완성 항목 */
+.suggestion-item {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    position: relative;
+}
+
+.suggestion-item:first-child {
+    border-radius: 16px 16px 0 0;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 16px 16px;
+}
+
+.suggestion-item:only-child {
+    border-radius: 16px;
+}
+
+.suggestion-item:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    transform: translateX(2px);
+}
+
+.suggestion-item.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 장소명 스타일 */
+.place-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1a202c;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+}
+
+.suggestion-item.selected .place-name {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* 주소 스타일 */
+.place-address {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.4;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+}
+
+.suggestion-item.selected .place-address {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* 로딩 상태 */
+.suggestions-loading {
+    padding: 1.5rem;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 16px;
+}
+
+.suggestions-loading i {
+    color: #667eea;
+}
+
+/* 결과 없음 상태 */
+.suggestions-empty {
+    padding: 1.5rem;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.suggestions-empty i {
+    color: #cbd5e1;
+}
+
+/* 드롭다운 스크롤바 스타일 */
+.suggestions-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 3px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.4);
 }
 
 .search-btn {
@@ -565,6 +725,16 @@ body {
     .search-input {
         width: 100%;
         max-width: 300px;
+    }
+
+    /* 모바일에서 자동완성 드롭다운 */
+    .input-wrapper {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .suggestions-dropdown {
+        max-height: 200px;
     }
 
     .error-text {

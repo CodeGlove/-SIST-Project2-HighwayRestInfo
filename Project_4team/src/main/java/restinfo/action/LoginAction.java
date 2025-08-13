@@ -17,7 +17,7 @@ public class LoginAction implements Action {
 
 		// 아이디 입력 안됐거나 입력란이 비어있을경우
 		if (id == null || id.trim().isEmpty()) {
-			return "login.jsp"; // 로그인창 이동
+			return "/login.jsp"; // 로그인창 이동 (자기 자신으로 포워딩 방지)
 		}
 
 		// ******** id 파라미터가 있으면, 비동기 로그인 수행 ********
@@ -28,7 +28,7 @@ public class LoginAction implements Action {
 		String message = "";
 
 		// 로그인 처리
-		if (vo != null && BCrypt.checkpw(pwd, vo.getPwd())) {
+		if (vo != null && vo.getPwd() != null && BCrypt.checkpw(pwd, vo.getPwd())) {
 			// 로그인 성공
 			loginSuccess = true;
 			HttpSession session = request.getSession();// 세션 생성

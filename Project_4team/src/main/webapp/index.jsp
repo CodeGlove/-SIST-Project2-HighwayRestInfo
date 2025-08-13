@@ -13,6 +13,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/indexStyle.css" rel="stylesheet">
     <link href="css/footerStyle.css" rel="stylesheet">
+    
+
 
 </head>
 <body>
@@ -38,8 +40,16 @@
         <div class="auth-buttons">
             <a href="#" class="btn btn-login">KOR</a>
             <a href="#" class="btn btn-login">ENG</a>
-            <a href="Controller?type=login" class="btn btn-login">로그인</a>
-            <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+            <c:choose>
+                <c:when test="${sessionScope.loginUser == null}">
+                    <a href="Controller?type=login" class="btn btn-login">로그인</a>
+                    <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="Controller?type=logout" class="btn btn-login">로그아웃</a>
+                    <a href="Controller?type=mypage" class="btn btn-register">내정보</a>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 </header>
@@ -67,10 +77,20 @@
         <h2 class="section-title">경로내 휴게시설 검색</h2>
         <div class="search-container">
             <form action="Controller?type=kakaoMap" method="post" id="routeForm">
-                <input type="text" name="origin" id="origin" class="search-input" placeholder="출발지를 입력하세요"
-                       value="<c:out value='${origin}'/>" required>
-                <input type="text" name="destination" id="destination" class="search-input" placeholder="목적지를 입력하세요"
-                       value="<c:out value='${destination}'/>" required>
+                <!-- 출발지 입력 섹션 -->
+                <div class="input-wrapper">
+                    <input type="text" name="origin" id="origin" class="search-input" placeholder="출발지를 입력하세요"
+                           value="<c:out value='${origin}'/>" required autocomplete="off">
+                    <div id="origin-suggestions" class="suggestions-dropdown"></div>
+                </div>
+                
+                <!-- 목적지 입력 섹션 -->
+                <div class="input-wrapper">
+                    <input type="text" name="destination" id="destination" class="search-input" placeholder="목적지를 입력하세요"
+                           value="<c:out value='${destination}'/>" required autocomplete="off">
+                    <div id="destination-suggestions" class="suggestions-dropdown"></div>
+                </div>
+                
                 <!-- 폼 제출 후 KakaoMapAction에서 경로 계산 완료 후 RestAreaAction으로 자동 포워딩하도록 지시하는 숨겨진 필드 -->
                 <input type="hidden" name="forwardTo" value="restArea">
                 <button type="submit" class="search-btn" id="searchRouteBtn"><i class="fas fa-search"></i> 길찾기</button>
@@ -156,6 +176,9 @@
 
         // 길찾기 폼 초기화
         initializeRouteForm();
+
+        // 자동완성 초기화
+        initializeAutocomplete();
     });
 
     // 스크롤 애니메이션 초기화
@@ -207,6 +230,211 @@
                 return true;
             });
         }
+        
+
+    }
+
+    // 자동완성 초기화
+    function initializeAutocomplete() {
+        // 출발지 자동완성 설정
+        setupAutocomplete('origin', 'origin-suggestions');
+        
+        // 목적지 자동완성 설정
+        setupAutocomplete('destination', 'destination-suggestions');
+    }
+
+    // 자동완성 설정
+    function setupAutocomplete(inputId, dropdownId) {
+        const input = document.getElementById(inputId);
+        const dropdown = document.getElementById(dropdownId);
+        
+        if (!input || !dropdown) {
+            return;
+        }
+
+        let currentSelection = -1;
+        let searchTimeout;
+
+        // 입력 이벤트
+        input.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+
+            // 디바운싱: 300ms 후에 검색
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                hideDropdown(dropdown);
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchPlaces(query, dropdown);
+            }, 300);
+        });
+
+        // 포커스 이벤트
+        input.addEventListener('focus', function() {
+            if (input.value.trim().length >= 2) {
+                showDropdown(dropdown);
+            }
+        });
+
+        // 블러 이벤트 (약간의 지연을 두어 클릭 이벤트가 먼저 실행되도록)
+        input.addEventListener('blur', function() {
+            setTimeout(() => {
+                hideDropdown(dropdown);
+            }, 200);
+        });
+
+        // 키보드 네비게이션
+        input.addEventListener('keydown', function(e) {
+            const items = dropdown.querySelectorAll('.suggestion-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentSelection = Math.min(currentSelection + 1, items.length - 1);
+                updateSelection(items, currentSelection);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentSelection = Math.max(currentSelection - 1, -1);
+                updateSelection(items, currentSelection);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentSelection >= 0 && items[currentSelection]) {
+                    selectSuggestion(input, dropdown, items[currentSelection]);
+                }
+            } else if (e.key === 'Escape') {
+                hideDropdown(dropdown);
+                currentSelection = -1;
+            }
+        });
+    }
+
+    // 장소 검색 (카카오 API 연결)
+    function searchPlaces(query, dropdown) {
+        // 로딩 표시
+        showLoading(dropdown);
+        
+        // SearchAddress API 호출
+        fetch('Controller?type=searchAddress&keyword=' + encodeURIComponent(query))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('서버 응답 오류: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 카카오 API 응답 구조에 맞게 처리
+                if (data.documents && Array.isArray(data.documents)) {
+                    displaySuggestions(dropdown, data.documents);
+                } else if (data.error) {
+                    showError(dropdown, 'API 오류가 발생했습니다.');
+                } else {
+                    displaySuggestions(dropdown, []);
+                }
+            })
+            .catch(error => {
+                showError(dropdown, '검색 중 오류가 발생했습니다.');
+            });
+    }
+
+    // 드롭다운 표시
+    function showDropdown(dropdown) {
+        dropdown.classList.add('show');
+    }
+
+    // 드롭다운 숨김
+    function hideDropdown(dropdown) {
+        dropdown.classList.remove('show');
+    }
+
+    // 로딩 표시
+    function showLoading(dropdown) {
+        dropdown.innerHTML = '<div class="suggestions-loading"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+        showDropdown(dropdown);
+    }
+
+    // 에러 표시
+    function showError(dropdown, message) {
+        dropdown.innerHTML = '<div class="suggestions-empty"><i class="fas fa-exclamation-triangle"></i> ' + message + '</div>';
+        showDropdown(dropdown);
+    }
+
+    // 제안 목록 표시
+    function displaySuggestions(dropdown, suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            dropdown.innerHTML = '<div class="suggestions-empty">검색 결과가 없습니다.</div>';
+            showDropdown(dropdown);
+            return;
+        }
+
+        let html = '';
+        suggestions.forEach((item, index) => {
+            const placeName = escapeHtml(item.place_name);
+            const placeAddress = escapeHtml(item.road_address_name || item.address_name);
+            
+            html += '<div class="suggestion-item" data-index="' + index + '" onclick="selectSuggestionByClick(this)">' +
+                    '<div class="place-name">' + placeName + '</div>' +
+                    '<div class="place-address">' + placeAddress + '</div>' +
+                    '</div>';
+        });
+
+        dropdown.innerHTML = html;
+        dropdown.dataset.suggestions = JSON.stringify(suggestions);
+        showDropdown(dropdown);
+    }
+
+    // 선택 상태 업데이트
+    function updateSelection(items, selectedIndex) {
+        items.forEach((item, index) => {
+            if (index === selectedIndex) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    // 제안 선택 (클릭)
+    function selectSuggestionByClick(element) {
+        // closest() 메서드: 현재 요소부터 시작해서 부모 요소들을 차례로 올라가며 
+        // 지정된 CSS 선택자와 일치하는 첫 번째 요소를 찾는 메서드
+        
+        // 클릭된 제안 항목(element)에서 부모 요소들을 거슬러 올라가며 
+        // 'suggestions-dropdown' 클래스를 가진 드롭다운 컨테이너를 찾음
+        const dropdown = element.closest('.suggestions-dropdown');
+        
+        // 찾은 드롭다운에서 다시 부모 요소들을 거슬러 올라가며
+        // 'input-wrapper' 클래스를 가진 입력 필드 래퍼를 찾음
+        const inputWrapper = dropdown.closest('.input-wrapper');
+        
+        // 래퍼 내에서 'search-input' 클래스를 가진 실제 검색 입력 필드를 찾음
+        // querySelector()는 해당 요소의 자식 요소들 중에서 선택자와 일치하는 첫 번째 요소를 찾음
+        const input = inputWrapper.querySelector('.search-input');
+        
+        selectSuggestion(input, dropdown, element);
+    }
+
+    // 제안 선택
+    function selectSuggestion(input, dropdown, selectedElement) {
+        const suggestions = JSON.parse(dropdown.dataset.suggestions || '[]');
+        const index = parseInt(selectedElement.dataset.index);
+        const selectedItem = suggestions[index];
+        
+        if (selectedItem) {
+            // 도로명 주소 우선, 없으면 지번 주소
+            const address = selectedItem.road_address_name || selectedItem.address_name;
+            input.value = address;
+        }
+        
+        hideDropdown(dropdown);
+    }
+
+    // HTML 이스케이프
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // 로딩 상태 설정
@@ -226,7 +454,7 @@
 </script>
 
 <!-- Footer Include -->
-<jsp:include page="footer.jsp" />
+<jsp:include page="footer.jsp"/>
 
 </body>
 </html>
