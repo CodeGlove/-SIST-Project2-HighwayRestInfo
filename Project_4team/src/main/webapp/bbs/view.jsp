@@ -1,0 +1,305 @@
+<%@ page import="mybatis.vo.BbsVO" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+  <style type="text/css">
+    #bbs table {
+      width:580px;
+      margin-left:10px;
+      border:1px solid black;
+      border-collapse:collapse;
+      font-size:14px;
+
+    }
+
+    #bbs table caption {
+      font-size:20px;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    #bbs table th {
+      text-align:center;
+      border:1px solid black;
+      padding:4px 10px;
+    }
+
+    #bbs table td {
+      text-align:left;
+      border:1px solid black;
+      padding:4px 10px;
+    }
+
+    .no {width:15%}
+    .subject {width:30%}
+    .writer {width:20%}
+    .reg {width:20%}
+    .hit {width:15%}
+    .title{background:lightsteelblue}
+
+    .odd {background:silver}
+
+    .hide{ display: none}
+
+  </style>
+
+</head>
+<body>
+
+<c:if test="${requestScope.vo ne null}"> <%--ne은 '!='와 같다--%>
+  <c:set var="vo" value="${requestScope.vo}"/>
+  <div id="bbs">
+    <form method="post" >
+      <table summary="공지사항 상세내용">
+        <caption>공지사항 상세내용</caption>
+        <tbody>
+        <tr>
+          <th>제목:</th>
+          <td>${vo.subject}</td>
+        </tr>
+        <c:if test="${vo.fileName ne null and vo.fileName.length() > 4}"> <%--첨부파일이 있을경우에만 보여주기--%>
+          <tr>
+            <th>첨부파일:</th>
+            <td><a href="javascript:down('${vo.fileName}')">
+                ${vo.fileName}
+            </a></td>
+          </tr>
+        </c:if>
+        <tr>
+          <th>이름:</th>
+          <td>${vo.writer}</td>
+        </tr>
+        <tr>
+          <th>내용:</th>
+          <td>${vo.content}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align: center;">
+            <input type="button" id="btn-like" value="👍" onclick="sendReaction('like')"
+                   <c:if test="${hasReacted}">disabled</c:if> />
+            <span id="likeCount">${likeCount}</span>
+            <input type="button" id="btn-hate" value="👎" onclick="sendReaction('hate')"
+                   <c:if test="${hasReacted}">disabled</c:if> />
+            <span id="hateCount">${hateCount}</span>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <input type="button" value="수정" onclick="goEdit()"/>
+            <input type="button" value="삭제" onclick="goDel()"/> <%--삭제 버튼 지정--%>
+            <input type="button" value="목록" onclick="goList()"/>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </form>
+    <form method="post" action="Controller">
+      이름:<input type="text" name="writer"/><br/>
+      내용:<textarea rows="4" cols="55" name="content"></textarea><br/>
+      비밀번호:<input type="password" name="pwd"/><br/>
+
+      <input type="hidden" name="PostNum" value="${vo.postNum}">
+      <input type="hidden" name="cPage" value="${param.cPage}"/>
+      <input type="hidden" name="type" value="commadd"/>
+      <input type="submit" value="저장하기"/>
+    </form>
+
+    <form name="ff" method="post">
+      <input type="hidden" name="type"/>
+      <input type="hidden" name="FileName"/>
+      <input type="hidden" name="PostNum" value="${vo.postNum}"/>
+      <input type="hidden" name="cPage" value="${param.cPage}"/>
+    </form>
+
+      <%-- 삭제 시 보여주는 팝업창--%>
+    <div id="del_dialog" title="삭제">
+      <form action="Controller" method="post">
+          <%-- 비밀번호 표현등 할 수 있음 --%>
+        <p>정말로 삭제하시겠습니까?</p>
+        <input type="hidden" name="type" value="del"/>
+        <input type="hidden" name="PostNum" value="${vo.postNum}"/>
+        <input type="hidden" name="cPage" value="${param.cPage}"/>
+        <button type="button" onclick="del(this.form)">삭제</button>
+      </form>
+    </div>
+  </div>
+</c:if>
+
+<%-- 표현할 vo객체가 존재하지 않는다면 원래 있던 목록 페이지로 이동한다.--%>
+<c:if test="${requestScope.vo eq null}"> <%--eq는 '==' 와 같다--%>
+  <c:redirect url="Controller">
+    <c:param name="type" value="list"/>
+    <c:param name="cPage" value="${param.cPage}"/>
+  </c:redirect>
+</c:if>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+<script>
+  $(function () {
+    let option = {
+      modal: true,
+      autoOpen: false, //호출되는 즉시 대화상자 표시(기본값: true)
+      resizable: false,
+    };
+
+    $("#del_dialog").dialog(option);
+  });
+
+  function goList() {
+    document.ff.action = "Controller";
+    document.ff.type.value = "notice"
+    document.ff.submit();
+  }
+  function goDel() {
+    /*document.ff.action = "Controller";
+    document.ff.type.value = "del"
+    document.ff.submit();*/
+    $("#del_dialog").dialog("open");
+  }
+  function del(frm) {
+    frm.submit();
+  }
+  function goEdit() {
+    //ff를 찾아야한다!
+    document.ff.action = "Controller";
+    document.ff.type.value = "edit";
+    document.ff.submit(); //EditAction으로 이동
+  }
+  function down(FileName) {
+    document.ff.action = "download.jsp";
+    document.ff.FileName.value = FileName;
+    document.ff.submit();
+  }
+
+  //리액션 실행 코드
+  function sendReaction(type) {
+    // 1. 함수가 시작되자마자 두 버튼을 '즉시' 비활성화 (가장 중요!)
+    //    - 서버 응답을 기다리지 않고 바로 UI를 잠가서 중복 클릭을 원천 차단합니다.
+    $("#btn-like").prop("disabled", true);
+    $("#btn-hate").prop("disabled", true);
+
+    // 2. 화면의 숫자 업데이트
+    //    - 서버가 성공할 것을 '미리 가정'하고 사용자에게 즉각적인 피드백을 줍니다.
+    if (type === 'like') {
+      const countSpan = $("#likeCount");
+      const currentCount = parseInt(countSpan.text(), 10);
+      countSpan.text(currentCount + 1);
+    } else { // 'hate'일 경우
+      const countSpan = $("#hateCount");
+      const currentCount = parseInt(countSpan.text(), 10);
+      countSpan.text(currentCount + 1);
+    }
+
+    // 3. 서버에 조용히 요청 보내기
+    //    - 이제 이 AJAX 호출은 백그라운드에서 DB에 데이터를 기록하는 역할만 합니다.
+    $.ajax({
+      url: '${pageContext.request.contextPath}/Controller',
+      type: 'POST',
+      data: {
+        type: type,
+        PostNum: '${vo.postNum}'
+      }
+    })
+      .fail(function() {
+        // 혹시라도 서버 요청이 실패하면 사용자에게 알리고, 새로고침을 유도합니다.
+        alert("데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
+        location.reload(); // 페이지를 새로고침하여 정확한 상태를 다시 불러옴
+      });
+  }
+
+  /*function sendReaction(type) {
+    console.log("1. sendReaction 함수 시작. 타입:", type);
+
+    // 버튼이 이미 비활성화 상태이면 아무것도 하지 않음 (중복 클릭 방지)
+    if ($("#btn-like").prop("disabled")) {
+      console.log("already btn disabled, close this method.");
+      return;
+    }
+
+    $.ajax({
+      url: '${pageContext.request.contextPath}/Controller',
+      type: 'POST',
+      data: {
+        type: type,
+        PostNum: '${vo.postNum}'
+      }
+    })
+      .done(function() {
+        // 서버와 통신이 '성공'했을 때 이 부분이 실행됩니다.
+        console.log("2. AJAX Request Success!!! (.done ). UI will updated.");
+
+        // 화면의 숫자 업데이트
+        if (type === 'like') {
+          const countSpan = $("#likeCount");
+          const currentCount = parseInt(countSpan.text(), 10);
+          countSpan.text(currentCount + 1);
+        } else { // 'hate'일 경우
+          const countSpan = $("#hateCount");
+          const currentCount = parseInt(countSpan.text(), 10);
+          countSpan.text(currentCount + 1);
+        }
+
+        // 두 버튼 모두 즉시 비활성화
+        $("#btn-like").prop("disabled", true);
+        $("#btn-hate").prop("disabled", true);
+        console.log("3. btn disabled success!!!.");
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        // 서버와 통신이 '실패'했을 때 이 부분이 실행됩니다.
+        console.error("AJAX 요청 실패:", textStatus, errorThrown);
+        alert("request ~ing error");
+      });
+  }*/
+
+  //********* 기존 코드 **********
+  /*function sendReaction(type) {
+    //서버에 보낼 데이터 준비
+    $.ajax({
+      url: '${pageContext.request.contextPath}/Controller', // 요청을 보낼 URL
+      type: 'POST', // 데이터 변경을 유발하므로 POST 방식 사용
+      data: {
+        type: type, PostNum: '${vo.postNum}'} // type: 'like' 또는 'hate' PostNum: 현재 게시물 번호
+    }).done(function () {
+      // ajax 요청 완료시 함수 실행
+      if(type === 'like'){
+        // 화면에 좋아요 숫자1 증가
+        const countSpan = $("#likeCount");
+        const currentCount = parseInt(countSpan.text());
+        countSpan.text(currentCount+1);
+      }else{
+        // 화면에 싫어요 숫자1 증가
+        const countSpan = $("#hateCount");
+        const currentCount = parseInt(countSpan.text());
+        countSpan.text(currentCount+1);
+      }
+      // 누르기 중복 안됨(버튼 비활성화)
+      $("#btn-like").prop("disabled", true);
+      $("#btn-hate").prop("disabled", true);
+    }).fail(function(){
+      //요청 실패시
+      alert("오류가 발생했습니다. 다시 시도해주세요");
+    });
+  }*/
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

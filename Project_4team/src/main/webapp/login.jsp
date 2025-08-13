@@ -184,7 +184,9 @@
                     //서버로부터 받은 JSON 결과에 따라 처리
                     if (data.status === 'success') {
                         alert("로그인이 완료되었습니다!");
-                        window.location.href = 'loginResult.jsp'; //성공시 index 화면으로 이동
+
+                        //서버가 알려준 redirectURL 값으로 페이지 이동
+                        window.location.href = data.redirectURL; //성공시 index 화면으로 이동
                     } else {
                         alert(data.message || "로그인에 실패했습니다."); //실패시 서버가 보낸 메시지를 alert창으로 보여줌
                     }
@@ -193,13 +195,6 @@
                     console.error("Login Error:", error);
                     alert("로그인 처리 중 오류가 발생했습니다.");
                 });
-
-                // Success - simulate login
-                /*showSuccess('로그인 중입니다...');
-                setTimeout(() => {
-                    alert('로그인이 완료되었습니다!');
-                    window.location.href = 'index.jsp';
-                }, 1500);*/
             });
 
             // Email validation
