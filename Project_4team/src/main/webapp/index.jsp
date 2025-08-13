@@ -71,6 +71,7 @@
             <div class="floating-icon">
                 <i class="fas fa-gift"></i>
             </div>
+        </div>
     </section>
 
     <!-- Search Section -->
