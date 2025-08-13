@@ -19,6 +19,12 @@
     <!-- jQuery: AJAX 요청을 위해 필요 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+    <%--모달을 위한 스크립트--%>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+
+
     <!--
         [중요] video.js와 HLS 관련 라이브러리 버전 통일 및 정리
         - video.js는 최신 안정 버전인 8.6.1 사용
@@ -76,6 +82,28 @@
     </style>
 </head>
 <body>
+<div class="modal fade" id="restAreaModal" tabindex="-1" aria-labelledby="restAreaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="restAreaModalLabel">휴게소 정보</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>휴게소 이름:</strong> <span id="modal-sa-name"></span></p>
+                <p><strong>주소:</strong> <span id="modal-address"></span></p>
+                <p><strong>전화번호:</strong> <span id="modal-phone"></span></p>
+                <%-- 필요하다면 다른 정보들도 추가 --%>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="search-container">
     <div class="select-wrapper">
@@ -166,9 +194,9 @@
     function addRestAreaMarkersToMap(data) {
         restAreaMarkers.clearLayers();
         if (!data || data.length === 0) return;
-        data.forEach(ra => {
-            const marker = L.marker([ra.Lat, ra.Lng], { icon: restIcon });
 
+        data.forEach(ra => {
+            const marker = L.marker([ra.Lat, ra.Lng]);
             // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
             const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
             marker.bindPopup(popupContent);
@@ -177,6 +205,7 @@
                 const currentZoom = map.getZoom();
                 const targetZoom = 14;
                 const newZoom = Math.max(currentZoom, targetZoom);
+
                 map.setView(e.latlng, newZoom);
                 map.once('zoomend', function() {
                     e.target.openPopup();
@@ -374,9 +403,7 @@
         }
     });
 
-    map.once('load', function(){
-        loadRestAreas();
-    });
+
 </script>
 
 </body>

@@ -27,7 +27,7 @@ public class SignUpAction implements Action {
         try {
             UserVO CheckVO = SignUpDAO.check(email,"SOCIAL");
             if(CheckVO==null) {
-                int cnt = SignUpDAO.add(email, "아아",hashpwd, name, "SOCIAL");
+                int cnt = SignUpDAO.add(email, "닉네임 넣을 부분", hashpwd, name, "SOCIAL");
                 if (cnt > 0) {
                     System.out.println("완료");
                 } else {
@@ -35,10 +35,31 @@ public class SignUpAction implements Action {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           e.printStackTrace();
 
         }
 
         return null;
     }
+
+    private String makeNickName() {
+
+        // 닉네임을 비교하기 위해 기존의 DB에서 닉네임값들 불러오기
+        List<String> nickNames = SignUpDAO.check("Social");
+        Set<Integer> set = new HashSet<>();
+
+        // 각각 닉네임에서 뒤의 숫자만 얻어내기
+        for (int i = 0; i < nickNames.size(); i++) {
+            set.add(Integer.parseInt(nickNames.get(i).substring(6)));
+        }
+
+        int newNumber;
+
+        do { // set구조에 값이 들어갈 때까지(중복되지 않는 수가 들어갈 때까지) 반복
+            newNumber = (int)(Math.random() * 90000) + 10000;  // 10000 ~ 99999
+        } while (set.contains(newNumber));
+
+        return "Social" + newNumber;
+    }
+
 }
