@@ -49,7 +49,7 @@ public class SignUpAction implements Action {
 
         // 각각 닉네임에서 뒤의 숫자만 얻어내기
         for (int i = 0; i < nickNames.size(); i++) {
-            set.add(Integer.parseInt(nickNames.get(i).substring(5)));
+            set.add(Integer.parseInt(nickNames.get(i).substring(6)));
         }
 
         int newNumber;

@@ -13,6 +13,10 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <%--모달을 위한 스크립트--%>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
     <style>
         /* style 태그 내용은 기존과 동일 */
         html, body { height: 100%; margin: 0; }
@@ -49,6 +53,28 @@
     </style>
 </head>
 <body>
+<div class="modal fade" id="restAreaModal" tabindex="-1" aria-labelledby="restAreaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="restAreaModalLabel">휴게소 정보</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>휴게소 이름:</strong> <span id="modal-sa-name"></span></p>
+                <p><strong>주소:</strong> <span id="modal-address"></span></p>
+                <p><strong>전화번호:</strong> <span id="modal-phone"></span></p>
+                <%-- 필요하다면 다른 정보들도 추가 --%>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="search-container">
     <div class="select-wrapper">
@@ -128,18 +154,22 @@
     function addMarkersToMap(data) {
         markers.clearLayers();
         if (!data || data.length === 0) return;
+
         data.forEach(ra => {
+            // [테스트 코드 추가] 반복문이 시작될 때, 'ra' 객체에 무엇이 들어있는지 콘솔에 출력해봅니다.
+            console.log(ra);
+
+            // --- 이 아래는 개발자님의 원래 코드 그대로입니다 ---
             const marker = L.marker([ra.Lat, ra.Lng]);
             const popupContent = `<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=\${ra.Idx}"><b>\${ra.SAName}</b><br>\${ra.Address}</a>`;
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
-                const currentZoom = map.getZoom(); // 현재 줌 레벨을 가져옴
+                const currentZoom = map.getZoom();
                 const targetZoom = 14;
-                // 현재 줌 레벨과 목표 줌 레벨 중 더 큰 값을 사용
                 const newZoom = Math.max(currentZoom, targetZoom);
 
-                map.setView(e.latlng, newZoom); // 계산된 줌 레벨로 설정
+                map.setView(e.latlng, newZoom);
                 map.once('zoomend', function() {
                     e.target.openPopup();
                 });
@@ -205,6 +235,9 @@
     map.once('load', function(){
         loadRestAreas();
     });
+
+    $.ajax()
+
 
 </script>
 
