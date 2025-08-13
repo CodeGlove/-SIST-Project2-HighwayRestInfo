@@ -12,13 +12,13 @@ import java.io.PrintWriter;
 public class LoginAction implements Action {
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
-		//ID 추출
+		// ID 추출
 		String id = request.getParameter("username");
 		String pwd = request.getParameter("password");
 
 		// 아이디 입력 안됐거나 입력란이 비어있을경우
-		if(id==null || id.trim().isEmpty()){
-			return "login.jsp"; //로그인창 이동
+		if (id == null || id.trim().isEmpty()) {
+			return "/login.jsp"; // 로그인창 이동 (자기 자신으로 포워딩 방지)
 		}
 
 		//******** id 파라미터가 있으면, 비동기 로그인 수행 ********
@@ -57,11 +57,11 @@ public class LoginAction implements Action {
 
 		//JSON 응답 생성
 		try {
-			//여기서 응답을 JSON으로 설정
+			// 여기서 응답을 JSON으로 설정
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
 
-			//응답 데이터를 작성할 PrintWriter 얻기
+			// 응답 데이터를 작성할 PrintWriter 얻기
 			PrintWriter out = response.getWriter();
 
 			// JSON 형식 문자열 생성
@@ -79,8 +79,8 @@ public class LoginAction implements Action {
 			e.printStackTrace();
 		}
 
-		//Controller한테 페이지 이동 안함
-		return null; //비동기 요청에 대한 응답(페이지 이동x)
+		// Controller한테 페이지 이동 안함
+		return null; // 비동기 요청에 대한 응답(페이지 이동x)
 	}
 
 
