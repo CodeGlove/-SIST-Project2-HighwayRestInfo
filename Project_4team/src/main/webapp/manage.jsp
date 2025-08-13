@@ -297,10 +297,41 @@
                     }
                     
                     ctx.fill();
+                    
+                    // 각 조각 안에 퍼센티지 텍스트 표시 (애니메이션 완료 후에만)
+                    if (progress >= 1) {
+                        const sliceCenterAngle = slice.start + (slice.end - slice.start) / 2;
+                        const textRadius = (radius + innerRadius) / 2; // 텍스트 위치 (중간 반지름)
+                        const textX = centerX + textRadius * Math.cos(sliceCenterAngle);
+                        const textY = centerY + textRadius * Math.sin(sliceCenterAngle);
+
+                        // 텍스트 스타일 설정
+                        ctx.fillStyle = '#333'; // 텍스트 색상
+                        ctx.font = 'bold 12px Arial'; // 폰트
+                        ctx.textAlign = 'center'; // 가운데 정렬
+                        ctx.textBaseline = 'middle'; // 세로 가운데 정렬
+                        
+                        // 퍼센티지 계산 및 표시
+                        const percentage = Math.round((slice.end - slice.start) / (2 * Math.PI) * 100);
+                        ctx.fillText(percentage + '%', textX, textY);
+                    }
                 }
                 
                 // 애니메이션 계속 여부 확인
                 const totalDuration = sliceAngles.length * durationPerSlice;
+                
+                // 가운데 빈 공간에 총 합계 표시 (모든 애니메이션 완료 후)
+                const allCompleted = elapsed >= totalDuration;
+                if (allCompleted) {
+                    console.log('애니메이션 완료! Total 표시:', total);
+                    ctx.fillStyle = '#333';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Total', centerX, centerY - 10);
+                    ctx.fillText(total.toString(), centerX, centerY + 10);
+                }
+                
                 if (elapsed < totalDuration) {
                     requestAnimationFrame(drawFrame);
                 }

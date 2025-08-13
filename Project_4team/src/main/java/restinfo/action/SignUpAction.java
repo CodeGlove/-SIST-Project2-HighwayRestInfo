@@ -24,9 +24,9 @@ public class SignUpAction implements Action {
         System.out.println(name);
 
         try {
-            UserVO CheckVO = SignUpDAO.check(email,"SOCIAL");
+            UserVO CheckVO = SignUpDAO.check(email,"ORIGIN");
             if(CheckVO==null) {
-                int cnt = SignUpDAO.add(email, makeNickName(), hashpwd, name, "SOCIAL");
+                int cnt = SignUpDAO.add(email, makeNickName(), hashpwd, name, "ORIGIN");
                 if (cnt > 0) {
                     System.out.println("완료");
                 } else {

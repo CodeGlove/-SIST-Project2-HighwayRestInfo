@@ -9,6 +9,27 @@ import java.util.List;
 
 public class ManageDAO {
 
+    public static int[] getPlatformCount(){
+
+        SqlSession ss = null;
+
+        int[] counts = new int[3];
+
+        try {
+
+            ss = FactoryService.getFactory().openSession();
+
+            counts[0] = ss.selectOne("User.getPlatformCount", "KAKAO");
+            counts[1] = ss.selectOne("User.getPlatformCount", "NAVER");
+            counts[2] = ss.selectOne("User.getPlatformCount", "ORIGIN");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }  finally {
+            ss.close();
+        }
+        return counts;
+    }
+
     public static void initSA(List<ServiceAreaVO> list) {
         int cnt = 0;
         SqlSession ss = null;
@@ -33,6 +54,7 @@ public class ManageDAO {
         }
         initShop(list);
     }
+
     public static void initShop(List<ServiceAreaVO> list) {
         int cnt = 0;
         SqlSession ss = null;
