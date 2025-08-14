@@ -7,46 +7,19 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Leaflet 라이브러리 (최신 안정 버전) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cee36ddcb7d177d7bdcafa84bed65182&libraries=clusterer"></script>
 
-    <!-- Leaflet.markercluster 라이브러리 -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-
-    <!-- jQuery: AJAX 요청을 위해 필요 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="css/restareaStyle.css">
-    <!--
-        [중요] video.js와 HLS 관련 라이브러리 버전 통일 및 정리
-        - video.js는 최신 안정 버전인 8.6.1 사용
-        - HLS 플러그인은 videojs-contrib-hls 대신
-          videojs/http-streaming을 사용 (video.js 7.x 이상부터 권장됨)
-    -->
+
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
 
-
     <style>
-        /* Leaflet 기본 팝업창 스타일 수정 */
-        .leaflet-popup-content-wrapper {
-            cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경해서 클릭 가능함을 나타냅니다. */
-            transition: background-color 0.2s ease-in-out; /* 배경색 변경에 부드러운 애니메이션 효과를 줍니다. */
-        }
-
-        .leaflet-popup-content-wrapper:hover {
-            background-color: #f0f0f0; /* 마우스 호버 시 배경색을 살짝 밝게 변경합니다. */
-        }
-
-        .leaflet-popup-content b {
-            font-size: 16px; /* 제목 글꼴 크기를 약간 키웁니다. */
-        }
-        
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .search-container {
@@ -90,6 +63,89 @@
             }
         }
 
+        /* 카카오 지도 InfoWindow 스타일 */
+        .kakao_infowindow {
+            position: relative;
+            z-index: 9999;
+            border-bottom: 2px solid #ccc;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .kakao_infowindow .title {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        .kakao_infowindow .body {
+            padding: 5px;
+        }
+        .kakao_infowindow .body video {
+            width: 320px;
+            height: 240px;
+            display: block;
+        }
+        .kakao_infowindow .cctv-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            color: #888;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .kakao_infowindow .cctv-close:hover {
+            color: #333;
+        }
+        .kakao_infowindow:after {
+            content: '';
+            position: absolute;
+            margin-left: -12px;
+            left: 50%;
+            bottom: -12px;
+            width: 22px;
+            height: 12px;
+            background: url('https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/round_triangle.png') no-repeat;
+        }
+
+        /* 💡 마우스오버 시 표시될 커스텀 오버레이 스타일 */
+        .custom-overlay {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .custom-overlay .overlay-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        .custom-overlay .overlay-address {
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+        }
+        .custom-overlay::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #ccc transparent transparent transparent;
+        }
     </style>
 </head>
 <body>
@@ -204,17 +260,17 @@
 <div id="map"></div>
 
 <script>
-    const koreaBounds = [ [32, 122], [40, 134] ];
-    const map = L.map('map', { minZoom: 7, maxBounds: koreaBounds, maxBoundsViscosity: 1 }).setView([36.5, 127.5], 7);
+    var mapContainer = document.getElementById('map'),
+        mapOption = {
+            center: new kakao.maps.LatLng(36.5, 127.5),
+            level: 13
+        };
+    var map = new kakao.maps.Map(mapContainer, mapOption);
 
-    L.tileLayer('https://api.maptiler.com/maps/bright-v2/{z}/{x}/{y}.png?key=TwDY4NtQJzt1inxOs8qP', {
-        attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    // 휴게소 데이터를 ID와 함께 저장할 공간
     const restAreaDataStore = new Map();
+    let currentInfoWindow = null;
+    let currentVideoPlayer = null;
 
-    // 팝업 클릭 시 ID로 휴게소 정보를 찾아 모달을 띄워주는 함수
     function showModalForRestArea(restAreaId) {
         const restArea = restAreaDataStore.get(restAreaId.toString());
         if (restArea) {
@@ -224,18 +280,21 @@
 
     $(window).on('load', function () {
         console.log("window.load 이벤트 발생! 페이지의 모든 리소스(이미지 등) 로딩 완료.");
-        // window.load 이벤트가 발생했더라도, 아주 짧은 지연(0.1초)을 주어
-        // Leaflet이 내부적으로 좌표 등을 계산할 시간을 확실히 보장해줍니다.
-        setTimeout(function () {
-            console.log("초기 휴게소 데이터를 로드합니다.");
-            loadRestAreas();
-        }, 100);
+        console.log("초기 휴게소 데이터를 로드합니다.");
+        loadRestAreas();
     });
 
-    const restAreaMarkers = L.markerClusterGroup();
-    map.addLayer(restAreaMarkers);
+    const restAreaMarkers = new kakao.maps.MarkerClusterer({
+        map: map,
+        averageCenter: true,
+        minLevel: 10
+    });
 
-    const cctvMarkers = L.markerClusterGroup();
+    const cctvMarkers = new kakao.maps.MarkerClusterer({
+        map: map,
+        averageCenter: true,
+        minLevel: 10
+    });
 
     let provinceData = null;
     let currentBoundaryLayer = null;
@@ -256,155 +315,203 @@
 
     $('#region-select').on('change', function() {
         const selectedRegion = $(this).val();
-        if (currentBoundaryLayer) { map.removeLayer(currentBoundaryLayer); }
         if (selectedRegion && regionLocations[selectedRegion]) {
             const loc = regionLocations[selectedRegion];
-            map.setView([loc.lat, loc.lng], loc.zoom);
-            if(provinceData) {
-                const regionFeatures = provinceData.features.filter(feature => {
-                    if (feature && feature.properties && feature.properties.name) { return loc.names.includes(feature.properties.name); }
-                    return false;
-                });
-                if (regionFeatures.length > 0) {
-                    currentBoundaryLayer = L.geoJSON(regionFeatures, {
-                        style: { color: "#007bff", weight: 1, opacity: 0.5, fillColor: "#007bff", fillOpacity: 0.1 }
-                    }).addTo(map);
-                }
-            }
+            map.setCenter(new kakao.maps.LatLng(loc.lat, loc.lng));
+            map.setLevel(loc.zoom);
         }
     });
 
-    //휴게소 아이콘 정의
-    const restIcon = L.icon({
-        iconUrl: '${pageContext.request.contextPath}/image/rest_icon.png',
-        iconSize: [40, 40],
-        iconAnchor: [19, 38],
-        popupAnchor: [0, -38]
-    });
+    const restIconImage = new kakao.maps.MarkerImage(
+        '/Project_4team_war_exploded/image/rest_icon.png',
+        new kakao.maps.Size(40, 40),
+        { offset: new kakao.maps.Point(19, 38) }
+    );
 
     function addRestAreaMarkersToMap(data) {
-        restAreaMarkers.clearLayers();
+        restAreaMarkers.clear();
+
         if (!data || data.length === 0) return;
 
+        const newMarkers = [];
         data.forEach(ra => {
             restAreaDataStore.set(ra.Idx.toString(), ra);
 
-            const marker = L.marker([ra.Lat, ra.Lng], {icon: restIcon});
-
-            const popupContent =
-                '<div onclick="showModalForRestArea(\'' + ra.Idx + '\');" style="cursor: pointer; line-height: 1.6;">' +
-                '<b style="font-size: 15px;">' + ra.SAName + '</b><br>' +
-                ra.Address +
-                '</div>';
-
-            marker.bindPopup(popupContent);
-            marker.on('click', function(e) {
-                isMarkerClickZoom = true;
-                const currentZoom = map.getZoom();
-                const targetZoom = 14;
-                const newZoom = Math.max(currentZoom, targetZoom);
-
-                map.setView(e.latlng, newZoom);
-                map.once('zoomend', function() {
-                    e.target.openPopup();
-                });
+            const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(ra.Lat, ra.Lng),
+                image: restIconImage
             });
-            restAreaMarkers.addLayer(marker);
+
+            const content = '<div class="custom-overlay">' +
+                '<div class="overlay-name">' + ra.SAName + '</div>' +
+                '<div class="overlay-address">' + ra.Address + '</div>' +
+                '</div>';
+            const customOverlay = new kakao.maps.CustomOverlay({
+                position: marker.getPosition(),
+                content: content,
+                yAnchor: 2.2
+            });
+
+            kakao.maps.event.addListener(marker, 'mouseover', function() {
+                customOverlay.setMap(map);
+            });
+
+            kakao.maps.event.addListener(marker, 'mouseout', function() {
+                customOverlay.setMap(null);
+            });
+
+            kakao.maps.event.addListener(marker, 'click', function() {
+                const currentLevel = map.getLevel();
+                const targetLevel = 3;
+                const newLevel = Math.min(currentLevel, targetLevel);
+
+                map.setLevel(newLevel, {
+                    anchor: marker.getPosition(),
+                    animate: { duration: 350 }
+                });
+
+                showModalForRestArea(ra.Idx.toString());
+            });
+
+            newMarkers.push(marker);
         });
+
+        restAreaMarkers.addMarkers(newMarkers);
     }
 
+    const cctvIconImage = new kakao.maps.MarkerImage(
+        '/Project_4team_war_exploded/image/cctv_icon.png',
+        new kakao.maps.Size(20, 20),
+        { offset: new kakao.maps.Point(19, 38) }
+    );
 
-    // CCTV 아이콘 정의
-    const cctvIcon = L.icon({
-        iconUrl: '${pageContext.request.contextPath}/image/cctv_icon.png',
-        iconSize: [38, 38],
-        iconAnchor: [19, 38],
-        popupAnchor: [0, -38]
-    });
-
-
-    // JSP 파일의 addCctvMarkersToMap 함수 (전체 교체)
     function addCctvMarkersToMap(data) {
-        // 기존 마커 레이어를 모두 지웁니다.
-        cctvMarkers.clearLayers();
+        cctvMarkers.clear();
 
-        // 데이터가 없거나 형식이 올바르지 않으면 함수를 종료합니다.
         if (!data || !data.response || !data.response.data) {
             console.log("CCTV 데이터가 없거나 형식이 올바르지 않습니다.");
             return;
         }
 
-        // 데이터를 배열로 정규화합니다.
         const cctvList = Array.isArray(data.response.data) ? data.response.data : [data.response.data];
+        const newCctvMarkers = [];
 
-        // 각 CCTV 데이터에 대해 마커를 생성하고 맵에 추가합니다.
         cctvList.forEach(cctv => {
             const lat = parseFloat(cctv.coordy);
             const lng = parseFloat(cctv.coordx);
             if (isNaN(lat) || isNaN(lng)) return;
 
-            // CCTV 이름에서 `;` 제거
             const name = cctv.cctvname.replace(/;/g, '');
-
-            // CSS 선택자에 유효하지 않은 모든 문자를 제거하여 videoId 생성
             const sanitizedName = name.replace(/[^a-zA-Z0-9-]/g, '-');
             const videoId = "cctv-video-" + sanitizedName;
-
             const temporaryUrl = cctv.cctvurl;
-            const marker = L.marker([lat, lng], { icon: cctvIcon });
 
-            const popupContent =
-                '<div style="width: 320px;">' +
-                '<b>' + name + '</b><br>' +
-                '<video id="' + videoId + '" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup=\'{}\'>' +
-                '<source type="application/x-mpegURL" />' +
-                '</video>' +
-                '</div>';
-            marker.bindPopup(popupContent, { minWidth: 320 });
-            cctvMarkers.addLayer(marker);
-
-            // 팝업이 열릴 때마다 새로운 AJAX 요청을 보내서 진짜 영상 URL을 가져옵니다.
-            marker.on('popupopen', function() {
-                const videoElement = document.getElementById(videoId);
-                if (videoElement) {
-
-
-                    $.ajax({
-                        url: '${pageContext.request.contextPath}/Controller?type=getVideoUrl',
-                        type: 'GET',
-                        data: { temporaryUrl: temporaryUrl },
-                        dataType: 'text'
-                    }).done(function(realUrl) {
-                        if (realUrl && realUrl.length > 0) {
-                            console.log("서버로부터 받은 실제 영상 URL:", realUrl);
-                            videojs(videoElement.id).src({
-                                src: realUrl,
-                                type: 'application/x-mpegURL'
-                            });
-                        } else {
-                            console.error("영상 URL이 유효하지 않습니다.");
-                            videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
-                        }
-                    }).fail(function(jqXHR, textStatus, errorThrown) {
-                        console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
-                        videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
-                    });
-                } else {
-                    console.error('Video element not found:', videoId);
-                }
+            const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(lat, lng),
+                image: cctvIconImage
             });
 
-            // 팝업이 닫힐 때 video.js 플레이어를 종료합니다.
-            marker.on('popupclose', function() {
-                const videoElement = document.getElementById(videoId);
-                if (videoElement) {
-                    const player = videojs(videoElement.id);
-                    if (player) {
-                        player.dispose();
-                        console.log('Video.js player disposed for:', videoId);
+            kakao.maps.event.addListener(marker, 'click', function() {
+                if (currentVideoPlayer) {
+                    currentVideoPlayer.dispose();
+                    currentVideoPlayer = null;
+                    console.log('이전 Video.js 플레이어 파기 완료');
+                }
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                    console.log('이전 infowindow 닫기 완료');
+                }
+
+                const popupContent =
+                    '<div class="kakao_infowindow">' +
+                    '    <div class="title">' + name + '</div>' +
+                    '    <div class="body">' +
+                    '        <video id="' + videoId + '" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240"></video>' +
+                    '    </div>' +
+                    '    <div class="cctv-close">X</div>' +
+                    '</div>';
+
+                const infowindow = new kakao.maps.InfoWindow({
+                    content: popupContent
+                });
+
+                infowindow.open(map, marker);
+                currentInfoWindow = infowindow;
+
+                $(document).on('click', '.cctv-close', function() {
+                    console.log('cctv-close 버튼이 클릭되었습니다.');
+                    if (currentVideoPlayer) {
+                        currentVideoPlayer.dispose();
+                        currentVideoPlayer = null;
+                        console.log('Video.js player disposed on cctv-close.');
                     }
-                }
+                    if (currentInfoWindow) {
+                        currentInfoWindow.close();
+                        currentInfoWindow = null;
+                        console.log('인포윈도우가 닫혔습니다.');
+                    }
+                });
+
+                loadVideoJsPlayer(videoId, temporaryUrl);
             });
+
+            newCctvMarkers.push(marker);
+        });
+        cctvMarkers.addMarkers(newCctvMarkers);
+    }
+
+    function loadVideoJsPlayer(videoId, temporaryUrl) {
+        const videoElement = document.getElementById(videoId);
+        if (!videoElement) {
+            console.error('Error: Video element not found:', videoId);
+            return;
+        }
+
+        const player = videojs(videoElement, {
+            controls: true,
+            autoplay: true,
+            preload: 'auto',
+            fluid: false,
+            fullscreen: {
+                options: {
+                    navigationUI: 'hide'
+                }
+            }
+        });
+        currentVideoPlayer = player;
+
+        player.on('error', function() {
+            const error = player.error();
+            console.error('video.js 플레이어 오류 발생:', error);
+            player.poster('/Project_4team_war_exploded/image/error.png');
+            if (error.code === 4) {
+                console.error('영상 재생 실패: 소스(URL)가 유효하지 않거나 재생할 수 없는 형식입니다.');
+            }
+        });
+
+        console.log("영상 URL 가져오기 시작:", temporaryUrl);
+
+        $.ajax({
+            url: '/Project_4team_war_exploded/Controller?type=getVideoUrl',
+            type: 'GET',
+            data: { temporaryUrl: temporaryUrl },
+            dataType: 'text'
+        }).done(function(realUrl) {
+            if (realUrl && realUrl.length > 0) {
+                console.log("서버로부터 받은 실제 영상 URL:", realUrl);
+                player.src({
+                    src: realUrl,
+                    type: 'application/x-mpegURL'
+                });
+                player.play();
+            } else {
+                console.error("영상 URL이 유효하지 않습니다. 서버 응답이 비어있습니다.");
+                player.poster('/Project_4team_war_exploded/image/error.png');
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
+            console.log("서버 응답:", jqXHR.responseText);
+            player.poster('/Project_4team_war_exploded/image/error.png');
         });
     }
 
@@ -417,9 +524,9 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=pjyrest',
+            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
             type: 'GET',
-            data: { swLat: sw.lat, swLng: sw.lng, neLat: ne.lat, neLng: ne.lng },
+            data: { swLat: sw.getLat(), swLng: sw.getLng(), neLat: ne.getLat(), neLng: ne.getLng() },
             dataType: 'json'
         }).done(function(data) {
             addRestAreaMarkersToMap(data);
@@ -431,13 +538,13 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=Cctv',
+            url: '/Project_4team_war_exploded/Controller?type=Cctv',
             type: 'GET',
             data: {
-                minX: sw.lng,
-                minY: sw.lat,
-                maxX: ne.lng,
-                maxY: ne.lat
+                minX: sw.getLng(),
+                minY: sw.getLat(),
+                maxX: ne.getLng(),
+                maxY: ne.getLat()
             },
             dataType: 'json'
         }).done(function(data) {
@@ -451,11 +558,19 @@
 
     $('#cctv-toggle-button').on('click', function() {
         if (isCctvVisible) {
-            map.removeLayer(cctvMarkers);
+            cctvMarkers.setMap(null);
             isCctvVisible = false;
             $(this).text('CCTV 켜기').css('background-color', '#6c757d').css('border-color', '#6c757d');
+
+            if(currentInfoWindow) {
+                currentInfoWindow.close();
+            }
+            if(currentVideoPlayer) {
+                currentVideoPlayer.dispose();
+                currentVideoPlayer = null;
+            }
         } else {
-            map.addLayer(cctvMarkers);
+            cctvMarkers.setMap(map);
             isCctvVisible = true;
             $(this).text('CCTV 끄기').css('background-color', '#007bff').css('border-color', '#007bff');
             loadCctvData();
@@ -469,7 +584,7 @@
             return;
         }
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=pjyrest',
+            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
             type: 'POST',
             data: { searchText: searchText },
             dataType: 'json'
@@ -478,70 +593,63 @@
                 if (data && data.length > 0) {
                     addRestAreaMarkersToMap(data);
                     const firstResult = data[0];
-                    const position = [firstResult.Lat, firstResult.Lng];
-                    const currentZoom = map.getZoom();
-                    const targetZoom = 15;
-                    const newZoom = Math.max(currentZoom, targetZoom);
-                    map.setView(position, newZoom);
-                    map.once('zoomend', function() {
-                        const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + firstResult.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + firstResult.SAName + '</b><br>' + firstResult.Address + '</a>';
-                        L.popup().setLatLng(position).setContent(popupContent).openOn(map);
-                    });
+                    const position = new kakao.maps.LatLng(firstResult.Lat, firstResult.Lng);
+                    const currentLevel = map.getLevel();
+                    const targetLevel = 3;
+                    const newLevel = Math.max(currentLevel, targetLevel);
+
+                    map.setCenter(position);
+                    map.setLevel(newLevel, { animate: true });
+
+                    // ❌ 이 부분을 삭제하거나 주석 처리하여 검색 시 상세정보 모달창이 바로 뜨지 않게 수정했습니다.
+                    // showModalForRestArea(firstResult.Idx.toString());
+
                 } else {
                     alert("검색 결과가 없습니다.");
                 }
             });
     });
 
-    map.on('moveend', function() {
+    kakao.maps.event.addListener(map, 'dragend', function() {
+        loadRestAreas();
+        if (isCctvVisible) {
+            loadCctvData();
+        }
+    });
+    kakao.maps.event.addListener(map, 'zoom_changed', function() {
         loadRestAreas();
         if (isCctvVisible) {
             loadCctvData();
         }
     });
 
-
-
-    // [추가] 모달창의 내용을 채우고, 창을 보여주는 함수
     function showRestAreaDetailModal(ra) {
-        if (!ra) return; // 데이터가 없으면 실행 중지
+        if (!ra) return;
 
         console.log("모달에 표시할 데이터:", ra);
 
         document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
         document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
-        // AJAX 응답에 전화번호가 있다면 ra.phone 등으로, 없으면 '정보 없음'으로 표시
-        let formattedPhone = '제공되지 않음'; // 기본값 설정
-        if (ra.Tel) { // 전화번호 데이터(ra.Tel)가 있을 경우에만
-            // 정규식을 사용해 하이픈(-)을 넣어서 서식을 적용
+        let formattedPhone = '제공되지 않음';
+        if (ra.Tel) {
             formattedPhone = ra.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
         }
         document.getElementById('modalPhone').textContent = formattedPhone;
-
-
-
         document.getElementById('modalCompactParking').textContent = ra.CompactParking+"대";
         document.getElementById('modalLargeParking').textContent = ra.LargeParking+"대";
         document.getElementById('modalDisabledParking').textContent = ra.DisabledParking+"대";
-
-
-        // 편의시설, 운영시간 등 다른 정보들도 같은 방식으로 채울 수 있습니다.
-
-        document.getElementById('restAreaModal').style.display = 'block'; // 모달창 보이기
+        document.getElementById('restAreaModal').style.display = 'block';
     }
 
-    // [추가] 모달의 X 버튼을 누르거나,
     function closeModal() {
         document.getElementById('restAreaModal').style.display = 'none';
     }
 
-    // [추가] 모달 바깥의 어두운 영역을 눌렀을 때 창을 닫는 함수
     window.onclick = function(event) {
         if (event.target == document.getElementById('restAreaModal')) {
             closeModal();
         }
     }
-        
 </script>
 
 </body>

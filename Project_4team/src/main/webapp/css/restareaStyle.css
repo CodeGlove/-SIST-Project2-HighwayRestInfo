@@ -1,7 +1,7 @@
 /* Pretendard 폰트 설정 */
 @font-face {
     font-family: 'PretendardVariable';
-    src: url('../fonts/PretendardVariable.woff2') format('woff2-variations');
+    src: url('/Project_4team/src/main/webapp/fonts/PretendardVariable.woff2') format('woff2-variations');
     font-weight: 45 920;
     font-style: normal;
     font-display: swap;
