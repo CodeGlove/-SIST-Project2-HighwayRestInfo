@@ -65,7 +65,7 @@
         /* 카카오 지도 InfoWindow 스타일 */
         .kakao_infowindow {
             position: relative;
-            z-index: 1000;
+            z-index: 9999;
             border-bottom: 2px solid #ccc;
             background: #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -380,7 +380,7 @@
 
     const cctvIconImage = new kakao.maps.MarkerImage(
         '/Project_4team_war_exploded/image/cctv_icon.png',
-        new kakao.maps.Size(38, 38),
+        new kakao.maps.Size(20, 20),
         { offset: new kakao.maps.Point(19, 38) }
     );
 
