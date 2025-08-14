@@ -19,12 +19,8 @@
     <!-- jQuery: AJAX 요청을 위해 필요 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <%--모달을 위한 스크립트--%>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
-
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/restareaStyle.css">
     <!--
         [중요] video.js와 HLS 관련 라이브러리 버전 통일 및 정리
         - video.js는 최신 안정 버전인 8.6.1 사용
@@ -35,7 +31,22 @@
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
 
+
     <style>
+        /* Leaflet 기본 팝업창 스타일 수정 */
+        .leaflet-popup-content-wrapper {
+            cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경해서 클릭 가능함을 나타냅니다. */
+            transition: background-color 0.2s ease-in-out; /* 배경색 변경에 부드러운 애니메이션 효과를 줍니다. */
+        }
+
+        .leaflet-popup-content-wrapper:hover {
+            background-color: #f0f0f0; /* 마우스 호버 시 배경색을 살짝 밝게 변경합니다. */
+        }
+
+        .leaflet-popup-content b {
+            font-size: 16px; /* 제목 글꼴 크기를 약간 키웁니다. */
+        }
+        
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .search-container {
@@ -78,26 +89,96 @@
                 box-sizing: border-box;
             }
         }
+
     </style>
 </head>
 <body>
-<div class="modal fade" id="restAreaModal" tabindex="-1" aria-labelledby="restAreaModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="restAreaModalLabel">휴게소 정보</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<%--모달창 ***************************************************************--%>
+<div id="restAreaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-utensils"></i>
+                <span id="modalTitle">휴게소 정보</span>
             </div>
-            <div class="modal-body">
-                <p><strong>휴게소 이름:</strong> <span id="modal-sa-name"></span></p>
-                <p><strong>주소:</strong> <span id="modal-address"></span></p>
-                <p><strong>전화번호:</strong> <span id="modal-phone"></span></p>
-                <%-- 필요하다면 다른 정보들도 추가 --%>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-map-marker-alt"></i>
+                    위치
+                </div>
+                <div class="info-value" id="modalLocation">
+                    정보를 불러오는 중...
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-phone"></i>
+                    연락처
+                </div>
+                <div class="info-value" id="modalPhone">
+                    정보를 불러오는 중...
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-parking"></i>
+                    주차 정보
+                </div>
+                <div class="parking-info-grid">
+                    <div class="parking-item">
+                        <span class="parking-label">소형차</span>
+                        <span class="parking-value" id="modalCompactParking">-</span>
+                    </div>
+                    <div class="parking-item">
+                        <span class="parking-label">대형차</span>
+                        <span class="parking-value" id="modalLargeParking">-</span>
+                    </div>
+                    <div class="parking-item">
+                        <span class="parking-label">장애인</span>
+                        <span class="parking-value" id="modalDisabledParking">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-clock"></i>
+                    운영시간
+                </div>
+                <div class="info-value" id="modalHours">
+                    24시간 운영
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-list"></i>
+                    편의시설
+                </div>
+                <div class="facilities-list" id="modalFacilities">
+                    <span class="facility-tag">주유소</span>
+                    <span class="facility-tag">충전소</span>
+                    <span class="facility-tag">음식점</span>
+                    <span class="facility-tag">화장실</span>
+                    <span class="facility-tag">편의점</span>
+                    <span class="facility-tag">휴식공간</span>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-info-circle"></i>
+                    안내사항
+                </div>
+                <div class="info-value">
+                    • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
+                    • 긴급상황 시 1588-2504로 연락하세요<br>
+                    • 휴게소 내에서는 안전수칙을 준수해주세요
+                </div>
             </div>
         </div>
     </div>
@@ -129,6 +210,17 @@
     L.tileLayer('https://api.maptiler.com/maps/bright-v2/{z}/{x}/{y}.png?key=TwDY4NtQJzt1inxOs8qP', {
         attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    // 휴게소 데이터를 ID와 함께 저장할 공간
+    const restAreaDataStore = new Map();
+
+    // 팝업 클릭 시 ID로 휴게소 정보를 찾아 모달을 띄워주는 함수
+    function showModalForRestArea(restAreaId) {
+        const restArea = restAreaDataStore.get(restAreaId.toString());
+        if (restArea) {
+            showRestAreaDetailModal(restArea);
+        }
+    }
 
     $(window).on('load', function () {
         console.log("window.load 이벤트 발생! 페이지의 모든 리소스(이미지 등) 로딩 완료.");
@@ -182,18 +274,29 @@
         }
     });
 
+    //휴게소 아이콘 정의
+    const restIcon = L.icon({
+        iconUrl: '${pageContext.request.contextPath}/image/rest_icon.png',
+        iconSize: [40, 40],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+    });
+
     function addRestAreaMarkersToMap(data) {
         restAreaMarkers.clearLayers();
         if (!data || data.length === 0) return;
 
         data.forEach(ra => {
-            // [테스트 코드 추가] 반복문이 시작될 때, 'ra' 객체에 무엇이 들어있는지 콘솔에 출력해봅니다.
-            console.log(ra);
+            restAreaDataStore.set(ra.Idx.toString(), ra);
 
-            // --- 이 아래는 개발자님의 원래 코드 그대로입니다 ---
-            const marker = L.marker([ra.Lat, ra.Lng]);
-            // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
-            const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
+            const marker = L.marker([ra.Lat, ra.Lng], {icon: restIcon});
+
+            const popupContent =
+                '<div onclick="showModalForRestArea(\'' + ra.Idx + '\');" style="cursor: pointer; line-height: 1.6;">' +
+                '<b style="font-size: 15px;">' + ra.SAName + '</b><br>' +
+                ra.Address +
+                '</div>';
+
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
@@ -209,6 +312,7 @@
             restAreaMarkers.addLayer(marker);
         });
     }
+
 
     // CCTV 아이콘 정의
     const cctvIcon = L.icon({
@@ -397,8 +501,47 @@
     });
 
 
-    $.ajax()
 
+    // [추가] 모달창의 내용을 채우고, 창을 보여주는 함수
+    function showRestAreaDetailModal(ra) {
+        if (!ra) return; // 데이터가 없으면 실행 중지
+
+        console.log("모달에 표시할 데이터:", ra);
+
+        document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
+        document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
+        // AJAX 응답에 전화번호가 있다면 ra.phone 등으로, 없으면 '정보 없음'으로 표시
+        let formattedPhone = '제공되지 않음'; // 기본값 설정
+        if (ra.Tel) { // 전화번호 데이터(ra.Tel)가 있을 경우에만
+            // 정규식을 사용해 하이픈(-)을 넣어서 서식을 적용
+            formattedPhone = ra.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        }
+        document.getElementById('modalPhone').textContent = formattedPhone;
+
+
+
+        document.getElementById('modalCompactParking').textContent = ra.CompactParking+"대";
+        document.getElementById('modalLargeParking').textContent = ra.LargeParking+"대";
+        document.getElementById('modalDisabledParking').textContent = ra.DisabledParking+"대";
+
+
+        // 편의시설, 운영시간 등 다른 정보들도 같은 방식으로 채울 수 있습니다.
+
+        document.getElementById('restAreaModal').style.display = 'block'; // 모달창 보이기
+    }
+
+    // [추가] 모달의 X 버튼을 누르거나,
+    function closeModal() {
+        document.getElementById('restAreaModal').style.display = 'none';
+    }
+
+    // [추가] 모달 바깥의 어두운 영역을 눌렀을 때 창을 닫는 함수
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('restAreaModal')) {
+            closeModal();
+        }
+    }
+        
 </script>
 
 </body>
