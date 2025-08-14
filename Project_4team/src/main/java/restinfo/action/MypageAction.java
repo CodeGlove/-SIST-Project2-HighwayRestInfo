@@ -7,13 +7,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-public class MypageAction implements Action{
-    @Override
-    public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
+public class MypageAction implements Action {
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        HttpSession session = request.getSession();
-
-
-        return "mypage.jsp";
-    }
+		HttpSession session = request.getSession();
+		return "";
+	}
 }
