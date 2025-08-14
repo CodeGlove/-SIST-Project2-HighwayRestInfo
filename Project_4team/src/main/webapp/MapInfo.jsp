@@ -35,6 +35,7 @@
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
 
+
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -182,16 +183,20 @@
         }
     });
 
+    //휴게소 아이콘 정의
+    const restIcon = L.icon({
+        iconUrl: '${pageContext.request.contextPath}/image/rest_icon.png',
+        iconSize: [40, 40],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+    });
+
     function addRestAreaMarkersToMap(data) {
         restAreaMarkers.clearLayers();
         if (!data || data.length === 0) return;
 
         data.forEach(ra => {
-            // [테스트 코드 추가] 반복문이 시작될 때, 'ra' 객체에 무엇이 들어있는지 콘솔에 출력해봅니다.
-            console.log(ra);
-
-            // --- 이 아래는 개발자님의 원래 코드 그대로입니다 ---
-            const marker = L.marker([ra.Lat, ra.Lng]);
+            const marker = L.marker([ra.Lat, ra.Lng], {icon: restIcon});
             // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
             const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
             marker.bindPopup(popupContent);
@@ -209,6 +214,8 @@
             restAreaMarkers.addLayer(marker);
         });
     }
+
+
 
     // CCTV 아이콘 정의
     const cctvIcon = L.icon({
@@ -396,8 +403,6 @@
         }
     });
 
-
-    $.ajax()
 
 </script>
 
