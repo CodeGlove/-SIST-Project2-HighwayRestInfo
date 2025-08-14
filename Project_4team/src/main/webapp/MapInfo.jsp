@@ -13,10 +13,10 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/restareaStyle.css">
+
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
-
 
     <style>
         html, body { height: 100%; margin: 0; }
@@ -65,11 +65,12 @@
         /* 카카오 지도 InfoWindow 스타일 */
         .kakao_infowindow {
             position: relative;
+            z-index: 1000;
             border-bottom: 2px solid #ccc;
             background: #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             border-radius: 5px;
-            overflow: hidden; /* 모서리를 둥글게 */
+            overflow: hidden;
         }
         .kakao_infowindow .title {
             font-size: 16px;
@@ -84,9 +85,9 @@
         .kakao_infowindow .body video {
             width: 320px;
             height: 240px;
-            display: block; /* 비디오 하단 공백 제거 */
+            display: block;
         }
-        .kakao_infowindow .close {
+        .kakao_infowindow .cctv-close {
             position: absolute;
             top: 5px;
             right: 10px;
@@ -95,7 +96,7 @@
             font-size: 18px;
             font-weight: bold;
         }
-        .kakao_infowindow .close:hover {
+        .kakao_infowindow .cctv-close:hover {
             color: #333;
         }
         .kakao_infowindow:after {
@@ -107,6 +108,42 @@
             width: 22px;
             height: 12px;
             background: url('https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/round_triangle.png') no-repeat;
+        }
+
+        /* 💡 마우스오버 시 표시될 커스텀 오버레이 스타일 */
+        .custom-overlay {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .custom-overlay .overlay-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        .custom-overlay .overlay-address {
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+        }
+        .custom-overlay::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #ccc transparent transparent transparent;
         }
     </style>
 </head>
@@ -222,21 +259,17 @@
 <div id="map"></div>
 
 <script>
-    // 카카오 지도로 변경된 부분
-    var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+    var mapContainer = document.getElementById('map'),
         mapOption = {
-            center: new kakao.maps.LatLng(36.5, 127.5), // 지도의 중심좌표
-            level: 13 // 지도의 확대 레벨 (더 줌아웃)
+            center: new kakao.maps.LatLng(36.5, 127.5),
+            level: 13
         };
-    // 지도를 생성
     var map = new kakao.maps.Map(mapContainer, mapOption);
 
-    // 휴게소 데이터를 ID와 함께 저장할 공간
     const restAreaDataStore = new Map();
-    // 현재 열려있는 InfoWindow를 추적하는 변수
     let currentInfoWindow = null;
+    let currentVideoPlayer = null;
 
-    // 팝업 클릭 시 ID로 휴게소 정보를 찾아 모달을 띄워주는 함수
     function showModalForRestArea(restAreaId) {
         const restArea = restAreaDataStore.get(restAreaId.toString());
         if (restArea) {
@@ -246,16 +279,14 @@
 
     $(window).on('load', function () {
         console.log("window.load 이벤트 발생! 페이지의 모든 리소스(이미지 등) 로딩 완료.");
-        // Leaflet과 달리 카카오 지도는 로드 이벤트 처리 방식이 달라 setTimeout 필요 없음
         console.log("초기 휴게소 데이터를 로드합니다.");
         loadRestAreas();
     });
 
-    // Leaflet의 L.markerClusterGroup() -> 카카오의 MarkerClusterer로 변경
     const restAreaMarkers = new kakao.maps.MarkerClusterer({
-        map: map, // 마커들을 클러스터로 관리하고 표시할 지도 객체
-        averageCenter: true, // 클러스터 마커의 위치를 평균 위치로 설정
-        minLevel: 10 // 클러스터 할 최소 지도 레벨
+        map: map,
+        averageCenter: true,
+        minLevel: 10
     });
 
     const cctvMarkers = new kakao.maps.MarkerClusterer({
@@ -269,8 +300,6 @@
     let isMarkerClickZoom = false;
     let isCctvVisible = false;
 
-    // 카카오 지도에는 GeoJSON 레이어 기능이 기본 내장되어 있지 않으므로, 이 부분은 Leaflet 코드와 동일하게 작동하지 않을 수 있습니다.
-    // 하지만, JQuery를 통해 데이터를 가져오는 로직은 그대로 사용할 수 있습니다.
     $.getJSON('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json', function(data) {
         provinceData = data;
     });
@@ -287,24 +316,20 @@
         const selectedRegion = $(this).val();
         if (selectedRegion && regionLocations[selectedRegion]) {
             const loc = regionLocations[selectedRegion];
-            // Leaflet의 setView -> 카카오의 setCenter로 변경
             map.setCenter(new kakao.maps.LatLng(loc.lat, loc.lng));
             map.setLevel(loc.zoom);
         }
-        // 카카오 지도에는 GeoJSON 레이어 기능이 없으므로 Leaflet 관련 코드는 제거
-        // if (currentBoundaryLayer) { map.removeLayer(currentBoundaryLayer); }
     });
 
-    // 휴게소 아이콘 정의 (카카오 지도는 별도 Image 객체 필요)
     const restIconImage = new kakao.maps.MarkerImage(
-        '${pageContext.request.contextPath}/image/rest_icon.png',
+        '/Project_4team_war_exploded/image/rest_icon.png',
         new kakao.maps.Size(40, 40),
         { offset: new kakao.maps.Point(19, 38) }
     );
 
     function addRestAreaMarkersToMap(data) {
-        // 기존 마커 클러스터의 모든 마커를 제거
         restAreaMarkers.clear();
+
         if (!data || data.length === 0) return;
 
         const newMarkers = [];
@@ -316,29 +341,45 @@
                 image: restIconImage
             });
 
-            // 마커 클릭 이벤트 리스너 추가
+            const content = '<div class="custom-overlay">' +
+                '<div class="overlay-name">' + ra.SAName + '</div>' +
+                '<div class="overlay-address">' + ra.Address + '</div>' +
+                '</div>';
+            const customOverlay = new kakao.maps.CustomOverlay({
+                position: marker.getPosition(),
+                content: content,
+                yAnchor: 2.2
+            });
+
+            kakao.maps.event.addListener(marker, 'mouseover', function() {
+                customOverlay.setMap(map);
+            });
+
+            kakao.maps.event.addListener(marker, 'mouseout', function() {
+                customOverlay.setMap(null);
+            });
+
             kakao.maps.event.addListener(marker, 'click', function() {
-                // 클릭 시 줌 레벨을 변경하고 모달 함수를 호출
-                map.setLevel(14, {
+                const currentLevel = map.getLevel();
+                const targetLevel = 3;
+                const newLevel = Math.min(currentLevel, targetLevel);
+
+                map.setLevel(newLevel, {
                     anchor: marker.getPosition(),
-                    animate: {
-                        duration: 350
-                    }
+                    animate: { duration: 350 }
                 });
-                // 팝업 대신 모달을 띄우므로 팝업 관련 로직은 제거
+
                 showModalForRestArea(ra.Idx.toString());
             });
+
             newMarkers.push(marker);
         });
 
-        // 클러스터러에 마커 추가
         restAreaMarkers.addMarkers(newMarkers);
     }
 
-
-    // CCTV 아이콘 정의 (카카오 지도는 별도 Image 객체 필요)
     const cctvIconImage = new kakao.maps.MarkerImage(
-        '${pageContext.request.contextPath}/image/cctv_icon.png',
+        '/Project_4team_war_exploded/image/cctv_icon.png',
         new kakao.maps.Size(38, 38),
         { offset: new kakao.maps.Point(19, 38) }
     );
@@ -369,41 +410,48 @@
                 image: cctvIconImage
             });
 
-            // 팝업 내용
-            const popupContent =
-                '<div class="kakao_infowindow">' +
-                '    <div class="title">' + name + '</div>' +
-                '    <div class="body">' +
-                '        <video id="' + videoId + '" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240" data-setup=\'{}\'>' +
-                '            <source type="application/x-mpegURL" />' +
-                '        </video>' +
-                '    </div>' +
-                '    <div class="close" onclick="currentInfoWindow.close();">X</div>' +
-                '</div>';
-
-            const infowindow = new kakao.maps.InfoWindow({
-                content: popupContent
-            });
-
             kakao.maps.event.addListener(marker, 'click', function() {
+                if (currentVideoPlayer) {
+                    currentVideoPlayer.dispose();
+                    currentVideoPlayer = null;
+                    console.log('이전 Video.js 플레이어 파기 완료');
+                }
                 if (currentInfoWindow) {
                     currentInfoWindow.close();
+                    console.log('이전 infowindow 닫기 완료');
                 }
+
+                const popupContent =
+                    '<div class="kakao_infowindow">' +
+                    '    <div class="title">' + name + '</div>' +
+                    '    <div class="body">' +
+                    '        <video id="' + videoId + '" class="video-js vjs-default-skin" controls preload="auto" width="320" height="240"></video>' +
+                    '    </div>' +
+                    '    <div class="cctv-close">X</div>' +
+                    '</div>';
+
+                const infowindow = new kakao.maps.InfoWindow({
+                    content: popupContent
+                });
+
                 infowindow.open(map, marker);
                 currentInfoWindow = infowindow;
-                loadRealVideoUrl(videoId, temporaryUrl);
-            });
 
-            // InfoWindow가 닫힐 때 Video.js 플레이어 리소스 해제
-            kakao.maps.event.addListener(infowindow, 'closeclick', function() {
-                const videoElement = document.getElementById(videoId);
-                if (videoElement) {
-                    const player = videojs(videoElement.id);
-                    if (player) {
-                        player.dispose();
-                        console.log('Video.js player disposed for:', videoId);
+                $(document).on('click', '.cctv-close', function() {
+                    console.log('cctv-close 버튼이 클릭되었습니다.');
+                    if (currentVideoPlayer) {
+                        currentVideoPlayer.dispose();
+                        currentVideoPlayer = null;
+                        console.log('Video.js player disposed on cctv-close.');
                     }
-                }
+                    if (currentInfoWindow) {
+                        currentInfoWindow.close();
+                        currentInfoWindow = null;
+                        console.log('인포윈도우가 닫혔습니다.');
+                    }
+                });
+
+                loadVideoJsPlayer(videoId, temporaryUrl);
             });
 
             newCctvMarkers.push(marker);
@@ -411,46 +459,71 @@
         cctvMarkers.addMarkers(newCctvMarkers);
     }
 
-    function loadRealVideoUrl(videoId, temporaryUrl) {
+    function loadVideoJsPlayer(videoId, temporaryUrl) {
         const videoElement = document.getElementById(videoId);
-        if (videoElement) {
-            $.ajax({
-                url: '${pageContext.request.contextPath}/Controller?type=getVideoUrl',
-                type: 'GET',
-                data: { temporaryUrl: temporaryUrl },
-                dataType: 'text'
-            }).done(function(realUrl) {
-                if (realUrl && realUrl.length > 0) {
-                    console.log("서버로부터 받은 실제 영상 URL:", realUrl);
-                    videojs(videoElement.id).src({
-                        src: realUrl,
-                        type: 'application/x-mpegURL'
-                    });
-                } else {
-                    console.error("영상 URL이 유효하지 않습니다.");
-                    videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
-                }
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
-                videoElement.poster = '${pageContext.request.contextPath}/image/error.png';
-            });
-        } else {
-            console.error('Video element not found:', videoId);
+        if (!videoElement) {
+            console.error('Error: Video element not found:', videoId);
+            return;
         }
-    }
 
+        const player = videojs(videoElement, {
+            controls: true,
+            autoplay: true,
+            preload: 'auto',
+            fluid: false,
+            fullscreen: {
+                options: {
+                    navigationUI: 'hide'
+                }
+            }
+        });
+        currentVideoPlayer = player;
+
+        player.on('error', function() {
+            const error = player.error();
+            console.error('video.js 플레이어 오류 발생:', error);
+            player.poster('/Project_4team_war_exploded/image/error.png');
+            if (error.code === 4) {
+                console.error('영상 재생 실패: 소스(URL)가 유효하지 않거나 재생할 수 없는 형식입니다.');
+            }
+        });
+
+        console.log("영상 URL 가져오기 시작:", temporaryUrl);
+
+        $.ajax({
+            url: '/Project_4team_war_exploded/Controller?type=getVideoUrl',
+            type: 'GET',
+            data: { temporaryUrl: temporaryUrl },
+            dataType: 'text'
+        }).done(function(realUrl) {
+            if (realUrl && realUrl.length > 0) {
+                console.log("서버로부터 받은 실제 영상 URL:", realUrl);
+                player.src({
+                    src: realUrl,
+                    type: 'application/x-mpegURL'
+                });
+                player.play();
+            } else {
+                console.error("영상 URL이 유효하지 않습니다. 서버 응답이 비어있습니다.");
+                player.poster('/Project_4team_war_exploded/image/error.png');
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
+            console.log("서버 응답:", jqXHR.responseText);
+            player.poster('/Project_4team_war_exploded/image/error.png');
+        });
+    }
 
     function loadRestAreas() {
         if (isMarkerClickZoom) {
             isMarkerClickZoom = false;
             return;
         }
-        // Leaflet의 getBounds -> 카카오의 getBounds로 변경
         const bounds = map.getBounds();
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=pjyrest',
+            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
             type: 'GET',
             data: { swLat: sw.getLat(), swLng: sw.getLng(), neLat: ne.getLat(), neLng: ne.getLng() },
             dataType: 'json'
@@ -464,7 +537,7 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=Cctv',
+            url: '/Project_4team_war_exploded/Controller?type=Cctv',
             type: 'GET',
             data: {
                 minX: sw.getLng(),
@@ -487,6 +560,14 @@
             cctvMarkers.setMap(null);
             isCctvVisible = false;
             $(this).text('CCTV 켜기').css('background-color', '#6c757d').css('border-color', '#6c757d');
+
+            if(currentInfoWindow) {
+                currentInfoWindow.close();
+            }
+            if(currentVideoPlayer) {
+                currentVideoPlayer.dispose();
+                currentVideoPlayer = null;
+            }
         } else {
             cctvMarkers.setMap(map);
             isCctvVisible = true;
@@ -502,7 +583,7 @@
             return;
         }
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller?type=pjyrest',
+            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
             type: 'POST',
             data: { searchText: searchText },
             dataType: 'json'
@@ -519,7 +600,8 @@
                     map.setCenter(position);
                     map.setLevel(newLevel, { animate: true });
 
-                    showModalForRestArea(firstResult.Idx.toString());
+                    // ❌ 이 부분을 삭제하거나 주석 처리하여 검색 시 상세정보 모달창이 바로 뜨지 않게 수정했습니다.
+                    // showModalForRestArea(firstResult.Idx.toString());
 
                 } else {
                     alert("검색 결과가 없습니다.");
@@ -527,7 +609,6 @@
             });
     });
 
-    // Leaflet의 moveend 이벤트 -> 카카오의 dragend, zoom_changed 이벤트로 변경
     kakao.maps.event.addListener(map, 'dragend', function() {
         loadRestAreas();
         if (isCctvVisible) {
@@ -541,10 +622,8 @@
         }
     });
 
-
-    // [추가] 모달창의 내용을 채우고, 창을 보여주는 함수
     function showRestAreaDetailModal(ra) {
-        if (!ra) return; // 데이터가 없으면 실행 중지
+        if (!ra) return;
 
         console.log("모달에 표시할 데이터:", ra);
 
@@ -561,12 +640,10 @@
         document.getElementById('restAreaModal').style.display = 'block';
     }
 
-    // [추가] 모달의 X 버튼을 누르거나,
     function closeModal() {
         document.getElementById('restAreaModal').style.display = 'none';
     }
 
-    // [추가] 모달 바깥의 어두운 영역을 눌렀을 때 창을 닫는 함수
     window.onclick = function(event) {
         if (event.target == document.getElementById('restAreaModal')) {
             closeModal();
