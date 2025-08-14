@@ -82,23 +82,72 @@
     </style>
 </head>
 <body>
-<div class="modal fade" id="restAreaModal" tabindex="-1" aria-labelledby="restAreaModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="restAreaModalLabel">휴게소 정보</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<%--모달창 ***************************************************************--%>
+<div id="restAreaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-utensils"></i>
+                <span id="modalTitle">휴게소 정보</span>
             </div>
-            <div class="modal-body">
-                <p><strong>휴게소 이름:</strong> <span id="modal-sa-name"></span></p>
-                <p><strong>주소:</strong> <span id="modal-address"></span></p>
-                <p><strong>전화번호:</strong> <span id="modal-phone"></span></p>
-                <%-- 필요하다면 다른 정보들도 추가 --%>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-map-marker-alt"></i>
+                    위치
+                </div>
+                <div class="info-value" id="modalLocation">
+                    정보를 불러오는 중...
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-phone"></i>
+                    연락처
+                </div>
+                <div class="info-value" id="modalPhone">
+                    정보를 불러오는 중...
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-clock"></i>
+                    운영시간
+                </div>
+                <div class="info-value" id="modalHours">
+                    24시간 운영
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-list"></i>
+                    편의시설
+                </div>
+                <div class="facilities-list" id="modalFacilities">
+                    <span class="facility-tag">주유소</span>
+                    <span class="facility-tag">충전소</span>
+                    <span class="facility-tag">음식점</span>
+                    <span class="facility-tag">화장실</span>
+                    <span class="facility-tag">편의점</span>
+                    <span class="facility-tag">휴식공간</span>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-info-circle"></i>
+                    안내사항
+                </div>
+                <div class="info-value">
+                    • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
+                    • 긴급상황 시 1588-2504로 연락하세요<br>
+                    • 휴게소 내에서는 안전수칙을 준수해주세요
+                </div>
             </div>
         </div>
     </div>
@@ -196,9 +245,21 @@
         if (!data || data.length === 0) return;
 
         data.forEach(ra => {
+
             const marker = L.marker([ra.Lat, ra.Lng], {icon: restIcon});
+
+            // [테스트 코드 추가] 반복문이 시작될 때, 'ra' 객체에 무엇이 들어있는지 콘솔에 출력해봅니다.
+            console.log(ra);
+
+            //
+
             // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
-            const popupContent = '<a href="${pageContext.request.contextPath}/Controller?type=restAreaDetail&idx=' + ra.Idx + '" target="_blank" style="text-decoration: none; color: inherit;"><b>' + ra.SAName + '</b><br>' + ra.Address + '</a>';
+            const popupContent = `
+        <div onclick="showModalForRestArea('${ra.Idx}');" style="cursor: pointer; line-height: 1.6;">
+            <b style="font-size: 15px;">\${ra.SAName}</b><br>
+            \${ra.Address}
+        </div>
+    `;
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
@@ -404,6 +465,32 @@
     });
 
 
+
+    // [추가] 모달창의 내용을 채우고, 창을 보여주는 함수
+    function showRestAreaDetailModal(ra) {
+        if (!ra) return; // 데이터가 없으면 실행 중지
+        document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
+        document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
+        // AJAX 응답에 전화번호가 있다면 ra.phone 등으로, 없으면 '정보 없음'으로 표시됩니다.
+        document.getElementById('modalPhone').textContent = ra.phone || '제공되지 않음';
+
+        // 편의시설, 운영시간 등 다른 정보들도 같은 방식으로 채울 수 있습니다.
+
+        document.getElementById('restAreaModal').style.display = 'block'; // 모달창 보이기
+    }
+
+    // [추가] 모달의 X 버튼을 누르거나,
+    function closeModal() {
+        document.getElementById('restAreaModal').style.display = 'none';
+    }
+
+    // [추가] 모달 바깥의 어두운 영역을 눌렀을 때 창을 닫는 함수
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('restAreaModal')) {
+            closeModal();
+        }
+    }
+        
 </script>
 
 </body>
