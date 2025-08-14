@@ -69,7 +69,6 @@ for keyword in keywords:
             
             # place_bluelink 클래스를 가진 링크 찾기
             place_links = driver.find_elements(By.CSS_SELECTOR, 'a.place_bluelink')
-            print(f"찾은 place_bluelink 링크 수: {len(place_links)}")
             
             if place_links:
                 first_link = place_links[0]
@@ -104,123 +103,68 @@ for keyword in keywords:
                     rating = "별점 정보 없음"
                     try:
                         rating_element = driver.find_element(By.CSS_SELECTOR, '.PXMot.LXIwF')
-                        rating = rating_element.get_attribute('value')
+                        text = rating_element.text.strip()
+                        rating = text.replace("별점", "").strip()
                         print(f"별점: {rating}")
                     except:
                         print("별점 정보를 찾을 수 없습니다.")
-                    # 리뷰 탭 클릭
-                    try:
-                        # 모든 탭 메뉴 요소 찾기
-                        tab_menus = driver.find_elements(By.CSS_SELECTOR, '.tpj9w._tab-menu')
-                        # 탭 메뉴 갯수에 따라 리뷰 탭 인덱스 결정
-                        review_index = "1" if len(tab_menus) == 4 else "2"
-                        review_button = driver.find_element(By.CSS_SELECTOR, f'.tpj9w._tab-menu[data-index="{review_index}"]')
-                        print(f"리뷰 탭: {review_button.text}")
-                        review_button.click()
-                        time.sleep(1)
-                        
-                        # 스크롤을 맨 아래로 내리기
-                        last_height = driver.execute_script("return document.body.scrollHeight")
-                        while True:
-                            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                            time.sleep(1)
-                            new_height = driver.execute_script("return document.body.scrollHeight")
-                            if new_height == last_height:
-                                break
-                            last_height = new_height
-
-                        # 리뷰 목록 요소 찾기
-                        review_list = driver.find_elements(By.CSS_SELECTOR, '#_review_list > li')
-                        print(f"총 {len(review_list)}개의 리뷰를 찾았습니다.")
-                        
-                        # 각 리뷰 요소에 대해 반복
-                        for i, review in enumerate(review_list, 1):
-                            try:
-                                print(f"\n--- 리뷰 {i} ---")
-                                
-                                # 기본 정보 초기화
-                                author = "작성자 정보 없음"
-                                review_text = "리뷰 내용 없음"
-                                review_image = "리뷰 사진 없음"
-                                date = "작성 날짜 없음"
-                                
-                                # 작성자 정보 추출
-                                try:
-                                    author_element = review.find_element(By.CSS_SELECTOR, '.pui__NMi-Dp')
-                                    author = author_element.text
-                                    print(f"작성자: {author}")
-                                except:
-                                    print("작성자 정보를 찾을 수 없습니다.")
-                                
-                                # 리뷰 내용 추출 
-                                try:
-                                    review_text_element = review.find_element(By.CSS_SELECTOR, '.pui__vn15t2 a')
-                                    review_text = review_text_element.text
-                                    print(f"리뷰 내용: {review_text}")
-                                except:
-                                    print("리뷰 내용을 찾을 수 없습니다.")
-                                
-                                # 리뷰 사진 추출 (개선된 부분)
-                                try:
-                                    # 가장 정확한 선택자부터 시도
-                                    img_element = review.find_element(By.CSS_SELECTOR, 'img[alt="방문자리뷰사진"]')
-                                    src = img_element.get_attribute('src')
-                                    
-                                    if src and 'pup-review-phinf.pstatic.net' in src:
-                                        review_image = src
-                                        print(f"리뷰 사진 URL: {review_image}")
-                                    else:
-                                        print("리뷰 사진 URL이 유효하지 않습니다.")
-                                        
-                                except:
-                                    # 이미지가 없는 경우 바로 처리
-                                    print("리뷰 사진 없음")
-
-                                # 작성 날짜 추출
-                                try:
-                                    date_elements = review.find_elements(By.CSS_SELECTOR, '.pui__gfuUIT .pui__blind')
-                                    date = date_elements[1].text if len(date_elements) > 1 else "날짜 정보 없음"
-                                    print(f"작성 날짜: {date}")
-                                except:
-                                    print("작성 날짜를 찾을 수 없습니다.")
-                                
-                                # 데이터를 리스트에 추가
-                                all_data.append({
-                                    '휴게소명': keyword,
-                                    '도로명주소': address,
-                                    '전화번호': phone,
-                                    '리뷰번호': i,
-                                    '작성자': author,
-                                    '리뷰내용': review_text,
-                                    '리뷰사진URL': review_image,
-                                    '작성날짜': date,
-                                    '별점': rating,
-                                    '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                                })
-                                
-                                print("-" * 50)
-                                
-                            except Exception as e:
-                                print(f"리뷰 {i} 데이터 추출 중 오류 발생: {e}")
-                                continue
-                                
-                    except Exception as e:
-                        print(f"리뷰 탭 처리 중 오류: {e}")
-                        
+                    
+                    # 데이터를 리스트에 추가 (들여쓰기 수정)
+                    all_data.append({
+                        '휴게소명': keyword,
+                        '도로명주소': address,
+                        '전화번호': phone,
+                        '별점': rating,
+                        '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    })
+                    print(f"데이터 수집 완료: {keyword}")
+                            
                 except Exception as e:
                     print(f"entryIframe 처리 중 오류: {e}")
+                    # 오류가 발생해도 기본 데이터는 저장
+                    all_data.append({
+                        '휴게소명': keyword,
+                        '도로명주소': '오류 발생',
+                        '전화번호': '오류 발생',
+                        '별점': '오류 발생',
+                        '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    })
                     
             else:
                 print("place_bluelink 클래스를 가진 링크를 찾을 수 없습니다.")
+                # 링크를 찾지 못한 경우에도 기본 데이터 저장
+                all_data.append({
+                    '휴게소명': keyword,
+                    '도로명주소': '링크 없음',
+                    '전화번호': '링크 없음',
+                    '별점': '링크 없음',
+                    '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
                 
         except Exception as e:
             print(f"searchIframe 처리 중 오류: {e}")
+            # 오류가 발생해도 기본 데이터는 저장
+            all_data.append({
+                '휴게소명': keyword,
+                '도로명주소': '프레임 오류',
+                '전화번호': '프레임 오류',
+                '별점': '프레임 오류',
+                '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
             
         # 다음 키워드로 넘어가기 전에 잠시 대기
         time.sleep(1)
         
     except Exception as e:
         print(f"키워드 '{keyword}' 처리 중 오류 발생: {e}")
+        # 예외가 발생해도 기본 데이터는 저장
+        all_data.append({
+            '휴게소명': keyword,
+            '도로명주소': '예외 발생',
+            '전화번호': '예외 발생',
+            '별점': '예외 발생',
+            '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
         continue
 
 # 모든 키워드 처리 완료 후 엑셀로 저장
@@ -229,12 +173,16 @@ if all_data:
     
     # 현재 시간을 파일명에 포함
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'휴게소_리뷰_데이터_{timestamp}.xlsx'
+    filename = f'가게정보_데이터_{timestamp}.xlsx'
     
     # 엑셀로 저장
     df.to_excel(filename, index=False, engine='openpyxl')
     print(f"\n데이터가 '{filename}' 파일로 저장되었습니다.")
-    print(f"총 {len(all_data)}개의 리뷰 데이터가 수집되었습니다.")
+    print(f"총 {len(all_data)}개의 데이터가 저장되었습니다.")
+    
+    # 저장된 데이터 미리보기
+    print("\n저장된 데이터 미리보기:")
+    print(df.head())
 else:
     print("\n수집된 데이터가 없습니다.")
 
