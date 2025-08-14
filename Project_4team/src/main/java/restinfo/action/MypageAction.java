@@ -12,7 +12,7 @@ public class MypageAction implements Action{
     public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         HttpSession session = request.getSession();
-        UserVO vo = 
+        UserVO vo =
 
         return "mypage.jsp";
     }
