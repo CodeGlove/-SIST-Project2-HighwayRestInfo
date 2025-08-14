@@ -15,7 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
           rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="css/register_1.css" rel="stylesheet">    <link href="css/footerStyle.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/css/register_1.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
     <style>
         @font-face {
             font-family: 'PretendardVariable';
