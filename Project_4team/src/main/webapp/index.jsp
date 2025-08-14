@@ -15,7 +15,6 @@
     <link href="css/footerStyle.css" rel="stylesheet">
 
 
-
 </head>
 <body>
 <!-- Header -->
@@ -31,7 +30,8 @@
         <nav>
             <ul class="nav-links">
                 <li><a href="#">회사 소개</a></li>
-                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li> <%--08.04-한결 수정--%>
+                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
+                <%--08.04-한결 수정--%>
                 <li><a href="#">고객센터</a></li>
                 <li><a href="#">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
@@ -71,6 +71,7 @@
             <div class="floating-icon">
                 <i class="fas fa-gift"></i>
             </div>
+        </div>
     </section>
 
     <!-- Search Section -->
@@ -258,7 +259,7 @@
         let searchTimeout;
 
         // 입력 이벤트
-        input.addEventListener('input', function(e) {
+        input.addEventListener('input', function (e) {
             const query = e.target.value.trim();
 
             // 디바운싱: 300ms 후에 검색
@@ -275,21 +276,21 @@
         });
 
         // 포커스 이벤트
-        input.addEventListener('focus', function() {
+        input.addEventListener('focus', function () {
             if (input.value.trim().length >= 2) {
                 showDropdown(dropdown);
             }
         });
 
         // 블러 이벤트 (약간의 지연을 두어 클릭 이벤트가 먼저 실행되도록)
-        input.addEventListener('blur', function() {
+        input.addEventListener('blur', function () {
             setTimeout(() => {
                 hideDropdown(dropdown);
             }, 200);
         });
 
         // 키보드 네비게이션
-        input.addEventListener('keydown', function(e) {
+        input.addEventListener('keydown', function (e) {
             const items = dropdown.querySelectorAll('.suggestion-item');
 
             if (e.key === 'ArrowDown') {
@@ -376,9 +377,9 @@
             const placeAddress = escapeHtml(item.road_address_name || item.address_name);
 
             html += '<div class="suggestion-item" data-index="' + index + '" onclick="selectSuggestionByClick(this)">' +
-                    '<div class="place-name">' + placeName + '</div>' +
-                    '<div class="place-address">' + placeAddress + '</div>' +
-                    '</div>';
+                '<div class="place-name">' + placeName + '</div>' +
+                '<div class="place-address">' + placeAddress + '</div>' +
+                '</div>';
         });
 
         dropdown.innerHTML = html;

@@ -113,9 +113,9 @@
                 <i class="fas fa-route"></i>
             </div>
             <div class="card-title">휴게시설</div>
-            <button class="only-sa" onclick="toggleRestStops(this)">
-                <i class="fas fa-utensils button-icon"></i>
-                <span class="button-text">휴게소만 표시</span>
+            <button class="only-sa active" onclick="toggleRestStops(this)">
+                <i class="fas fa-eye button-icon"></i>
+                <span class="button-text">전체 표시</span>
             </button>
         </div>
 
@@ -147,27 +147,8 @@
                                     <c:if test="${not empty allRestAreaDurations and status.index < allRestAreaDurations.size()}">
                                         <div class="duration-info">
                                             <i class="fas fa-clock duration-icon"></i>
-                                            <span class="duration-text">
-                                                                <c:set var="duration"
-                                                                       value="${allRestAreaDurations[status.index]}"/>
-                                                                <c:set var="totalHours" value="${duration / 3600}"/>
-                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
-                                                                <c:set var="totalMinutes"
-                                                                       value="${(duration % 3600) / 60}"/>
-                                                                <c:set var="minutes"
-                                                                       value="${totalMinutes.intValue()}"/>
-                                                                <c:choose>
-                                                                    <c:when test="${status.index == 0}">
-                                                                        출발지부터 <c:if
-                                                                            test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                            test="${minutes > 0}">${minutes}분</c:if>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        이전 휴게시설부터 <c:if
-                                                                            test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                            test="${minutes > 0}">${minutes}분</c:if>
-                                                                    </c:otherwise>
-                                                                </c:choose>
+                                            <span class="duration-text" data-duration="${allRestAreaDurations[status.index]}" data-index="${status.index}">
+                                                                계산 중...
                                                             </span>
                                         </div>
                                     </c:if>
@@ -412,32 +393,26 @@
 </div>
 
 <script>
+    // 전역 변수 초기화 (한 번만 실행)
+    function initializeGlobalData() {
+        if (!window.allRestAreaDurations) {
+            window.allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
+        }
+        if (!window.serviceAreaOnlyDurations) {
+            window.serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
+        }
+    }
+
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
-        // 탭 기능 구현
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const targetTab = this.getAttribute('data-tab');
-
-                // 모든 탭 버튼에서 active 클래스 제거
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-
-                // 모든 탭 패널에서 active 클래스 제거
-                tabPanes.forEach(pane => pane.classList.remove('active'));
-
-                // 클릭된 버튼에 active 클래스 추가
-                this.classList.add('active');
-
-                // 해당 탭 패널에 active 클래스 추가
-                const targetPane = document.getElementById(targetTab);
-                if (targetPane) {
-                    targetPane.classList.add('active');
-                }
-            });
-        });
+        // 전역 데이터 초기화
+        initializeGlobalData();
+        
+        // 페이지 로드 시 휴게소만 표시 (졸음쉼터 숨기기)
+        initializeRestAreaDisplay();
+        
+        // 소요시간 계산 및 표시
+        calculateAndDisplayDurations();
 
         // 카드 애니메이션 효과
         const cards = document.querySelectorAll('.info-card');
@@ -458,28 +433,67 @@
         });
     });
 
-    // 휴게소 정보 모달 표시
-    function showRestAreaInfo(name, index) {
-        const modal = document.getElementById('restAreaModal');
-        const title = document.getElementById('modalTitle');
-        const location = document.getElementById('modalLocation');
-        const phone = document.getElementById('modalPhone');
-
-        title.textContent = name;
-        location.textContent = `휴게소 #${index + 1} - ${name}`;
-        phone.textContent = '031-XXX-XXXX';
-
-        modal.style.display = 'block';
+    // 소요시간 포맷팅 유틸리티 함수
+    function formatDuration(durationInSeconds, prefix = '') {
+        const hours = Math.floor(durationInSeconds / 3600);
+        const minutes = Math.floor((durationInSeconds % 3600) / 60);
+        
+        let result = prefix;
+        if (hours > 0) result += hours + '시간';
+        if (minutes > 0) result += minutes + '분';
+        
+        return result || '정보 없음';
     }
 
-    // 졸음쉼터 정보 모달 표시
-    function showRestStopInfo(name, index) {
-        const modal = document.getElementById('restStopModal');
-        const title = document.getElementById('modalTitle2');
-        const location = document.getElementById('modalLocation2');
+    // 소요시간 계산 및 표시
+    function calculateAndDisplayDurations() {
+        const durationElements = document.querySelectorAll('.duration-text[data-duration]');
+        
+        durationElements.forEach(element => {
+            const duration = parseInt(element.getAttribute('data-duration'));
+            const index = parseInt(element.getAttribute('data-index'));
+            const prefix = index === 0 ? '출발지부터 ' : '이전 휴게시설부터 ';
+            
+            element.textContent = formatDuration(duration, prefix);
+        });
+    }
 
+    // 페이지 로드 시 휴게소만 표시하도록 초기화
+    function initializeRestAreaDisplay() {
+        const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
+        const serviceAreaCards = document.querySelectorAll('.rest-area-card.service-area');
+        
+        // 졸음쉼터 숨기기
+        restStopCards.forEach(card => {
+            card.style.display = 'none';
+        });
+        
+        // 휴게소 소요시간 업데이트 (전역 변수 사용)
+        if (window.serviceAreaOnlyDurations && window.serviceAreaOnlyDurations.length > 0) {
+            updateServiceAreaDurations(serviceAreaCards, window.serviceAreaOnlyDurations);
+        }
+    }
+
+    // 통합된 모달 표시 함수
+    function showRestAreaInfo(name, index) {
+        const isRestArea = name.includes('휴게소');
+        const modalId = isRestArea ? 'restAreaModal' : 'restStopModal';
+        const titleId = isRestArea ? 'modalTitle' : 'modalTitle2';
+        const locationId = isRestArea ? 'modalLocation' : 'modalLocation2';
+        const facilityType = isRestArea ? '휴게소' : '졸음쉼터';
+        
+        const modal = document.getElementById(modalId);
+        const title = document.getElementById(titleId);
+        const location = document.getElementById(locationId);
+        
         title.textContent = name;
-        location.textContent = `졸음쉼터 #${index + 1} - ${name}`;
+        location.textContent = `${facilityType} #${index + 1} - ${name}`;
+        
+        // 휴게소인 경우 전화번호 설정
+        if (isRestArea) {
+            const phone = document.getElementById('modalPhone');
+            phone.textContent = '031-XXX-XXXX';
+        }
 
         modal.style.display = 'block';
     }
@@ -492,14 +506,6 @@
         const buttonIcon = button.querySelector('.button-icon');
         const isActive = button.classList.contains('active');
 
-        // 서버에서 전달받은 소요시간 데이터
-
-        const allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
-
-        // RestAreaAction에서 계산된 휴게소 전용 소요시간 사용
-        const serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
-
-
         if (isActive) {
             // 모든 시설 표시 - 소요시간 먼저 복원, 그 다음 리스트 표시
 
@@ -508,7 +514,7 @@
             button.classList.remove('active');
 
             // 1단계: 소요시간 먼저 복원
-            restoreOriginalDurations(serviceAreaCards, allRestAreaDurations);
+            restoreOriginalDurations(serviceAreaCards, window.allRestAreaDurations);
 
             // 2단계: 소요시간 복원 완료 후 리스트 나타나기 애니메이션
             setTimeout(() => {
@@ -547,7 +553,7 @@
             button.classList.add('active');
 
             // 1단계: 소요시간 먼저 업데이트 (300ms)
-            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
+            updateServiceAreaDurations(serviceAreaCards, window.serviceAreaOnlyDurations);
 
             // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
             setTimeout(() => {
@@ -601,18 +607,8 @@
             const durationElement = card.querySelector('.duration-text');
             if (durationElement && serviceAreaIndex < serviceAreaOnlyDurations.length) {
                 const duration = serviceAreaOnlyDurations[serviceAreaIndex];
-                const hours = Math.floor(duration / 3600);
-                const minutes = Math.floor((duration % 3600) / 60);
-
-                let newTimeText = '';
-                if (serviceAreaIndex === 0) {
-                    newTimeText = '출발지부터 ';
-                } else {
-                    newTimeText = '이전 휴게소부터 ';
-                }
-
-                if (hours > 0) newTimeText += hours + '시간';
-                if (minutes > 0) newTimeText += minutes + '분';
+                const prefix = serviceAreaIndex === 0 ? '출발지부터 ' : '이전 휴게소부터 ';
+                const newTimeText = formatDuration(duration, prefix);
 
                 // 부드러운 텍스트 변경 애니메이션 (더 자연스럽게)
                 setTimeout(() => {
