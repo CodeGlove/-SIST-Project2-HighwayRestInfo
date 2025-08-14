@@ -89,7 +89,7 @@ public class KakaoCallbackAction implements Action {
             e.printStackTrace();
         }
 
-        return "loginResult.jsp"; // 네이버와 동일한 결과 페이지로 이동시킵니다.
+        return "index.jsp"; // 네이버와 동일한 결과 페이지로 이동시킵니다.
     }
 
     private void getUserInfo(String accessToken, HttpServletRequest request) {
