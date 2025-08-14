@@ -1,4 +1,3 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
@@ -6,7 +5,6 @@
     <title>Title</title>
 </head>
 <body>
-휴게소 이름: ${vo.SAName}
-
+USer의 정보를 보여줄 부분임 근데 kakao와 naver의 mypage는 어떻게할?
 </body>
 </html>

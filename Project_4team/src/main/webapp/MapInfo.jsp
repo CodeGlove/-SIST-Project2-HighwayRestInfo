@@ -19,12 +19,8 @@
     <!-- jQuery: AJAX 요청을 위해 필요 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <%--모달을 위한 스크립트--%>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
-
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/restareaStyle.css">
     <!--
         [중요] video.js와 HLS 관련 라이브러리 버전 통일 및 정리
         - video.js는 최신 안정 버전인 8.6.1 사용
@@ -37,6 +33,20 @@
 
 
     <style>
+        /* Leaflet 기본 팝업창 스타일 수정 */
+        .leaflet-popup-content-wrapper {
+            cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경해서 클릭 가능함을 나타냅니다. */
+            transition: background-color 0.2s ease-in-out; /* 배경색 변경에 부드러운 애니메이션 효과를 줍니다. */
+        }
+
+        .leaflet-popup-content-wrapper:hover {
+            background-color: #f0f0f0; /* 마우스 호버 시 배경색을 살짝 밝게 변경합니다. */
+        }
+
+        .leaflet-popup-content b {
+            font-size: 16px; /* 제목 글꼴 크기를 약간 키웁니다. */
+        }
+        
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .search-container {
@@ -79,6 +89,7 @@
                 box-sizing: border-box;
             }
         }
+
     </style>
 </head>
 <body>
@@ -113,6 +124,26 @@
                 </div>
             </div>
 
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="fas fa-parking"></i>
+                    주차 정보
+                </div>
+                <div class="parking-info-grid">
+                    <div class="parking-item">
+                        <span class="parking-label">소형차</span>
+                        <span class="parking-value" id="modalCompactParking">-</span>
+                    </div>
+                    <div class="parking-item">
+                        <span class="parking-label">대형차</span>
+                        <span class="parking-value" id="modalLargeParking">-</span>
+                    </div>
+                    <div class="parking-item">
+                        <span class="parking-label">장애인</span>
+                        <span class="parking-value" id="modalDisabledParking">-</span>
+                    </div>
+                </div>
+            </div>
             <div class="info-section">
                 <div class="info-label">
                     <i class="fas fa-clock"></i>
@@ -180,6 +211,17 @@
         attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap</a> contributors'
     }).addTo(map);
 
+    // 휴게소 데이터를 ID와 함께 저장할 공간
+    const restAreaDataStore = new Map();
+
+    // 팝업 클릭 시 ID로 휴게소 정보를 찾아 모달을 띄워주는 함수
+    function showModalForRestArea(restAreaId) {
+        const restArea = restAreaDataStore.get(restAreaId.toString());
+        if (restArea) {
+            showRestAreaDetailModal(restArea);
+        }
+    }
+
     $(window).on('load', function () {
         console.log("window.load 이벤트 발생! 페이지의 모든 리소스(이미지 등) 로딩 완료.");
         // window.load 이벤트가 발생했더라도, 아주 짧은 지연(0.1초)을 주어
@@ -245,21 +287,16 @@
         if (!data || data.length === 0) return;
 
         data.forEach(ra => {
+            restAreaDataStore.set(ra.Idx.toString(), ra);
 
             const marker = L.marker([ra.Lat, ra.Lng], {icon: restIcon});
 
-            // [테스트 코드 추가] 반복문이 시작될 때, 'ra' 객체에 무엇이 들어있는지 콘솔에 출력해봅니다.
-            console.log(ra);
+            const popupContent =
+                '<div onclick="showModalForRestArea(\'' + ra.Idx + '\');" style="cursor: pointer; line-height: 1.6;">' +
+                '<b style="font-size: 15px;">' + ra.SAName + '</b><br>' +
+                ra.Address +
+                '</div>';
 
-            //
-
-            // JSP EL과 JavaScript 템플릿 리터럴 충돌 방지를 위해 문자열 결합 방식으로 변경
-            const popupContent = `
-        <div onclick="showModalForRestArea('${ra.Idx}');" style="cursor: pointer; line-height: 1.6;">
-            <b style="font-size: 15px;">\${ra.SAName}</b><br>
-            \${ra.Address}
-        </div>
-    `;
             marker.bindPopup(popupContent);
             marker.on('click', function(e) {
                 isMarkerClickZoom = true;
@@ -275,7 +312,6 @@
             restAreaMarkers.addLayer(marker);
         });
     }
-
 
 
     // CCTV 아이콘 정의
@@ -469,10 +505,25 @@
     // [추가] 모달창의 내용을 채우고, 창을 보여주는 함수
     function showRestAreaDetailModal(ra) {
         if (!ra) return; // 데이터가 없으면 실행 중지
+
+        console.log("모달에 표시할 데이터:", ra);
+
         document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
         document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
-        // AJAX 응답에 전화번호가 있다면 ra.phone 등으로, 없으면 '정보 없음'으로 표시됩니다.
-        document.getElementById('modalPhone').textContent = ra.phone || '제공되지 않음';
+        // AJAX 응답에 전화번호가 있다면 ra.phone 등으로, 없으면 '정보 없음'으로 표시
+        let formattedPhone = '제공되지 않음'; // 기본값 설정
+        if (ra.Tel) { // 전화번호 데이터(ra.Tel)가 있을 경우에만
+            // 정규식을 사용해 하이픈(-)을 넣어서 서식을 적용
+            formattedPhone = ra.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        }
+        document.getElementById('modalPhone').textContent = formattedPhone;
+
+
+
+        document.getElementById('modalCompactParking').textContent = ra.CompactParking+"대";
+        document.getElementById('modalLargeParking').textContent = ra.LargeParking+"대";
+        document.getElementById('modalDisabledParking').textContent = ra.DisabledParking+"대";
+
 
         // 편의시설, 운영시간 등 다른 정보들도 같은 방식으로 채울 수 있습니다.
 
