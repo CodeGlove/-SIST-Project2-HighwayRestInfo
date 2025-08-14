@@ -114,8 +114,8 @@
             </div>
             <div class="card-title">휴게시설</div>
             <button class="only-sa" onclick="toggleRestStops(this)">
-                <i class="fas fa-bed button-icon"></i>
-                <span class="button-text">졸음쉼터 표시</span>
+                <i class="fas fa-utensils button-icon"></i>
+                <span class="button-text">휴게소만 표시</span>
             </button>
         </div>
 
@@ -456,12 +456,6 @@
                 this.style.transform = 'translateX(0)';
             });
         });
-
-        // 페이지 로드 시 졸음쉼터 카드들을 기본적으로 숨김
-        const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
-        restStopCards.forEach(card => {
-            card.style.display = 'none';
-        });
     });
 
     // 휴게소 정보 모달 표시
@@ -490,7 +484,7 @@
         modal.style.display = 'block';
     }
 
-    // 졸음쉼터 표시 토글 기능
+    // 휴게소만 표시 토글 기능
     function toggleRestStops(button) {
         const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
         const serviceAreaCards = document.querySelectorAll('.rest-area-card.service-area');
@@ -499,51 +493,19 @@
         const isActive = button.classList.contains('active');
 
         // 서버에서 전달받은 소요시간 데이터
+
         const allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
 
         // RestAreaAction에서 계산된 휴게소 전용 소요시간 사용
         const serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
 
+
         if (isActive) {
-            // 졸음쉼터 숨기기 - 소요시간 먼저 변경, 그 다음 리스트 변경
-            buttonText.textContent = '졸음쉼터 표시';
-            buttonIcon.className = 'fas fa-bed button-icon';
+            // 모든 시설 표시 - 소요시간 먼저 복원, 그 다음 리스트 표시
+
+            buttonText.textContent = '휴게소만 표시';
+            buttonIcon.className = 'fas fa-utensils button-icon';
             button.classList.remove('active');
-
-            // 1단계: 소요시간 먼저 업데이트 (300ms)
-            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
-
-            // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
-            setTimeout(() => {
-                // 콜랩스 애니메이션으로 사라지기 (빈 공간 채우기)
-                restStopCards.forEach((card, index) => {
-                    setTimeout(() => {
-                        // 1단계: 페이드아웃과 스케일 다운 (더 부드럽게)
-                        card.classList.add('animating-out');
-
-                        setTimeout(() => {
-                            // 2단계: 콜랩스 (높이와 마진 줄이기) - 더 긴 시간
-                            card.classList.remove('animating-out');
-                            card.classList.add('collapsing');
-
-                            setTimeout(() => {
-                                // 3단계: 완전히 숨기기
-                                card.style.display = 'none';
-                                card.classList.remove('collapsing');
-                                // 스타일 정리
-                                card.style.maxHeight = '';
-                                card.style.marginBottom = '';
-                                card.style.padding = '';
-                            }, 800); // 콜랩스 애니메이션 시간 증가
-                        }, 300); // 페이드아웃 후 콜랩스 시작 - 더 여유롭게
-                    }, index * 120); // 순차적 사라짐 - 더 여유로운 간격
-                });
-            }, 600); // 소요시간 업데이트 완료 후 대기
-        } else {
-            // 졸음쉼터 표시 - 소요시간 먼저 복원, 그 다음 리스트 표시
-            buttonText.textContent = '졸음쉼터 숨기기';
-            buttonIcon.className = 'fas fa-eye-slash button-icon';
-            button.classList.add('active');
 
             // 1단계: 소요시간 먼저 복원
             restoreOriginalDurations(serviceAreaCards, allRestAreaDurations);
@@ -577,6 +539,42 @@
                     }, index * 150); // 더 여유로운 순차적 딜레이
                 });
             }, 500); // 소요시간 복원 완료 후 대기
+        } else {
+            // 휴게소만 표시 - 소요시간 먼저 변경, 그 다음 리스트 변경
+
+            buttonText.textContent = '전체 표시';
+            buttonIcon.className = 'fas fa-eye button-icon';
+            button.classList.add('active');
+
+            // 1단계: 소요시간 먼저 업데이트 (300ms)
+            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
+
+            // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
+            setTimeout(() => {
+                // 콜랩스 애니메이션으로 사라지기 (빈 공간 채우기)
+                restStopCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        // 1단계: 페이드아웃과 스케일 다운 (더 부드럽게)
+                        card.classList.add('animating-out');
+
+                        setTimeout(() => {
+                            // 2단계: 콜랩스 (높이와 마진 줄이기) - 더 긴 시간
+                            card.classList.remove('animating-out');
+                            card.classList.add('collapsing');
+
+                            setTimeout(() => {
+                                // 3단계: 완전히 숨기기
+                                card.style.display = 'none';
+                                card.classList.remove('collapsing');
+                                // 스타일 정리
+                                card.style.maxHeight = '';
+                                card.style.marginBottom = '';
+                                card.style.padding = '';
+                            }, 800); // 콜랩스 애니메이션 시간 증가
+                        }, 300); // 페이드아웃 후 콜랩스 시작 - 더 여유롭게
+                    }, index * 120); // 순차적 사라짐 - 더 여유로운 간격
+                });
+            }, 600); // 소요시간 업데이트 완료 후 대기
         }
     }
 
