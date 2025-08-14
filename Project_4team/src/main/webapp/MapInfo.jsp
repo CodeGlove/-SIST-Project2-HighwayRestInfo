@@ -20,7 +20,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/restareaStyle.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/restareaStyle.css">
     <!--
         [중요] video.js와 HLS 관련 라이브러리 버전 통일 및 정리
         - video.js는 최신 안정 버전인 8.6.1 사용

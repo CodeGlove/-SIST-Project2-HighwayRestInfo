@@ -21,8 +21,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <!-- CSS 파일 링크 -->
-    <link rel="stylesheet" href="css/restareaStyle.css">
-    <link href="css/footerStyle.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/restareaStyle.css">
+    <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
 </head>
 <body>
 <!-- 헤더 -->
