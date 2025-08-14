@@ -12,8 +12,9 @@ public class MypageAction implements Action{
     public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         HttpSession session = request.getSession();
-        UserVO vo = 
+        UserVO vo = (UserVO) session.getAttribute("loginUser");
 
+        request.setAttribute("user",vo);
         return "mypage.jsp";
     }
 }
