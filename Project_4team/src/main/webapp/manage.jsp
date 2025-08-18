@@ -6,6 +6,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -204,8 +205,9 @@
         .legend-color {
             width: 16px;
             height: 16px;
-            border-radius: 2px;
+            border-radius: 50%;  /* 동그라미 모양 */
             border: 1px solid #ddd;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* 도넛차트와 비슷한 그림자 */
         }
         
         .legend-text {
@@ -214,6 +216,7 @@
     </style>
 </head>
 <body>
+<c:set var="vo" value="${sessionScope.loginUser}" scope="page"/>
     <!-- Header -->
     <header class="header">
         <div class="nav-container">
@@ -225,18 +228,26 @@
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="#">회사 소개</a></li>
-                    <li><a href="#">공지사항</a></li>
+                    <li><a href="#">대시보드&업데이트</a></li>
+                    <li><a href="#">공지사항 수정</a></li>
                     <li><a href="#">고객센터</a></li>
-                    <li><a href="#">자주 묻는 질문</a></li>
-                    <li><a href="#">채용</a></li>
+                    <li><a href="#">자주 묻는 질문 수정</a></li>
                 </ul>
             </nav>
             <div class="auth-buttons">
                 <a href="#" class="btn btn-login">KOR</a>
                 <a href="#" class="btn btn-login">ENG</a>
-                <a href="Controller?type=login" class="btn btn-login">로그인</a>
-                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
+
+                <c:if test="${vo eq null or vo.authority eq 0}"> <%--로그인이 안되어있거나 일반사용자일 경우--%>
+<%--                    메인 페이지로 돌아가게 함--%>
+                    <c:redirect url="Controller">
+                        <c:param name="type" value="mainpage"/>
+                        <c:param name="cPage" value="${vo}"/>
+                    </c:redirect>
+                </c:if>
+                <c:if test="${vo ne null and vo.authority eq 1}"> <%--관리자일 경우만--%>
+                    <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
+                </c:if>
             </div>
         </div>
     </header>
@@ -280,10 +291,10 @@
                 <div class="chart-legend" id="barChartLegend">
                     <!-- 범례가 동적으로 생성됩니다 -->
                 </div>
-                <div class="chart-description">
-                    <i class="fas fa-heart"></i>
-                    사용자들이 가장 많이 즐겨찾기한 휴게소 순위입니다.
-                </div>
+<%--                <div class="chart-description">--%>
+<%--                    <i class="fas fa-heart"></i>--%>
+<%--                    사용자들이 가장 많이 즐겨찾기한 휴게소 순위입니다.--%>
+<%--                </div>--%>
             </div>
             
             <!-- 버튼 섹션 -->
@@ -511,6 +522,55 @@
             }
         }
 
+        // 막대그래프(즐겨찾기한 휴게소들) 데이터 가져오기
+        async function fetchBookMarkData() {
+            try {
+                // ========================================
+                // 6-1. 서버에 HTTP POST 요청
+                // ========================================
+                const response = await fetch('Controller', {
+                    method: 'POST',
+                    // Content-Type은 기본값 application/x-www-form-urlencoded 사용
+                    // 별도 headers 설정 불필요
+
+                    // POST 데이터: type과 chartType을 URLSearchParams로 전송
+                    body: new URLSearchParams({
+                        type: 'getStatus',        // Controller에서 getStatusAction 호출
+                        chartType: 'bar'        // 구분자 - 막대그래프
+                    })
+                });
+
+                // ========================================
+                // 6-2. HTTP 응답 상태 확인
+                // ========================================
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                // ========================================
+                // 6-3. JSON 응답 데이터 파싱
+                // ========================================
+                const data = await response.json();  // [{name: '시흥', count: 10}, {},...]
+                console.log('가져온 회원 데이터:', data);
+                return data;
+
+            } catch (error) {
+                // ========================================
+                // 6-4. 에러 처리 및 기본값 반환
+                // ========================================
+                console.error('데이터 가져오기 실패:', error);
+                // 네트워크 오류 시 기본 데이터로 차트 표시
+                return [
+                    {name: '휴게소A', count: 15},
+                    {name: '휴게소B', count: 15},  // 같은 즐겨찾기 수
+                    {name: '휴게소C', count: 15},
+                    {name: '휴게소D', count: 12},
+                    {name: '휴게소E', count: 11},
+                    {name: '휴게소F', count: 10}
+                ];
+            }
+        }
+
         // ========================================
         // 7. 막대그래프 그리기 함수 (즐겨찾기 휴게소 TOP 5)
         // ========================================
@@ -635,7 +695,30 @@
         }
 
         // ========================================
-        // 8. 범례 생성 함수
+        // 8. 동적 색상 생성 함수
+        // ========================================
+        // HSL 색상 공간에서 황금비율로 분산된 고유한 색상들을 자동 생성
+        // 매개변수:
+        // - count: 필요한 색상 개수
+        // - saturation: 채도 (0-100, 기본값 70)
+        // - lightness: 명도 (0-100, 기본값 60)
+        function generateColors(count, saturation = 70, lightness = 60) {
+            const colors = [];
+            const goldenRatio = 137.508; // 황금비율 (360도에서 균등하게 분산)
+            
+            for (let i = 0; i < count; i++) {
+                // 황금비율을 사용하여 색조를 균등하게 분산
+                const hue = (i * goldenRatio) % 360;
+                const color = 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+                colors.push(color);
+            }
+            
+            console.log(count + '개의 동적 색상 생성:', colors);
+            return colors;
+        }
+
+        // ========================================
+        // 9. 범례 생성 함수
         // ========================================
         function createBarChartLegend(data, colors) {
             const legendContainer = document.getElementById('barChartLegend');
@@ -646,15 +729,17 @@
             console.log('범례 생성 색상:', colors);
             
             data.forEach((item, index) => {
+                // 각 휴게소의 실제 색상 인덱스 계산
                 const colorIndex = index % colors.length;
-                console.log(`범례 아이템 ${index}:`, item, '색상 인덱스:', colorIndex);
+                const actualColor = colors[colorIndex];
+                
+                console.log(`범례 아이템 ${index}:`, item, '색상 인덱스:', colorIndex, '실제 색상:', actualColor);
                 
                 const legendItem = document.createElement('div');
                 legendItem.className = 'legend-item';
-                legendItem.innerHTML = `
-                    <span class="legend-color" style="background-color: ${colors[colorIndex]}"></span>
-                    <span class="legend-text">${item.name}</span>
-                `;
+                legendItem.innerHTML = 
+                    '<span class="legend-color" style="background-color: ' + actualColor + '"></span>' +
+                    '<span class="legend-text">' + item.name + '</span>';
                 legendContainer.appendChild(legendItem);
             });
         }
@@ -692,35 +777,28 @@
             drawDonutChartWithAnimation('donutChart', memberData, colors);
             
             // ========================================
-            // 9-4. 막대그래프용 색상 배열 (5개 이상)
-            // ========================================
-            const barChartColors = [
-                '#FF6B6B',  // 빨간색
-                '#4ECDC4',  // 청록색
-                '#45B7D1',  // 파란색
-                '#96CEB4',  // 연두색
-                '#FFEAA7',  // 노란색
-                '#DDA0DD',  // 연보라색
-                '#98D8C8',  // 민트색
-                '#F7DC6F',  // 황금색
-                '#BB8FCE',  // 보라색
-                '#85C1E9'   // 하늘색
-            ];
-            
-            // ========================================
-            // 9-5. 막대그래프 그리기 (임시 데이터로)
+            // 9-4. 막대그래프 그리기 (임시 데이터로)
             // ========================================
             // 나중에 DB에서 실제 데이터를 가져올 예정
             // 같은 즐겨찾기 수를 가진 휴게소들이 있을 수 있음
-            const favoriteData = [
-                {name: '휴게소A', count: 45},
-                {name: '휴게소B', count: 45},  // 같은 즐겨찾기 수
-                {name: '휴게소C', count: 38},
-                {name: '휴게소D', count: 32},
-                {name: '휴게소E', count: 28},
-                {name: '휴게소F', count: 25}
-            ];
-            
+            // 임시 데이터로 막대그래프 테스트
+            // const favoriteData = [
+            //     {name: '휴게소A', count: 45},
+            //     {name: '휴게소B', count: 45},  // 같은 즐겨찾기 수
+            //     {name: '휴게소C', count: 38},
+            //     {name: '휴게소D', count: 32},
+            //     {name: '휴게소E', count: 28},
+            //     {name: '휴게소F', count: 25}
+            // ];
+            const favoriteData = await fetchBookMarkData();
+
+            // ========================================
+            // 9-5. 막대그래프용 동적 색상 생성
+            // ========================================
+            // 데이터 개수만큼 고유한 색상을 자동으로 생성
+            // 채도 70%, 명도 60%로 설정하여 적당히 선명하면서도 부드러운 색상
+            const barChartColors = generateColors(favoriteData.length, 70, 60);
+
             drawBarChart('barChart', favoriteData, barChartColors);
             createBarChartLegend(favoriteData, barChartColors);
         });
