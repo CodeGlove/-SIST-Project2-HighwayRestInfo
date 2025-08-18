@@ -84,7 +84,12 @@ public class InitAreaAction implements Action {
 
                 // 🧱 휴게소VO 생성 및 값 설정
                 ServiceAreaVO savo = new ServiceAreaVO();
+                savo.setIdx(SAitem.getString("svarCd")); //휴게소코드
+
                 savo.setSAName(outside);           // 휴게소명
+
+                System.out.println("휴게소코드"+SAitem.getString("svarCd"));
+
                 if (inside.equals(""))
                     savo.setSADirection("양방향");
                 else
@@ -172,7 +177,7 @@ public class InitAreaAction implements Action {
             //각 휴게소들 위도경도 매핑
             Geocoding.kakaoGeocoding(SAlist);
 
-            // 받아온 리스트 DAO에 전달
+//            // 받아온 리스트 DAO에 전달
             ManageDAO.initSA(SAlist);
 
 
