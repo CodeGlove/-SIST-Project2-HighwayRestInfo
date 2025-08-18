@@ -8,6 +8,7 @@ import restinfo.dao.ServiceAreaDAO;
 import restinfo.util.ConfigLoader;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -115,8 +116,13 @@ public class Geocoding {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Authorization", "KakaoAK " + KAKAO_API_KEY);
 
+                int code = conn.getResponseCode();
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                InputStream is = (code >= 200 && code < 300) ?
+                        conn.getInputStream() :
+                        conn.getErrorStream();
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                 StringBuilder response = new StringBuilder();
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -165,7 +171,7 @@ public class Geocoding {
         // 1. DB에서 모든 휴게소 목록을 불러옴
         List<ServiceAreaVO> list = ServiceAreaDAO.getAll();
 
-        String KAKAO_API_KEY = ConfigLoader.getProperty("KAKAO_CLIENT_ID");
+        String KAKAO_API_KEY = ConfigLoader.getProperty("KAKAO_API_KEY");
         Gson gson = new Gson();
 
         System.out.println("총 " + list.size() + "개의 휴게소 좌표 변환을 시작합니다.");
