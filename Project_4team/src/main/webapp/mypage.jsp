@@ -215,7 +215,7 @@
                 <div class="info-row">
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-user"></i>이름</span>
-                        <span class="info-value">${user.name}</span>
+                        <span class="info-value">${sessionScope.loginUser.name}</span>
                     </div>
                 </div>
 
@@ -223,7 +223,7 @@
                 <div class="info-row">
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-envelope"></i>아이디 (이메일)</span>
-                        <span class="info-value">${user.ID}</span>
+                        <span class="info-value">${sessionScope.loginUser.ID}</span>
                     </div>
                 </div>
 
@@ -231,7 +231,7 @@
                 <div class="info-row">
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-sign-in-alt"></i>가입 경로</span>
-                        <span class="info-value">${user.platform}</span>
+                        <span class="info-value">${sessionScope.loginUser.platform}</span>
                     </div>
                 </div>
 
@@ -240,9 +240,9 @@
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-user-tag"></i>닉네임</span>
                         <%-- 보기 모드 --%>
-                        <span id =viewNickName class="info-value view-mode">${user.nickName}</span>
+                        <span id="viewNickName" class="info-value view-mode">${sessionScope.loginUser.nickName}</span>
                         <%-- 수정 모드 --%>
-                        <input type="text" name="nickName" class="info-input edit-mode" value="${user.nickName}" disabled required>
+                        <input type="text" name="nickName" class="info-input edit-mode" value="${sessionScope.loginUser.nickName}" disabled required>
                     </div>
                 </div>
 
@@ -251,21 +251,38 @@
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-leaf"></i>좋아하는 계절</span>
                         <%-- 보기 모드 --%>
-                        <span id="favoriteSeason" class="info-value view-mode">
+                        <span id="viewFavoriteSeason" class="info-value view-mode">
                             <c:choose>
-                                <c:when test="${not empty user.interest}">${user.interest}</c:when>
+                                <c:when test="${not empty sessionScope.loginUser.interest}">${sessionScope.loginUser.interest}</c:when>
                                 <c:otherwise>선택 안 함</c:otherwise>
                             </c:choose>
                         </span>
                         <%-- 수정 모드 --%>
                         <select name="favoriteSeason" class="info-select edit-mode" disabled>
-                            <option value="봄" ${user.interest == '봄' ? 'selected' : ''}>봄</option>
-                            <option value="여름" ${user.interest == '여름' ? 'selected' : ''}>여름</option>
-                            <option value="가을" ${user.interest == '가을' ? 'selected' : ''}>가을</option>
-                            <option value="겨울" ${user.interest == '겨울' ? 'selected' : ''}>겨울</option>
+                            <option value="봄" ${sessionScope.loginUser.interest == '봄' ? 'selected' : ''}>봄</option>
+                            <option value="여름" ${sessionScope.loginUser.interest == '여름' ? 'selected' : ''}>여름</option>
+                            <option value="가을" ${sessionScope.loginUser.interest == '가을' ? 'selected' : ''}>가을</option>
+                            <option value="겨울" ${sessionScope.loginUser.interest == '겨울' ? 'selected' : ''}>겨울</option>
                         </select>
                     </div>
                 </div>
+
+                <%-- 집주소 정보 (수정 가능) --%>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-map-marker-alt"></i>집주소</span>
+                        <%-- 보기 모드 --%>
+                        <span id="home" class="info-value view-mode">
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.loginUser.home}">${sessionScope.loginUser.home}</c:when>
+                                <c:otherwise>입력 안 함</c:otherwise>
+                            </c:choose>
+                        </span>
+                        <%-- 수정 모드 --%>
+                        <input type="text" name="home" class="info-input edit-mode" value="${sessionScope.loginUser.home}" disabled>
+                    </div>
+                </div>
+
             </div>
 
             <%-- 수정/저장/취소 버튼 그룹 --%>
@@ -290,100 +307,95 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function() {
-    // DOM 요소 가져오기 (jQuery 방식)
-    const $userInfoCard = $('#userInfoCard');
-    const $buttonGroup = $('#buttonGroup');
-    const $editableFields = $userInfoCard.find('.edit-mode');
+        // DOM 요소 가져오기 (jQuery 방식)
+        const $userInfoCard = $('#userInfoCard');
+        const $buttonGroup = $('#buttonGroup');
+        const $editableFields = $userInfoCard.find('.edit-mode');
 
-    // 보기/수정 모드 전환 함수
-    function setEditMode(isEdit) {
-    if (isEdit) {
-    $userInfoCard.addClass('edit-active');
-    $buttonGroup.addClass('edit-active');
-    $editableFields.prop('disabled', false);
-} else {
-    $userInfoCard.removeClass('edit-active');
-    $buttonGroup.removeClass('edit-active');
-    $editableFields.prop('disabled', true);
-}
-}
+        // 보기/수정 모드 전환 함수
+        function setEditMode(isEdit) {
+            if (isEdit) {
+                $userInfoCard.addClass('edit-active');
+                $buttonGroup.addClass('edit-active');
+                $editableFields.prop('disabled', false);
+            } else {
+                $userInfoCard.removeClass('edit-active');
+                $buttonGroup.removeClass('edit-active');
+                $editableFields.prop('disabled', true);
+            }
+        }
 
-    // '정보 수정' 버튼 클릭 이벤트
-    $('#edit-btn').on('click', function() {
-    setEditMode(true); // 수정 모드로 전환
-});
+        // '정보 수정' 버튼 클릭 이벤트
+        $('#edit-btn').on('click', function() {
+            setEditMode(true); // 수정 모드로 전환
+        });
 
-    // '취소' 버튼 클릭 이벤트
-    $('#cancel-btn').on('click', function() {
-    setEditMode(false); // 보기 모드로 전환
-    $('#profile-form')[0].reset(); // 폼 리셋
-});
+        // '취소' 버튼 클릭 이벤트
+        $('#cancel-btn').on('click', function() {
+            setEditMode(false); // 보기 모드로 전환
+            $('#profile-form')[0].reset(); // 폼 리셋
+        });
 
-    // '수정 완료'를 위한 form의 'submit' 이벤트 처리 (jQuery AJAX)
-    $('#profile-form').on('submit', function(e) {
-    // 1. 기본 폼 전송(새로고침) 방지
-    e.preventDefault();
+        // '수정 완료'를 위한 form의 'submit' 이벤트 처리 (jQuery AJAX)
+        $('#profile-form').on('submit', function(e) {
+            // 1. 기본 폼 전송(새로고침) 방지
+            e.preventDefault();
 
-    // 2. 유효성 검사
-    const nickName = $('input[name="nickName"]').val().trim();
-    if (nickName === '') {
-    alert('닉네임은 비워둘 수 없습니다.');
-    $('input[name="nickName"]').focus();
-    return;
-}
+            // 2. 유효성 검사
+            const nickName = $('input[name="nickName"]').val().trim();
+            if (nickName === '') {
+                alert('닉네임은 비워둘 수 없습니다.');
+                $('input[name="nickName"]').focus();
+                return;
+            }
 
-    // 3. 폼 데이터 직렬화 (URL 인코딩된 문자열로 변환)
-    const formData = $(this).serialize();
+            // 3. 폼 데이터 직렬화 (URL 인코딩된 문자열로 변환)
+            const formData = $(this).serialize();
 
-    // 4. jQuery AJAX 요청
-    $.ajax({
-    type: 'POST',                 // 전송 방식
-    url: $(this).attr('action'),  // form의 action 속성 값 (Controller?type=updateProfile)
-    data: formData,               // 서버로 보낼 데이터
-    dataType: 'json',             // 서버로부터 JSON 타입의 응답을 받을 것임을 명시
+            // 4. jQuery AJAX 요청
+            $.ajax({
+                type: 'POST',                 // 전송 방식
+                url: $(this).attr('action'),  // form의 action 속성 값 (Controller?type=updateProfile)
+                data: formData,               // 서버로 보낼 데이터
+                dataType: 'json',             // 서버로부터 JSON 타입의 응답을 받을 것임을 명시
 
-    // 5. 성공 시 실행될 함수
-    success: function(data) {
-    if (data.success) {
-    alert(data.message || '성공적으로 수정되었습니다.');
+                // 5. 성공 시 실행될 함수
+                success: function(data) {
+                    if (data.success) {
+                        alert(data.message || '성공적으로 수정되었습니다.');
 
-    // 화면의 텍스트를 새로운 값으로 직접 업데이트
-    const newNickName = $('input[name="nickName"]').val();
-    const newSeason = $('select[name="favoriteSeason"]').val();
+                        // 화면의 텍스트를 새로운 값으로 직접 업데이트
+                        const newNickName = $('input[name="nickName"]').val();
+                        const newSeason = $('select[name="favoriteSeason"]').val();
+                        const newHome = $('input[name="home"]').val();
 
-    $('#viewNickName').text(newNickName);
-    $('#viewFavoriteSeason').text(newSeason);
+                        $('#viewNickName').text(newNickName);
+                        $('#viewFavoriteSeason').text(newSeason);
+                        $('#home').text(newHome || '입력 안 함');
 
-    // 보기 모드로 전환
-    setEditMode(false);
-} else {
-    // 서버가 {success: false} 응답을 보냈을 경우
-    alert(data.message || '정보 수정에 실패했습니다.');
-}
-},
+                        // 보기 모드로 전환
+                        setEditMode(false);
+                    } else {
+                        // 서버가 {success: false} 응답을 보냈을 경우
+                        alert(data.message || '정보 수정에 실패했습니다.');
+                    }
+                },
 
-    // 6. 실패 시 실행될 함수
-    error: function(jqXHR, textStatus, errorThrown) {
-    console.error("AJAX Error:", textStatus, errorThrown);
-    alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-}
-});
-});
+                // 6. 실패 시 실행될 함수
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX Error:", textStatus, errorThrown);
+                    alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                }
+            });
+        });
 
-    // '회원 탈퇴' 버튼 클릭 이벤트
-    $('#withdrawal-btn').on('click', function() {
-    if (confirm('정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-    window.location.href = 'Controller?type=deleteAccount';
-}
-});
-});
+        // '회원 탈퇴' 버튼 클릭 이벤트
+        $('#withdrawal-btn').on('click', function() {
+            if (confirm('정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                window.location.href = 'Controller?type=deleteAccount';
+            }
+        });
+    });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
