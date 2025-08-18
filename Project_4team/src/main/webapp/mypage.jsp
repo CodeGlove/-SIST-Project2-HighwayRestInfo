@@ -14,6 +14,7 @@
     <link href="css/indexStyle.css" rel="stylesheet">
     <link href="css/footerStyle.css" rel="stylesheet">
 
+
     <%-- 마이페이지 전용 스타일 추가 --%>
     <style>
         .mypage-container {
@@ -239,7 +240,7 @@
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-user-tag"></i>닉네임</span>
                         <%-- 보기 모드 --%>
-                        <span class="info-value view-mode">${user.nickName}</span>
+                        <span id =viewNickName class="info-value view-mode">${user.nickName}</span>
                         <%-- 수정 모드 --%>
                         <input type="text" name="nickName" class="info-input edit-mode" value="${user.nickName}" disabled required>
                     </div>
@@ -250,7 +251,7 @@
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-leaf"></i>좋아하는 계절</span>
                         <%-- 보기 모드 --%>
-                        <span class="info-value view-mode">
+                        <span id="favoriteSeason" class="info-value view-mode">
                             <c:choose>
                                 <c:when test="${not empty user.interest}">${user.interest}</c:when>
                                 <c:otherwise>선택 안 함</c:otherwise>
@@ -286,67 +287,100 @@
 <%-- 메인 페이지와 동일한 푸터를 포함합니다. --%>
 <jsp:include page="footer.jsp"/>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM 요소 가져오기
-        const userInfoCard = document.getElementById('userInfoCard');
-        const buttonGroup = document.getElementById('buttonGroup');
-        const editBtn = document.getElementById('edit-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const withdrawalBtn = document.getElementById('withdrawal-btn');
-        const editableFields = userInfoCard.querySelectorAll('.edit-mode');
+    $(document).ready(function() {
+    // DOM 요소 가져오기 (jQuery 방식)
+    const $userInfoCard = $('#userInfoCard');
+    const $buttonGroup = $('#buttonGroup');
+    const $editableFields = $userInfoCard.find('.edit-mode');
 
-        // '정보 수정' 버튼 클릭 이벤트
-        editBtn.addEventListener('click', function() {
-            // 수정 모드로 전환
-            userInfoCard.classList.add('edit-active');
-            buttonGroup.classList.add('edit-active');
+    // 보기/수정 모드 전환 함수
+    function setEditMode(isEdit) {
+    if (isEdit) {
+    $userInfoCard.addClass('edit-active');
+    $buttonGroup.addClass('edit-active');
+    $editableFields.prop('disabled', false);
+} else {
+    $userInfoCard.removeClass('edit-active');
+    $buttonGroup.removeClass('edit-active');
+    $editableFields.prop('disabled', true);
+}
+}
 
-            // 입력 필드 활성화
-            editableFields.forEach(field => field.disabled = false);
-        });
+    // '정보 수정' 버튼 클릭 이벤트
+    $('#edit-btn').on('click', function() {
+    setEditMode(true); // 수정 모드로 전환
+});
 
-        // '취소' 버튼 클릭 이벤트
-        cancelBtn.addEventListener('click', function() {
-            // 보기 모드로 전환
-            userInfoCard.classList.remove('edit-active');
-            buttonGroup.classList.remove('edit-active');
+    // '취소' 버튼 클릭 이벤트
+    $('#cancel-btn').on('click', function() {
+    setEditMode(false); // 보기 모드로 전환
+    $('#profile-form')[0].reset(); // 폼 리셋
+});
 
-            // 입력 필드 비활성화
-            editableFields.forEach(field => field.disabled = true);
+    // '수정 완료'를 위한 form의 'submit' 이벤트 처리 (jQuery AJAX)
+    $('#profile-form').on('submit', function(e) {
+    // 1. 기본 폼 전송(새로고침) 방지
+    e.preventDefault();
 
-            // 폼의 내용을 원래대로 리셋 (서버에서 받은 초기값으로)
-            document.getElementById('profile-form').reset();
-        });
+    // 2. 유효성 검사
+    const nickName = $('input[name="nickName"]').val().trim();
+    if (nickName === '') {
+    alert('닉네임은 비워둘 수 없습니다.');
+    $('input[name="nickName"]').focus();
+    return;
+}
 
-        // '회원 탈퇴' 버튼 클릭 이벤트
-        withdrawalBtn.addEventListener('click', function() {
-            // 사용자에게 재확인
-            if (confirm('정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                // 확인을 누르면 탈퇴 처리 Action으로 이동
-                // 실제 Action 경로에 맞게 수정해주세요.
-                window.location.href = 'Controller?type=deleteAccount';
-            }
-        });
+    // 3. 폼 데이터 직렬화 (URL 인코딩된 문자열로 변환)
+    const formData = $(this).serialize();
 
-        // '수정 완료'는 form의 submit으로 처리되므로 별도 이벤트 핸들러는 필요 없지만,
-        
-        // 제출 전 유효성 검사 등을 추가할 수 있습니다.
-        document.getElementById('profile-form').addEventListener('submit', function(e) {
-            // 예: 닉네임이 비어있는지 검사
-            const nicknameInput = document.querySelector('input[name="nickName"]');
-            if (nicknameInput.value.trim() === '') {
-                alert('닉네임은 비워둘 수 없습니다.');
-                e.preventDefault(); // 폼 제출 중단
-            }
-        });
-    });
+    // 4. jQuery AJAX 요청
+    $.ajax({
+    type: 'POST',                 // 전송 방식
+    url: $(this).attr('action'),  // form의 action 속성 값 (Controller?type=updateProfile)
+    data: formData,               // 서버로 보낼 데이터
+    dataType: 'json',             // 서버로부터 JSON 타입의 응답을 받을 것임을 명시
+
+    // 5. 성공 시 실행될 함수
+    success: function(data) {
+    if (data.success) {
+    alert(data.message || '성공적으로 수정되었습니다.');
+
+    // 화면의 텍스트를 새로운 값으로 직접 업데이트
+    const newNickName = $('input[name="nickName"]').val();
+    const newSeason = $('select[name="favoriteSeason"]').val();
+
+    $('#viewNickName').text(newNickName);
+    $('#viewFavoriteSeason').text(newSeason);
+
+    // 보기 모드로 전환
+    setEditMode(false);
+} else {
+    // 서버가 {success: false} 응답을 보냈을 경우
+    alert(data.message || '정보 수정에 실패했습니다.');
+}
+},
+
+    // 6. 실패 시 실행될 함수
+    error: function(jqXHR, textStatus, errorThrown) {
+    console.error("AJAX Error:", textStatus, errorThrown);
+    alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+}
+});
+});
+
+    // '회원 탈퇴' 버튼 클릭 이벤트
+    $('#withdrawal-btn').on('click', function() {
+    if (confirm('정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+    window.location.href = 'Controller?type=deleteAccount';
+}
+});
+});
 </script>
-
 </body>
 </html>
 
-소스
 
 
 

@@ -8,4 +8,26 @@
         select count(*) from User where Platform = #{str}
     </select>
 
+
+    <update id="update" parameterType="Map">
+        UPDATE User <!-- ※ 테이블명은 실제 DB에 맞게 수정해주세요 -->
+        SET
+        NickName = #{nickName},
+        Interest = #{favoriteSeason} <!-- ※ 컬럼명은 실제 DB에 맞게 수정해주세요 -->
+        WHERE
+        ID = #{ID}
+        AND Platform = #{platform}
+    </update>
+
+    <select id="isNicknameTaken" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM User WHERE NickName = #{nickName}
+    </select>
+
+    <update id="deactivateAccount" parameterType="java.util.Map">
+        UPDATE User SET
+        Cancel = 1 WHERE
+        ID = #{ID}
+        AND Platform = #{platform}
+    </update>
+
 </mapper>
