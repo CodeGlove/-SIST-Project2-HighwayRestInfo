@@ -230,7 +230,7 @@
                 <ul class="nav-links">
                     <li><a href="#">대시보드&업데이트</a></li>
                     <li><a href="#">공지사항 수정</a></li>
-                    <li><a href="#">고객센터</a></li>
+                    <li><a href="#">회원조회</a></li>
                     <li><a href="#">자주 묻는 질문 수정</a></li>
                 </ul>
             </nav>
@@ -242,7 +242,7 @@
 <%--                    메인 페이지로 돌아가게 함--%>
                     <c:redirect url="Controller">
                         <c:param name="type" value="mainpage"/>
-                        <c:param name="cPage" value="${vo}"/>
+                        <c:param name="vo" value="${vo}"/>
                     </c:redirect>
                 </c:if>
                 <c:if test="${vo ne null and vo.authority eq 1}"> <%--관리자일 경우만--%>

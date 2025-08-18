@@ -1,6 +1,7 @@
 package mybatis.vo;
 
 public class UserVO {
+    private int Idx;
     private String ID;
     private String NickName;
     private String Pwd;
@@ -8,6 +9,16 @@ public class UserVO {
     private String Home;
     private String Authority;
     private String Interest;
+    private String platform;
+    private String Cancel;
+
+    public String getCancel() {
+        return Cancel;
+    }
+
+    public void setCancel(String cancel) {
+        Cancel = cancel;
+    }
 
     public String getPlatform() {
         return platform;
@@ -16,9 +27,6 @@ public class UserVO {
     public void setPlatform(String platform) {
         this.platform = platform;
     }
-
-    private String platform;
-    private int Idx;
 
     public int getIdx() {
         return Idx;
