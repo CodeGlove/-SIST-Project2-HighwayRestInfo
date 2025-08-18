@@ -29,7 +29,10 @@ public class LoginAction implements Action {
 		String redirectURL = ""; //리다이렉트 URL 담을 변수
 
 		//로그인 처리
-		if(vo != null && BCrypt.checkpw(pwd, vo.getPwd())) { //vo가 존재하고 비밀번호 일치하면 로그인 성공
+		if(vo != null && vo.getCancel().equals("1")) { // 탈퇴한 사용자일 경우
+			loginSuccess = false;
+			message = "이미 탈퇴한 사용자입니다.";
+		} else if(vo != null && BCrypt.checkpw(pwd, vo.getPwd())) { //vo가 존재하고 비밀번호 일치하면 로그인 성공
 			//로그인 성공
 			loginSuccess = true;
 			HttpSession session = request.getSession();//세션 생성
