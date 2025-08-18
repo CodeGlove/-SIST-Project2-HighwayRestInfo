@@ -8,10 +8,13 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 public class MypageAction implements Action {
-	@Override
-	public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @Override
+    public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		HttpSession session = request.getSession();
-		return "";
-	}
+        HttpSession session = request.getSession();
+        UserVO vo = (UserVO) session.getAttribute("loginUser");
+
+        request.setAttribute("user", vo);
+        return "mypage.jsp";
+    }
 }
