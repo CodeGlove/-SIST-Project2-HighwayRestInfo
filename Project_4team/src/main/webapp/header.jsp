@@ -31,7 +31,7 @@
             <%--***** 로그인된 경우 --%>
             <c:if test="${not empty sessionScope.loginUser}">
                 <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
-                <a href="Controller?type=#" class="btn btn-register">마이페이지</a>
+                <a href="Controller?type=mypage" class="btn btn-register">마이페이지</a>
             </c:if>
         </div>
     </div>
