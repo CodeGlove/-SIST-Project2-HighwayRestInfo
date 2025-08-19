@@ -12,7 +12,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link rel="stylesheet" href="css/restareaStyle.css">
 
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -84,8 +83,8 @@
             padding: 5px;
         }
         .kakao_infowindow .body video {
-            width: 320px;
-            height: 240px;
+            width: 100%;
+            height: 100%;
             display: block;
         }
         .kakao_infowindow .cctv-close {
@@ -323,9 +322,9 @@
     });
 
     const restIconImage = new kakao.maps.MarkerImage(
-        '/Project_4team_war_exploded/image/rest_icon.png',
-        new kakao.maps.Size(40, 40),
-        { offset: new kakao.maps.Point(19, 38) }
+        'image/rest_icon1.png',
+        new kakao.maps.Size(30, 30),
+        { offset: new kakao.maps.Point(15, 30) }
     );
 
     function addRestAreaMarkersToMap(data) {
@@ -380,9 +379,9 @@
     }
 
     const cctvIconImage = new kakao.maps.MarkerImage(
-        '/Project_4team_war_exploded/image/cctv_icon.png',
+        'image/cctv_icon.png',
         new kakao.maps.Size(20, 20),
-        { offset: new kakao.maps.Point(19, 38) }
+        { offset: new kakao.maps.Point(10, 20) }
     );
 
     function addCctvMarkersToMap(data) {
@@ -483,7 +482,7 @@
         player.on('error', function() {
             const error = player.error();
             console.error('video.js 플레이어 오류 발생:', error);
-            player.poster('/Project_4team_war_exploded/image/error.png');
+            player.poster('image/error.png');
             if (error.code === 4) {
                 console.error('영상 재생 실패: 소스(URL)가 유효하지 않거나 재생할 수 없는 형식입니다.');
             }
@@ -492,7 +491,7 @@
         console.log("영상 URL 가져오기 시작:", temporaryUrl);
 
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=getVideoUrl',
+            url: 'Controller?type=getVideoUrl',
             type: 'GET',
             data: { temporaryUrl: temporaryUrl },
             dataType: 'text'
@@ -506,12 +505,12 @@
                 player.play();
             } else {
                 console.error("영상 URL이 유효하지 않습니다. 서버 응답이 비어있습니다.");
-                player.poster('/Project_4team_war_exploded/image/error.png');
+                player.poster('image/error.png');
             }
         }).fail(function(jqXHR, textStatus, errorThrown) {
             console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
             console.log("서버 응답:", jqXHR.responseText);
-            player.poster('/Project_4team_war_exploded/image/error.png');
+            player.poster('image/error.png');
         });
     }
 
@@ -524,7 +523,7 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
+            url: 'Controller?type=pjyrest',
             type: 'GET',
             data: { swLat: sw.getLat(), swLng: sw.getLng(), neLat: ne.getLat(), neLng: ne.getLng() },
             dataType: 'json'
@@ -538,7 +537,7 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=Cctv',
+            url: 'Controller?type=Cctv',
             type: 'GET',
             data: {
                 minX: sw.getLng(),
@@ -584,7 +583,7 @@
             return;
         }
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
+            url: 'Controller?type=pjyrest',
             type: 'POST',
             data: { searchText: searchText },
             dataType: 'json'

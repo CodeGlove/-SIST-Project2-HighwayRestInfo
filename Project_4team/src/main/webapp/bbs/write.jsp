@@ -151,7 +151,7 @@
         .create(document.querySelector('#content'), { // #editor에서 #content로 수정
             ckfinder: {
                 // Summernote의 이미지 업로드 Controller 경로를 그대로 사용함
-                uploadUrl: 'Controller?type=saveImg'
+                uploadUrl: 'http://localhost:8080/image/upload'
             }
         })
         .then(editor => {
