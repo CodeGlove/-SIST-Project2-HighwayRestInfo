@@ -8,7 +8,7 @@
     </select>
 
     <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
-        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
+        select * from ServiceArea where Idx = #{idx}
     </select>
 
     <update id="xY" parameterType="Map">
@@ -20,10 +20,10 @@
     </update>
 
     <insert id="insert" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
-        insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
-        Address, Lat, Lng Tel, ShopCode)
+        insert into ServiceArea (Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
+        Address, Lat, Lng, Tel, ShopCode)
         values
-        (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
+        (#{Idx}, #{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
         #{DisabledParking}, #{Address}, #{Lat}, #{Lng}, #{Tel}, #{ShopCode})
     </insert>
 
@@ -36,6 +36,8 @@
     <update id="update" parameterType="mybatis.vo.ServiceAreaVO">
         update ServiceArea
         set
+        SAName = #{SAName},
+        SADirection = #{SADirection},
         WayNum = #{WayNum},
         CompactParking = #{CompactParking},
         LargeParking = #{LargeParking},
@@ -48,18 +50,37 @@
         Tel = #{Tel},
         ShopCode = #{ShopCode}
         where
-        SAName = #{SAName} and
-        SADirection = #{SADirection}
+        Idx = #{Idx}
     </update>
     <select id="searchInsert" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
         Select * from ServiceArea where SAName Like concat ('%', #{name}, '%');
     </select>
 
     <select id="getOne" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
-        Select * from ServiceArea where Idx = #{idx}
+        Select * from ServiceArea where Idx = #{Idx}
     </select>
 
-
+    <select id="getRanking" resultType="map">
+        <!--frequency : SAKey, SAName, SADirection별로
+        묶은 레코드들의 갯수를 세는 임시 테이블-->
+        WITH frequency AS (
+        SELECT SAKey, SAName, SADirection, COUNT(*) AS cnt
+        FROM BookMark b inner join ServiceArea s on b.SAKey = s.Idx
+        GROUP BY b.SAKey, s.SAName, s.SADirection
+        ),
+        <!--ranked : frequency에서 센 cnt를
+        랭크를 rnk로 매겨주는 DENSE_RANK()함수를 쓰는 임시 테이블-->
+        ranked AS (
+        SELECT SAName, cnt, SADirection ,
+        DENSE_RANK() OVER (ORDER BY cnt DESC) AS rnk
+        FROM frequency
+        )
+        <!--ranked테이블에서 5등인 항목까지만 뽑아오기-->
+        SELECT SAName, cnt, SADirection
+        FROM ranked
+        WHERE rnk &lt;= 5
+        ORDER BY cnt DESC, SAName, SADirection
+    </select>
 
 <!--    <insert id="init" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,

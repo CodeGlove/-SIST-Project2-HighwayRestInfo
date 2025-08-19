@@ -1,8 +1,32 @@
 package mybatis.vo;
 
 public class UserVO {
-    private String ID, NickName, Pwd, Name, Home, Authority, Interset;
     private int Idx;
+    private String ID;
+    private String NickName;
+    private String Pwd;
+    private String Name;
+    private String Home;
+    private String Authority;
+    private String Interest;
+    private String platform;
+    private String Cancel;
+
+    public String getCancel() {
+        return Cancel;
+    }
+
+    public void setCancel(String cancel) {
+        Cancel = cancel;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
 
     public int getIdx() {
         return Idx;
@@ -60,11 +84,11 @@ public class UserVO {
         Home = home;
     }
 
-    public String getInterset() {
-        return Interset;
+    public String getInterest() {
+        return Interest;
     }
 
-    public void setInterset(String interset) {
-        Interset = interset;
+    public void setInterest(String interset) {
+        Interest = interset;
     }
 }

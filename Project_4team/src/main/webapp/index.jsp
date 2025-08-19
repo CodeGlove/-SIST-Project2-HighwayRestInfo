@@ -18,6 +18,14 @@
 </head>
 <body>
 <!-- Header -->
+<c:if test="${sessionScope.loginUser ne null and sessionScope.loginUser.authority eq 1}">
+    <%--로그인이 안되어있거나 관리자일 경우--%>
+    <%--관리자 페이지로 돌아가게 함--%>
+    <c:redirect url="Controller">
+        <c:param name="type" value="mainpage"/>
+        <c:param name="vo" value="${sessionScope.loginUser}"/>
+    </c:redirect>
+</c:if>
 
 <header class="header">
     <div class="nav-container">

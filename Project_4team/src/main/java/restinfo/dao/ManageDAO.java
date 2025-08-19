@@ -5,7 +5,9 @@ import mybatis.vo.ServiceAreaVO;
 import mybatis.vo.ShopVO;
 import org.apache.ibatis.session.SqlSession;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ManageDAO {
 
@@ -28,6 +30,19 @@ public class ManageDAO {
             ss.close();
         }
         return counts;
+    }
+
+    public static List<Map<String, Object>> getSARank(){
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<Map<String, Object>> list = new ArrayList<>();
+        try {
+            list = ss.selectList("SA.getRanking");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            ss.close();
+        }
+        return  list;
     }
 
     public static void initSA(List<ServiceAreaVO> list) {

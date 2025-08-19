@@ -9,7 +9,7 @@
 
     </insert>
     <select id="selectID" resultType="mybatis.vo.UserVO" parameterType="Map">
-        select * from User where ID =#{email} and platform=#{platform}
+        select * from User where ID =#{email} and platform=#{platform} and Cancel=0
     </select>
 
     <select id="searchNickName" parameterType="String" resultType="String">
