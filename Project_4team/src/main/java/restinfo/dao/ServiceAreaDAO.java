@@ -66,4 +66,25 @@ public class ServiceAreaDAO {
         return list;
 
     }
+    public static List<ServiceAreaVO> bookmarkedArea(String idx){
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<ServiceAreaVO> list = ss.selectList("SA.getbookmark",idx);
+        ss.close();
+
+        return list;
+    }
+    public static int deletebookmark(String idx,String Useridx){
+        SqlSession ss= FactoryService.getFactory().openSession();
+        Map<String,String> m = new HashMap<>();
+        m.put("SAidx",idx);
+        m.put("Useridx",Useridx);
+        int cnt = ss.delete("SA.deletebookmark",m);
+        if(cnt>0)
+            ss.commit();
+        else
+            ss.rollback();
+
+        ss.close();
+        return cnt;
+    }
 }
