@@ -560,10 +560,40 @@
 
         // 서버에서 받은 데이터로 모달 창의 내용을 채우고 화면에 표시하는 함수
         function populateAndShowModal(data) {
-            // 이제 data가 바로 ServiceAreaVO 객체이므로 .data를 붙이지 않습니다.
+            if (!data) return;
+
             $('#modalTitle').text(data.SAName || '정보 없음');
             $('#modalLocation').text(data.Address || '정보 없음');
-            $('#modalPhone').text(data.Tel || '정보 없음');
+
+            let formattedPhone = '정보 없음';
+            if (data.Tel) {
+                formattedPhone = data.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+            }
+            $('#modalPhone').text(formattedPhone);
+
+            $('#modalCompactParking').text((data.CompactParking || 0) + '대');
+            $('#modalLargeParking').text((data.LargeParking || 0) + '대');
+            $('#modalDisabledParking').text((data.DisabledParking || 0) + '대');
+
+            // --- 이 부분을 추가/수정합니다. ---
+            const facilitiesList = $('#modalFacilities');
+            facilitiesList.empty(); // 기존 내용을 비웁니다.
+
+            if (data.Convenience) {
+                // 데이터가 "수유실,세차장,ATM,편의점" 형태라고 가정하고 쉼표로 분리
+                const facilities = data.Convenience.split(',');
+                if (facilities.length > 0) {
+                    facilities.forEach(facility => {
+                        const tag = $('<span>').addClass('facility-tag').text(facility.trim());
+                        facilitiesList.append(tag);
+                    });
+                } else {
+                    facilitiesList.html('<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>');
+                }
+            } else {
+                facilitiesList.html('<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>');
+            }
+            // ------------------------------------
 
             $('#restAreaModal').show();
         }
