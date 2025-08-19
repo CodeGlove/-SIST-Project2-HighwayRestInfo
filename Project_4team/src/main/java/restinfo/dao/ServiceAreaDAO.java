@@ -16,24 +16,25 @@ public class ServiceAreaDAO {
 
         return list;
     }
-    public static ServiceAreaVO getOneArea(String idx){
-        // idx는 클릭한 휴게소의 값임 그걸로 찾아서 휴게소 정보 갖고온 후
-        //pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
-        SqlSession ss =FactoryService.getFactory().openSession();
-        ServiceAreaVO vo = ss.selectOne("SA.getOne",idx);
-        ss.close();
 
+    public static ServiceAreaVO getOneArea(String idx) {
+        // idx는 클릭한 휴게소의 값임 그걸로 찾아서 휴게소 정보 갖고온 후
+        // pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
+        SqlSession ss = FactoryService.getFactory().openSession();
+        ServiceAreaVO vo = ss.selectOne("SA.getOne", idx);
+        ss.close();
 
         return vo;
     }
+
     public static int updateXY(String idx, double lat, double lng) {
         int cnt = 0;
         SqlSession ss = FactoryService.getFactory().openSession();
         Map<String, Object> m = new HashMap<>();
 
-        m.put("idx", idx);   // String 타입
-        m.put("lat", lat);  // double 타입
-        m.put("lng", lng);  // double 타입
+        m.put("idx", idx); // String 타입
+        m.put("lat", lat); // double 타입
+        m.put("lng", lng); // double 타입
 
         cnt = ss.update("SA.xY", m);
         if (cnt > 0) {
@@ -65,5 +66,103 @@ public class ServiceAreaDAO {
         ss.close();
         return list;
 
+    }
+
+    /**
+     * Excel 데이터로 별점과 편의시설을 업데이트합니다.
+     * 
+     * @param idx         휴게소 인덱스
+     * @param rating      별점
+     * @param convenience 편의시설
+     * @return 업데이트된 행 수
+     */
+    public static int updateStarAndConvenience(String idx, String rating, String convenience) {
+        // null 값 체크
+        if (rating == null || rating.trim().isEmpty() || rating.equals("null")) {
+            System.out.println("⚠️ 별점이 null이므로 업데이트하지 않습니다: idx=" + idx);
+            return 0;
+        }
+
+        if (convenience == null || convenience.trim().isEmpty() || convenience.equals("null")) {
+            System.out.println("⚠️ 편의시설이 null이므로 업데이트하지 않습니다: idx=" + idx);
+            return 0;
+        }
+
+        int cnt = 0;
+        SqlSession ss = FactoryService.getFactory().openSession();
+
+        try {
+            ServiceAreaVO serviceArea = new ServiceAreaVO();
+            serviceArea.setIdx(idx);
+            serviceArea.setStar(rating);
+            serviceArea.setConvenience(convenience);
+
+            cnt = ss.update("SA.updateStarAndConvenience", serviceArea);
+
+            if (cnt > 0) {
+                ss.commit();
+            } else {
+                ss.rollback();
+            }
+        } catch (Exception e) {
+            ss.rollback();
+            throw e;
+        } finally {
+            ss.close();
+        }
+
+        return cnt;
+    }
+
+    /**
+     * Excel 데이터로 전화번호를 업데이트합니다.
+     * 
+     * @param idx   휴게소 인덱스
+     * @param phone 전화번호
+     * @return 업데이트된 행 수
+     */
+    public static int updateTel(String idx, String phone) {
+        // null 값 체크
+        if (phone == null || phone.trim().isEmpty() || phone.equals("null")) {
+            System.out.println("⚠️ 전화번호가 null이므로 업데이트하지 않습니다: idx=" + idx);
+            return 0;
+        }
+
+        int cnt = 0;
+        SqlSession ss = FactoryService.getFactory().openSession();
+
+        try {
+            ServiceAreaVO serviceArea = new ServiceAreaVO();
+            serviceArea.setIdx(idx);
+            serviceArea.setTel(phone);
+
+            cnt = ss.update("SA.updateTel", serviceArea);
+
+            if (cnt > 0) {
+                ss.commit();
+            } else {
+                ss.rollback();
+            }
+        } catch (Exception e) {
+            ss.rollback();
+            throw e;
+        } finally {
+            ss.close();
+        }
+
+        return cnt;
+    }
+
+    /**
+     * idx로 휴게소 정보를 조회합니다.
+     * 
+     * @param idx 휴게소 인덱스
+     * @return 휴게소 정보
+     */
+    public static ServiceAreaVO getByIdx(String idx) {
+        SqlSession ss = FactoryService.getFactory().openSession();
+        ServiceAreaVO serviceArea = ss.selectOne("SA.getByIdx", idx);
+        ss.close();
+        return serviceArea;
     }
 }

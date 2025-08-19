@@ -136,10 +136,7 @@
                                         <span class="rating-label">별점</span>
                                         <div class="stars">
                                             <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star empty"></i>
+                                       
                                         </div>
 
                                     </div>

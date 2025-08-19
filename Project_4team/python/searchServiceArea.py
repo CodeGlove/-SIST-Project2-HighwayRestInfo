@@ -10,6 +10,8 @@ import time
 import pandas as pd
 from datetime import datetime
 import mysql.connector
+import json
+import os
 
 def switch_frame(driver, frame):
     driver.switch_to.default_content()  # frame 초기화
@@ -69,17 +71,41 @@ def collect_reviews(driver: webdriver.Chrome) -> list:
                 break
         print(f"리뷰 탭 인덱스: {review_index}")
         
-        # 리뷰 탭 클릭
+        # 리뷰 탭 클릭 (element click intercepted 오류 해결)
         try:
             review_button = driver.find_element(
                 By.CSS_SELECTOR, f'.tpj9w._tab-menu[data-index="{review_index}"]'
             )
-            review_button.click()
-            print("리뷰 탭 클릭 완료")
+            
+            # 방해하는 헤더 요소 제거
+            try:
+                header = driver.find_element(By.CSS_SELECTOR, '#_header')
+                driver.execute_script("arguments[0].remove();", header)
+                print("방해하는 헤더 요소 제거 완료")
+            except:
+                pass
+            
+            # 요소가 보이도록 스크롤
+            driver.execute_script("arguments[0].scrollIntoView(true);", review_button)
+            time.sleep(1)
+            
+            # JavaScript로 강제 클릭 (element click intercepted 방지)
+            driver.execute_script("arguments[0].click();", review_button)
+            print("리뷰 탭 클릭 완료 (JavaScript)")
             time.sleep(2)
         except Exception as e:
             print(f"리뷰 탭 클릭 실패: {e}")
-            return reviews
+            # 일반 클릭으로 재시도
+            try:
+                review_button = driver.find_element(
+                    By.CSS_SELECTOR, f'.tpj9w._tab-menu[data-index="{review_index}"]'
+                )
+                review_button.click()
+                print("리뷰 탭 클릭 완료 (일반 클릭)")
+                time.sleep(2)
+            except Exception as e2:
+                print(f"리뷰 탭 클릭 재시도 실패: {e2}")
+                return reviews
         
         # 리뷰 섹션으로 스크롤
         print("리뷰 섹션으로 스크롤 중...")
@@ -116,11 +142,8 @@ def collect_reviews(driver: webdriver.Chrome) -> list:
                                 break
                         
                         if not review_elements:
-                            print("리뷰 요소를 찾을 수 없습니다.")
-                            # 페이지를 더 스크롤해보기
-                            driver.execute_script("window.scrollBy(0, 400);")
-                            time.sleep(1)
-                            continue
+                            print("리뷰 요소를 찾을 수 없습니다. 다음 키워드로 넘어갑니다.")
+                            return reviews
                         
                         # 첫 번째 리뷰 데이터 수집
                         first_review = review_elements[0]
@@ -318,10 +341,38 @@ def get_service_area_list():
         print(f"데이터베이스 연결 오류: {e}")
         # 오류 발생 시 기본 키워드 반환
         return ["첫번째는 날리기","정안알밤휴게소(천안방향)", "하남드림휴게소", "시흥하늘휴게소", "가평휴게소(춘천)", "홍성휴게소(서울)"]
-def main():
+
+def save_failed_items(failed_items, filename=None):
+    """실패한 항목들을 JSON 파일로 저장합니다."""
+    if filename is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"failed_items_{timestamp}.json"
+    
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(failed_items, f, ensure_ascii=False, indent=2)
+    
+    print(f"실패한 항목 {len(failed_items)}개를 {filename}에 저장했습니다.")
+    return filename
+
+def load_failed_items(filename):
+    """저장된 실패 항목들을 불러옵니다."""
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            failed_items = json.load(f)
+        print(f"{filename}에서 실패한 항목 {len(failed_items)}개를 불러왔습니다.")
+        return failed_items
+    except FileNotFoundError:
+        print(f"파일 {filename}을 찾을 수 없습니다.")
+        return []
+    except Exception as e:
+        print(f"파일 읽기 오류: {e}")
+        return []
+
+def main(retry_failed=False, failed_file=None):
     """메인 함수: 휴게소 정보 수집을 실행합니다."""
-    # Chrome 옵션 설정 (속도 최적화)
+    # Chrome 옵션 설정 (백그라운드 실행 + 속도 최적화)
     options = webdriver.ChromeOptions()
+    # options.add_argument('--headless')  # 백그라운드 실행
     options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
     options.add_argument('window-size=1380,900')
     options.add_argument("--no-sandbox")
@@ -339,21 +390,32 @@ def main():
     # 대기 시간 설정 (더 빠르게)
     driver.implicitly_wait(time_to_wait=1)
 
-    # 데이터베이스에서 휴게소 리스트 가져오기
-    service_areas = get_service_area_list()
-    # service_areas = [{'idx': 1, 'name': '보성녹차휴게소(목포방향)'}]  # 테스트용
+    # 실패한 항목 재실행인지 확인
+    if retry_failed and failed_file:
+        service_areas = load_failed_items(failed_file)
+        if not service_areas:
+            print("재실행할 실패 항목이 없습니다.")
+            return
+        print(f"실패한 항목 {len(service_areas)}개를 재실행합니다.")
+    else:
+        # 데이터베이스에서 휴게소 리스트 가져오기
+        service_areas = get_service_area_list()
+        # service_areas = [{'idx': 1, 'name': '보성녹차휴게소(목포방향)'}]  # 테스트용
+    
     # 데이터 저장을 위한 리스트
     all_data = []
     all_reviews = []  # 모든 리뷰를 저장할 리스트
+    failed_items = []  # 실패한 항목들을 저장할 리스트
 
     try:
         # 각 휴게소에 대해 반복 처리
         for i, service_area in enumerate(service_areas):
             keyword = service_area['name']
             sa_idx = service_area['idx']
+            
             try:
                 print(f"\n{'='*60}")
-                print(f"검색 키워드: {keyword}")
+                print(f"검색 키워드: {keyword} ({i+1}/{len(service_areas)})")
                 print(f"{'='*60}")
                 
                 if i == 0:  # 첫 번째 키워드일 때 URL로 직접 접속
@@ -560,57 +622,51 @@ def main():
                     '수집된_리뷰_수': 0,
                     '수집시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 })
+                # 실패한 항목 저장
+                failed_items.append({
+                    'idx': sa_idx,
+                    'name': keyword,
+                    'error': str(e),
+                    'timestamp': datetime.now().isoformat()
+                })
                 continue
 
-        # 모든 키워드 처리 완료 후 엑셀로 저장
-        if all_data:
-            df = pd.DataFrame(all_data)
-            
-            # 현재 시간을 파일명에 포함
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f'가게정보_데이터_{timestamp}.xlsx'
-            
-            # 엑셀로 저장
-            df.to_excel(filename, index=False, engine='openpyxl')
-            print(f"\n데이터가 '{filename}' 파일로 저장되었습니다.")
-            print(f"총 {len(all_data)}개의 데이터가 저장되었습니다.")
-            
-            # 저장된 데이터 미리보기
-            print("\n저장된 데이터 미리보기:")
-            print(df.head())
-        else:
-            print("\n수집된 데이터가 없습니다.")
-        
-        # 모든 리뷰를 하나의 파일로 저장
-        if all_reviews:
-            reviews_df = pd.DataFrame(all_reviews)
-            
-            # 현재 시간을 파일명에 포함
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            reviews_filename = f'휴게소_리뷰_전체_{timestamp}.xlsx'
-            
-            # 엑셀로 저장
-            reviews_df.to_excel(reviews_filename, index=False, engine='openpyxl')
-            print(f"\n리뷰 데이터가 '{reviews_filename}' 파일로 저장되었습니다.")
-            print(f"총 {len(all_reviews)}개의 리뷰가 저장되었습니다.")
-            
-            # 저장된 리뷰 데이터 미리보기
-            print("\n저장된 리뷰 데이터 미리보기:")
-            print(reviews_df.head())
-        else:
-            print("\n수집된 리뷰 데이터가 없습니다.")
-
     except Exception as e:
-        print(f"메인 함수 실행 중 오류: {e}")
+        print(f"전체 처리 중 오류 발생: {e}")
     finally:
-        # 브라우저 종료
-        try:
-            driver.quit()
-            print("\n브라우저가 종료되었습니다.")
-        except:
-            pass
+        driver.quit()
+        
+        # 실패한 항목이 있으면 저장
+        if failed_items:
+            failed_filename = save_failed_items(failed_items)
+            print(f"\n실패한 항목 {len(failed_items)}개가 {failed_filename}에 저장되었습니다.")
+            print("재실행하려면: main(retry_failed=True, failed_file='{failed_filename}')")
+        
+        # 성공한 데이터 저장 (기존 로직)
+        if all_data:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            df = pd.DataFrame(all_data)
+            filename = f"가게정보_데이터_{timestamp}.xlsx"
+            df.to_excel(filename, index=False)
+            print(f"✅ 가게 정보 데이터가 {filename}에 저장되었습니다.")
+        
+        if all_reviews:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            df_reviews = pd.DataFrame(all_reviews)
+            filename = f"휴게소_리뷰_전체_{timestamp}.xlsx"
+            df_reviews.to_excel(filename, index=False)
+            print(f"✅ 리뷰 데이터가 {filename}에 저장되었습니다.")
+
+# 재실행을 위한 편의 함수
+def retry_failed_crawling(failed_file):
+    """실패한 항목들을 재실행합니다."""
+    main(retry_failed=True, failed_file=failed_file)
 
 if __name__ == "__main__":
+    # 일반 실행
     main()
+    
+    # 실패한 항목 재실행 예시 (주석 처리)
+    # retry_failed_crawling("failed_items_20241201_143022.json")
     
 

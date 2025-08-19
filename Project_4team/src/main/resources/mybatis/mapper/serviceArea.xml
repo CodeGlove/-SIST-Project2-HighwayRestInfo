@@ -52,6 +52,27 @@
         where
         Idx = #{Idx}
     </update>
+    
+    <!-- Excel 데이터로 별점과 편의시설 업데이트 -->
+    <update id="updateStarAndConvenience" parameterType="mybatis.vo.ServiceAreaVO">
+        UPDATE ServiceArea 
+        SET Star = #{Star}, 
+            Convenience = #{Convenience}
+        WHERE Idx = #{Idx}
+    </update>
+    
+    <!-- Excel 데이터로 전화번호 업데이트 -->
+    <update id="updateTel" parameterType="mybatis.vo.ServiceAreaVO">
+        UPDATE ServiceArea 
+        SET Tel = #{Tel}
+        WHERE Idx = #{Idx}
+    </update>
+    
+    <!-- idx로 휴게소 조회 -->
+    <select id="getByIdx" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        SELECT * FROM ServiceArea WHERE Idx = #{Idx}
+    </select>
+    
     <select id="searchInsert" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
         Select * from ServiceArea where SAName Like concat ('%', #{name}, '%');
     </select>

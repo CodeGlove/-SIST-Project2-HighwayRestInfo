@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceAreaVO {
-    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, Lat, Lng, ShopCode;
+    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, Lat,
+            Lng, ShopCode;
+    private String Star, Convenience; // 별점과 편의시설 필드 추가
     private List<ShopVO> Shoplist;
 
     public ServiceAreaVO() {
@@ -14,7 +16,7 @@ public class ServiceAreaVO {
     public List<ShopVO> getShoplist() {
         return Shoplist;
     }
-    
+
     public String getIdx() {
         return Idx;
     }
@@ -26,7 +28,7 @@ public class ServiceAreaVO {
     public void setShoplist(List<ShopVO> shoplist) {
         Shoplist = shoplist;
     }
-    
+
     public String getWayNum() {
         return WayNum;
     }
@@ -50,7 +52,6 @@ public class ServiceAreaVO {
     public void setSADirection(String SADirection) {
         this.SADirection = SADirection;
     }
-
 
     public String getCompactParking() {
         return CompactParking;
@@ -114,5 +115,23 @@ public class ServiceAreaVO {
 
     public void setShopCode(String shopCode) {
         ShopCode = shopCode;
+    }
+
+    // Star 필드 getter/setter
+    public String getStar() {
+        return Star;
+    }
+
+    public void setStar(String star) {
+        Star = star;
+    }
+
+    // Convenience 필드 getter/setter
+    public String getConvenience() {
+        return Convenience;
+    }
+
+    public void setConvenience(String convenience) {
+        Convenience = convenience;
     }
 }
