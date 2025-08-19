@@ -2,6 +2,7 @@ package bbs.action;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -21,10 +22,10 @@ public class SaveImgAction implements Action {
     // 여기에 AWS Access Key와 Secret Key를 직접 입력
     // 경고: 이 방법은 보안상 매우 취약하며, 절대 GitHub에 푸시하면 안됩니다.
     // .gitignore에 추가하거나 환경 변수를 사용하는 것이 안전합니다.
-    private static final String ACCESS_KEY = "YOUR_ACCESS_KEY_ID";
-    private static final String SECRET_KEY = "YOUR_SECRET_ACCESS_KEY";
-    private static final String BUCKET_NAME = "YOUR_BUCKET_NAME";
-    private static final String BUCKET_URL = "https://YOUR_BUCKET_NAME.s3.ap-northeast-2.amazonaws.com/";
+    private static final String ACCESS_KEY = "AKIA6FS6YJWCUSI5JIIW";
+    private static final String SECRET_KEY = "oDKCgNJOQnk9sP/7ob8NOFyW9GRJWZbaEcelM16M";
+    private static final String BUCKET_NAME = "highway-restinfo-uploads";
+    private static final String BUCKET_URL = "https://highway-restinfo-uploads.s3.ap-northeast-2.amazonaws.com/";
 
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
@@ -52,7 +53,7 @@ public class SaveImgAction implements Action {
 
                 // AWS S3 클라이언트 생성 및 파일 업로드
                 AWSCredentials credentials = new BasicAWSCredentials(ACCESS_KEY, SECRET_KEY);
-                AmazonS3Client s3Client = new AmazonS3Client(credentials);
+                AmazonS3Client s3Client = new AmazonS3Client(credentials).withRegion(Regions.AP_NORTHEAST_2);
 
                 s3Client.putObject(new PutObjectRequest(BUCKET_NAME, newFileName, f)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
