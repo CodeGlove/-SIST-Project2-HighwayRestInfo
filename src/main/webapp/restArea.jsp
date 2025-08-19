@@ -21,8 +21,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <!-- CSS 파일 링크 -->
-    <link rel="stylesheet" href="css/restareaStyle.css">
-    <link href="css/footerStyle.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/restareaStyle.css">
+    <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
 </head>
 <body>
 <!-- 헤더 -->
@@ -114,8 +114,8 @@
             </div>
             <div class="card-title">휴게시설</div>
             <button class="only-sa" onclick="toggleRestStops(this)">
-                <i class="fas fa-utensils button-icon"></i>
-                <span class="button-text">휴게소만 표시</span>
+                <i class="fas fa-bed button-icon"></i>
+                <span class="button-text">졸음쉼터 표시</span>
             </button>
         </div>
 
@@ -124,7 +124,7 @@
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
                         <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}"
-                             onclick="showRestAreaInfo('${restArea}', ${status.index})">
+                             data-rest-area="${restArea}" data-index="${status.index}">
                             <div class="rest-area-info-row">
                                 <!-- 휴게시설명 섹션 -->
                                 <div class="rest-area-name-section">
@@ -148,27 +148,45 @@
                                         <div class="duration-info">
                                             <i class="fas fa-clock duration-icon"></i>
                                             <span class="duration-text">
-                                                                <c:set var="duration"
-                                                                       value="${allRestAreaDurations[status.index]}"/>
-                                                                <c:set var="totalHours" value="${duration / 3600}"/>
-                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
-                                                                <c:set var="totalMinutes"
-                                                                       value="${(duration % 3600) / 60}"/>
-                                                                <c:set var="minutes"
-                                                                       value="${totalMinutes.intValue()}"/>
-                                                                <c:choose>
-                                                                    <c:when test="${status.index == 0}">
-                                                                        출발지부터 <c:if
-                                                                            test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                            test="${minutes > 0}">${minutes}분</c:if>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        이전 휴게시설부터 <c:if
-                                                                            test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                            test="${minutes > 0}">${minutes}분</c:if>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </span>
+                                                <c:choose>
+                                                    <c:when test="${restArea.contains('휴게소')}">
+                                                        <c:set var="serviceAreaIndex" value="0"/>
+                                                        <c:forEach var="sa" items="${allRestAreas}" varStatus="saStatus">
+                                                            <c:if test="${saStatus.index <= status.index and sa.contains('휴게소')}">
+                                                                <c:set var="serviceAreaIndex" value="${serviceAreaIndex + 1}"/>
+                                                            </c:if>
+                                                        </c:forEach>
+                                                        <c:set var="duration" value="${serviceAreaOnlyDurations[serviceAreaIndex - 1]}"/>
+                                                        <c:set var="totalHours" value="${duration / 3600}"/>
+                                                        <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                        <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                        <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                        <c:choose>
+                                                            <c:when test="${serviceAreaIndex == 1}">
+                                                                출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                이전 휴게소부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <c:set var="duration" value="${allRestAreaDurations[status.index]}"/>
+                                                        <c:set var="totalHours" value="${duration / 3600}"/>
+                                                        <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                        <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                        <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                        <c:choose>
+                                                            <c:when test="${status.index == 0}">
+                                                                출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                이전 휴게시설부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </span>
                                         </div>
                                     </c:if>
                                 </div>
@@ -456,6 +474,27 @@
                 this.style.transform = 'translateX(0)';
             });
         });
+
+        // 페이지 로드 시 졸음쉼터 카드들을 기본적으로 숨김
+        const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
+        restStopCards.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        // 휴게시설 카드 클릭 이벤트 리스너 추가
+        const restAreaCards = document.querySelectorAll('.rest-area-card.clickable');
+        restAreaCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const restAreaName = this.getAttribute('data-rest-area');
+                const index = parseInt(this.getAttribute('data-index'));
+                
+                if (this.classList.contains('service-area')) {
+                    showRestAreaInfo(restAreaName, index);
+                } else {
+                    showRestStopInfo(restAreaName, index);
+                }
+            });
+        });
     });
 
     // 휴게소 정보 모달 표시
@@ -484,7 +523,7 @@
         modal.style.display = 'block';
     }
 
-    // 휴게소만 표시 토글 기능
+    // 졸음쉼터 표시 토글 기능
     function toggleRestStops(button) {
         const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
         const serviceAreaCards = document.querySelectorAll('.rest-area-card.service-area');
@@ -493,19 +532,51 @@
         const isActive = button.classList.contains('active');
 
         // 서버에서 전달받은 소요시간 데이터
-
-        const allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
+        const allRestAreaDurations = <c:out value="${allRestAreaDurations != null ? allRestAreaDurations : '[]'}" escapeXml="false"/>;
 
         // RestAreaAction에서 계산된 휴게소 전용 소요시간 사용
-        const serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
-
+        const serviceAreaOnlyDurations = <c:out value="${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'}" escapeXml="false"/>;
 
         if (isActive) {
-            // 모든 시설 표시 - 소요시간 먼저 복원, 그 다음 리스트 표시
-
-            buttonText.textContent = '휴게소만 표시';
-            buttonIcon.className = 'fas fa-utensils button-icon';
+            // 졸음쉼터 숨기기 - 소요시간 먼저 변경, 그 다음 리스트 변경
+            buttonText.textContent = '졸음쉼터 표시';
+            buttonIcon.className = 'fas fa-bed button-icon';
             button.classList.remove('active');
+
+            // 1단계: 소요시간 먼저 업데이트 (300ms)
+            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
+
+            // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
+            setTimeout(() => {
+                // 콜랩스 애니메이션으로 사라지기 (빈 공간 채우기)
+                restStopCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        // 1단계: 페이드아웃과 스케일 다운 (더 부드럽게)
+                        card.classList.add('animating-out');
+
+                        setTimeout(() => {
+                            // 2단계: 콜랩스 (높이와 마진 줄이기) - 더 긴 시간
+                            card.classList.remove('animating-out');
+                            card.classList.add('collapsing');
+
+                            setTimeout(() => {
+                                // 3단계: 완전히 숨기기
+                                card.style.display = 'none';
+                                card.classList.remove('collapsing');
+                                // 스타일 정리
+                                card.style.maxHeight = '';
+                                card.style.marginBottom = '';
+                                card.style.padding = '';
+                            }, 800); // 콜랩스 애니메이션 시간 증가
+                        }, 300); // 페이드아웃 후 콜랩스 시작 - 더 여유롭게
+                    }, index * 120); // 순차적 사라짐 - 더 여유로운 간격
+                });
+            }, 600); // 소요시간 업데이트 완료 후 대기
+        } else {
+            // 졸음쉼터 표시 - 소요시간 먼저 복원, 그 다음 리스트 표시
+            buttonText.textContent = '졸음쉼터 숨기기';
+            buttonIcon.className = 'fas fa-eye-slash button-icon';
+            button.classList.add('active');
 
             // 1단계: 소요시간 먼저 복원
             restoreOriginalDurations(serviceAreaCards, allRestAreaDurations);
@@ -539,50 +610,13 @@
                     }, index * 150); // 더 여유로운 순차적 딜레이
                 });
             }, 500); // 소요시간 복원 완료 후 대기
-        } else {
-            // 휴게소만 표시 - 소요시간 먼저 변경, 그 다음 리스트 변경
-
-            buttonText.textContent = '전체 표시';
-            buttonIcon.className = 'fas fa-eye button-icon';
-            button.classList.add('active');
-
-            // 1단계: 소요시간 먼저 업데이트 (300ms)
-            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
-
-            // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
-            setTimeout(() => {
-                // 콜랩스 애니메이션으로 사라지기 (빈 공간 채우기)
-                restStopCards.forEach((card, index) => {
-                    setTimeout(() => {
-                        // 1단계: 페이드아웃과 스케일 다운 (더 부드럽게)
-                        card.classList.add('animating-out');
-
-                        setTimeout(() => {
-                            // 2단계: 콜랩스 (높이와 마진 줄이기) - 더 긴 시간
-                            card.classList.remove('animating-out');
-                            card.classList.add('collapsing');
-
-                            setTimeout(() => {
-                                // 3단계: 완전히 숨기기
-                                card.style.display = 'none';
-                                card.classList.remove('collapsing');
-                                // 스타일 정리
-                                card.style.maxHeight = '';
-                                card.style.marginBottom = '';
-                                card.style.padding = '';
-                            }, 800); // 콜랩스 애니메이션 시간 증가
-                        }, 300); // 페이드아웃 후 콜랩스 시작 - 더 여유롭게
-                    }, index * 120); // 순차적 사라짐 - 더 여유로운 간격
-                });
-            }, 600); // 소요시간 업데이트 완료 후 대기
         }
     }
 
     // 휴게소끼리 소요시간으로 업데이트 (부드러운 애니메이션)
     function updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations) {
-
+        // 원본 소요시간 저장 (첫 번째 호출 시에만)
         if (!window.originalDurations) {
-            // 원본 소요시간 저장
             window.originalDurations = [];
             const allCards = document.querySelectorAll('.rest-area-card');
             allCards.forEach(card => {
@@ -610,22 +644,19 @@
                 } else {
                     newTimeText = '이전 휴게소부터 ';
                 }
-
                 if (hours > 0) newTimeText += hours + '시간';
                 if (minutes > 0) newTimeText += minutes + '분';
 
-                // 부드러운 텍스트 변경 애니메이션 (더 자연스럽게)
+                // 부드러운 텍스트 변경 애니메이션
                 setTimeout(() => {
                     durationElement.classList.add('updating');
-
                     setTimeout(() => {
                         durationElement.innerHTML = newTimeText;
-
                         setTimeout(() => {
                             durationElement.classList.remove('updating');
-                        }, 250); // 더 긴 시간
-                    }, 200); // 더 여유로운 타이밍
-                }, index * 150); // 순차적 업데이트 - 더 여유로운 간격
+                        }, 250);
+                    }, 200);
+                }, index * 150);
 
                 serviceAreaIndex++;
             }
@@ -635,28 +666,21 @@
     // 원래 소요시간으로 복원 (부드러운 애니메이션)
     function restoreOriginalDurations(serviceAreaCards, allRestAreaDurations) {
         if (window.originalDurations) {
-            const serviceAreaElements = [];
-            serviceAreaCards.forEach(card => {
+            serviceAreaCards.forEach((card, index) => {
                 const durationElement = card.querySelector('.duration-text');
                 if (durationElement) {
-                    serviceAreaElements.push(durationElement);
-                }
-            });
-
-            serviceAreaElements.forEach((element, index) => {
-                const originalItem = window.originalDurations.find(item => item.element === element);
-                if (originalItem && originalItem.originalText) {
-                    setTimeout(() => {
-                        element.classList.add('updating');
-
+                    const originalItem = window.originalDurations.find(item => item.element === durationElement);
+                    if (originalItem && originalItem.originalText) {
                         setTimeout(() => {
-                            element.innerHTML = originalItem.originalText;
-
+                            durationElement.classList.add('updating');
                             setTimeout(() => {
-                                element.classList.remove('updating');
-                            }, 250); // 더 긴 시간
-                        }, 200); // 더 여유로운 타이밍
-                    }, index * 120); // 순차적 복원 - 더 여유로운 간격
+                                durationElement.innerHTML = originalItem.originalText;
+                                setTimeout(() => {
+                                    durationElement.classList.remove('updating');
+                                }, 250);
+                            }, 200);
+                        }, index * 120);
+                    }
                 }
             });
         }

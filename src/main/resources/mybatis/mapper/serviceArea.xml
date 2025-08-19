@@ -6,6 +6,11 @@
     <select id="all" resultType="mybatis.vo.ServiceAreaVO">
         select * from ServiceArea
     </select>
+
+    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
+        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
+    </select>
+
     <update id="xY" parameterType="Map">
         update ServiceArea SET
         lat = #{lat},
@@ -14,16 +19,12 @@
         Idx = #{idx}
     </update>
 
-    <select id="search" parameterType="mybatis.vo.ServiceAreaVO" resultType="mybatis.vo.ServiceAreaVO">
-        select * from ServiceArea where SAName = #{SAName} and SADirection = #{SADirection}
-    </select>
-
     <insert id="insert" parameterType="mybatis.vo.ServiceAreaVO" useGeneratedKeys="true" keyProperty="Idx">
         insert into ServiceArea (SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking,
-        Address, Tel, ShopCode)
+        Address, Lat, Lng Tel, ShopCode)
         values
         (#{SAName}, #{SADirection}, #{WayNum}, #{CompactParking}, #{LargeParking},
-        #{DisabledParking}, #{Address}, #{Tel}, #{ShopCode})
+        #{DisabledParking}, #{Address}, #{Lat}, #{Lng}, #{Tel}, #{ShopCode})
     </insert>
 
     <select id="inBounds" resultType="mybatis.vo.ServiceAreaVO" parameterType="Map">
@@ -40,6 +41,10 @@
         LargeParking = #{LargeParking},
         DisabledParking = #{DisabledParking},
         Address = #{Address},
+        <if test="lat != null and Lng != null">
+        Lat = #{Lat},
+        Lng = #{Lng},
+        </if>
         Tel = #{Tel},
         ShopCode = #{ShopCode}
         where
@@ -48,6 +53,10 @@
     </update>
     <select id="searchInsert" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
         Select * from ServiceArea where SAName Like concat ('%', #{name}, '%');
+    </select>
+
+    <select id="getOne" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        Select * from ServiceArea where Idx = #{idx}
     </select>
 
 

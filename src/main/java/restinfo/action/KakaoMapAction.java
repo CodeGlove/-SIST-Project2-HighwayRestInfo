@@ -183,21 +183,13 @@ public class KakaoMapAction implements Action {
                 JSONObject route = routeData.getJSONArray("routes").getJSONObject(0);
                 JSONArray sections = route.getJSONArray("sections");
 
-                // 휴게소 정보 추출
+                // 휴게소 정보 추출 및 시간 계산 (통합 방식)
                 List<String> allRestAreas = new ArrayList<>();
-                List<String> restAreas = new ArrayList<>();
-                List<String> restStops = new ArrayList<>();
+                List<Integer> allRestAreaDurations = new ArrayList<>();
+                extractRestAreasWithDurations(sections, allRestAreas, allRestAreaDurations);
 
-                extractRestAreas(sections, allRestAreas, restAreas, restStops);
-
-                // 소요시간 계산
-                List<Integer> allRestAreaDurations = calculateDurationsToRestAreas(sections, allRestAreas);
-                List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
-                List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
-
-                // request에 데이터 저장
-                saveRouteDataToRequest(request, route, sections, allRestAreas, restAreas, restStops,
-                        allRestAreaDurations, restAreaDurations, restStopDurations,
+                // request에 데이터 저장 (통합 방식)
+                saveRouteDataToRequest(request, route, sections, allRestAreas, allRestAreaDurations,
                         origin, destination, waypoints, waypointsCoords, routeData);
 
             }
@@ -206,25 +198,35 @@ public class KakaoMapAction implements Action {
         }
     }
 
-    // 휴게소 정보 추출
-    private void extractRestAreas(JSONArray sections, List<String> allRestAreas,
-            List<String> restAreas, List<String> restStops) {
+    // 휴게소 정보 추출 및 시간 계산 (통합 방식)
+    private void extractRestAreasWithDurations(JSONArray sections, List<String> allRestAreas,
+            List<Integer> allRestAreaDurations) {
+        int currentDuration = 0;
+        int previousRestAreaDuration = 0; // 이전 휴게시설의 누적 시간
+
         for (int i = 0; i < sections.length(); i++) {
             JSONObject section = sections.getJSONObject(i);
             if (section.has("guides")) {
                 JSONArray guides = section.getJSONArray("guides");
                 for (int j = 0; j < guides.length(); j++) {
                     JSONObject guide = guides.getJSONObject(j);
+
+                    // 누적 시간 계산
+                    int guideDuration = guide.optInt("duration", 0);
+                    currentDuration += guideDuration;
+
                     if (guide.has("name") && !guide.getString("name").isEmpty()) {
                         String guideName = guide.getString("name");
 
+                        // 휴게소 또는 졸음쉼터인 경우 순서대로 추가하고 이전 휴게시설부터의 시간 저장
                         if (guideName.contains("휴게소") || guideName.contains("서비스") ||
-                                guideName.contains("REST") || guideName.contains("SERVICE")) {
-                            restAreas.add(guideName);
+                                guideName.contains("REST") || guideName.contains("SERVICE") ||
+                                guideName.contains("졸음쉼터")) {
                             allRestAreas.add(guideName);
-                        } else if (guideName.contains("졸음쉼터")) {
-                            restStops.add(guideName);
-                            allRestAreas.add(guideName);
+                            // 이전 휴게시설부터의 시간 계산 (첫 번째는 출발지부터)
+                            int timeFromPrevious = currentDuration - previousRestAreaDuration;
+                            allRestAreaDurations.add(timeFromPrevious);
+                            previousRestAreaDuration = currentDuration; // 다음 계산을 위해 저장
                         }
                     }
                 }
@@ -232,12 +234,10 @@ public class KakaoMapAction implements Action {
         }
     }
 
-    // request에 경로 데이터 저장
+    // request에 경로 데이터 저장 (통합 방식)
     private void saveRouteDataToRequest(HttpServletRequest request, JSONObject route, JSONArray sections,
-            List<String> allRestAreas, List<String> restAreas, List<String> restStops,
-            List<Integer> allRestAreaDurations, List<Integer> restAreaDurations,
-            List<Integer> restStopDurations, String origin, String destination,
-            String waypoints, String waypointsCoords, JSONObject routeData) {
+            List<String> allRestAreas, List<Integer> allRestAreaDurations,
+            String origin, String destination, String waypoints, String waypointsCoords, JSONObject routeData) {
 
         // 기본 정보
         request.setAttribute("origin", origin);
@@ -245,18 +245,12 @@ public class KakaoMapAction implements Action {
         request.setAttribute("waypoints", waypoints);
         request.setAttribute("waypointsCoords", waypointsCoords);
 
-        // 휴게소 정보
+        // 휴게소 정보 (통합)
         request.setAttribute("allRestAreas", allRestAreas);
-        request.setAttribute("restAreas", restAreas);
-        request.setAttribute("restStops", restStops);
         request.setAttribute("allRestAreasStr", String.join(", ", allRestAreas));
-        request.setAttribute("restAreasStr", String.join(", ", restAreas));
-        request.setAttribute("restStopsStr", String.join(", ", restStops));
 
-        // 소요시간 정보
+        // 소요시간 정보 (통합)
         request.setAttribute("allRestAreaDurations", allRestAreaDurations);
-        request.setAttribute("restAreaDurations", restAreaDurations);
-        request.setAttribute("restStopDurations", restStopDurations);
 
         // 요약 정보
         if (route.has("summary")) {
@@ -355,74 +349,6 @@ public class KakaoMapAction implements Action {
         }
 
         return null;
-    }
-
-    /**
-     * 휴게소/졸음쉼터 간의 소요시간을 계산하는 메서드
-     *
-     * @param sections  경로의 sections 배열
-     * @param restAreas 휴게소/졸음쉼터 이름 리스트
-     * @return 각 휴게소/졸음쉼터 간의 소요시간 리스트 (초 단위)
-     */
-    private List<Integer> calculateDurationsToRestAreas(JSONArray sections, List<String> restAreas) {
-        List<Integer> durations = new ArrayList<>();
-        Map<String, Integer> restAreaDurations = new HashMap<>();
-        List<String> foundRestAreas = new ArrayList<>();
-        int currentDuration = 0;
-        int lastRestAreaDuration = 0;
-
-        for (int i = 0; i < sections.length(); i++) {
-            JSONObject section = sections.getJSONObject(i);
-
-            if (section.has("guides")) {
-                JSONArray guides = section.getJSONArray("guides");
-                for (int j = 0; j < guides.length(); j++) {
-                    JSONObject guide = guides.getJSONObject(j);
-
-                    int guideDuration = guide.optInt("duration", 0);
-                    currentDuration += guideDuration;
-
-                    if (guide.has("name") && !guide.getString("name").isEmpty()) {
-                        String guideName = guide.getString("name");
-
-                        boolean isRestArea = false;
-                        if (restAreas.contains(guideName)) {
-                            isRestArea = true;
-                        } else if (guideName.contains("휴게소") || guideName.contains("서비스") ||
-                                guideName.contains("REST") || guideName.contains("SERVICE")) {
-                            isRestArea = true;
-                        } else if (guideName.contains("졸음쉼터")) {
-                            isRestArea = true;
-                        }
-
-                        if (isRestArea && restAreas.contains(guideName)) {
-                            if (!foundRestAreas.contains(guideName)) {
-                                foundRestAreas.add(guideName);
-
-                                if (foundRestAreas.size() == 1) {
-                                    restAreaDurations.put(guideName, currentDuration);
-                                } else {
-                                    int segmentDuration = currentDuration - lastRestAreaDuration;
-                                    restAreaDurations.put(guideName, segmentDuration);
-                                }
-
-                                lastRestAreaDuration = currentDuration;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        for (String restArea : restAreas) {
-            if (restAreaDurations.containsKey(restArea)) {
-                durations.add(restAreaDurations.get(restArea));
-            } else {
-                durations.add(0);
-            }
-        }
-
-        return durations;
     }
 
 }

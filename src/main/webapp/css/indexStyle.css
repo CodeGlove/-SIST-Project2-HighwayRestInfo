@@ -94,6 +94,11 @@ body {
     transition: all 0.2s;
     font-size: 0.9rem;
 }
+/*08.12-한결 추가*/
+.btn-notice {
+    color: #666;
+    font-size: 16px;
+}
 
 .btn-login {
     color: #666;

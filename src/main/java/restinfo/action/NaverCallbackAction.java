@@ -7,8 +7,7 @@ import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import jakarta.mail.Session;
 import mybatis.vo.UserVO;
@@ -115,12 +114,16 @@ public class NaverCallbackAction implements Action {
                 UserVO CheckVO = SignUpDAO.check(email,"NAVER");
                 if(CheckVO==null) {
                     UserVO vo = new UserVO();
+
+                    // 닉네임 만들기
+                    makeNickName(vo);
+
                     vo.setID(email);
                     vo.setName(name);
                     request.getSession().setAttribute("loginUser", vo);
                     request.getSession().setAttribute("login_provider", "naver");
                     request.getSession().setAttribute("access_token", access_token);
-                    SignUpDAO.add(email, userIdentifier, name, "NAVER");
+                    SignUpDAO.add(email, vo.getNickName(), userIdentifier, name, "NAVER");
                 }else{
                     request.getSession().setAttribute("loginUser",CheckVO);
                     request.getSession().setAttribute("login_provider", "naver");
@@ -133,7 +136,7 @@ public class NaverCallbackAction implements Action {
             out.println(e);
         }
 
-        return "loginResult.jsp";
+        return "index.jsp";
     }
 
 
@@ -189,5 +192,25 @@ public class NaverCallbackAction implements Action {
         } catch (IOException e) {
             throw new RuntimeException("API 응답을 읽는데 실패했습니다.", e);
         }
+    }
+
+    private void makeNickName(UserVO vo) {
+
+        // 닉네임을 비교하기 위해 기존의 DB에서 닉네임값들 불러오기
+        List<String> nickNames = SignUpDAO.check("Naver");
+        Set<Integer> set = new HashSet<>();
+
+        // 각각 닉네임에서 뒤의 숫자만 얻어내기
+        for (int i = 0; i < nickNames.size(); i++) {
+            set.add(Integer.parseInt(nickNames.get(i).substring(5)));
+        }
+
+        int newNumber;
+
+        do { // set구조에 값이 들어갈 때까지(중복되지 않는 수가 들어갈 때까지) 반복
+            newNumber = (int)(Math.random() * 90000) + 10000;  // 10000 ~ 99999
+        } while (set.contains(newNumber));
+
+        vo.setNickName("Naver" + newNumber);
     }
 }
