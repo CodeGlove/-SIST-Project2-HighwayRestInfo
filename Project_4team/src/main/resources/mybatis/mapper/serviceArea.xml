@@ -47,7 +47,7 @@
         Lat = #{Lat},
         Lng = #{Lng},
         </if>
-        Tel = #{Tel},
+<!--        Tel = #{Tel},-->
         ShopCode = #{ShopCode}
         where
         Idx = #{Idx}
