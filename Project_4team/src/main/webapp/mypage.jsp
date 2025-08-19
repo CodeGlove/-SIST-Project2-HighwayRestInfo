@@ -8,7 +8,8 @@
     <title>HighwayGuide - 마이페이지</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
@@ -100,15 +101,24 @@
             width: 200px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
+
         .info-input:focus, .info-select:focus {
             border-color: #80bdff;
             outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
         }
 
-        .edit-mode { display: none; }
-        .edit-active .view-mode { display: none; }
-        .edit-active .edit-mode { display: inline-block; }
+        .edit-mode {
+            display: none;
+        }
+
+        .edit-active .view-mode {
+            display: none;
+        }
+
+        .edit-active .edit-mode {
+            display: inline-block;
+        }
 
         .button-group {
             margin-top: 2.5rem;
@@ -126,10 +136,24 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-primary { color: #fff; background-color: #007bff; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-secondary { color: #fff; background-color: #6c757d; }
-        .btn-secondary:hover { background-color: #5a6268; }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
 
         .bookmark-section {
             margin-top: 3rem;
@@ -175,7 +199,7 @@
 
         .bookmark-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .bookmark-name {
@@ -216,6 +240,7 @@
             border-top: 1px solid #e9ecef;
             text-align: right;
         }
+
         .btn-danger {
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
@@ -226,19 +251,39 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .btn-danger:hover {
             color: #fff;
             background-color: #dc3545;
         }
+
         .bookmark-item.clickable:hover {
             cursor: pointer;
             background-color: #e9ecef; /* 마우스를 올렸을 때 배경색 변경 */
         }
+        .restarea-name {
+            font-weight: 600; /* 또는 bold */
+            color: #212529; /* 기존과 동일 */
+            margin-right: 0.5rem; /* 이름과 방면 사이에 간격 추가 */
+        }
+
+        .restarea-direction {
+            font-size: 0.9rem; /* 방면 텍스트를 작게 만듭니다. */
+            font-weight: 400; /* 글자 두께를 얇게 합니다. */
+            color: #6c757d; /* 회색으로 만들어 보조 정보임을 시각적으로 강조합니다. */
+            padding-left: 0.5rem; /* 또는 border-left 등으로 구분선 추가 */
+        }
 
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -282,7 +327,8 @@
                     <div class="info-item">
                         <span class="info-label"><i class="fas fa-user-tag"></i>닉네임</span>
                         <span id="viewNickName" class="info-value view-mode">${sessionScope.loginUser.nickName}</span>
-                        <input type="text" name="nickName" class="info-input edit-mode" value="${sessionScope.loginUser.nickName}" disabled required>
+                        <input type="text" name="nickName" class="info-input edit-mode"
+                               value="${sessionScope.loginUser.nickName}" disabled required>
                     </div>
                 </div>
 
@@ -313,7 +359,8 @@
                                 <c:otherwise>입력 안 함</c:otherwise>
                             </c:choose>
                         </span>
-                        <input type="text" name="home" class="info-input edit-mode" value="${sessionScope.loginUser.home}" disabled>
+                        <input type="text" name="home" class="info-input edit-mode"
+                               value="${sessionScope.loginUser.home}" disabled>
                     </div>
                 </div>
 
@@ -336,7 +383,10 @@
                     <c:when test="${not empty bookmarkedServiceAreas}">
                         <c:forEach var="serviceArea" items="${bookmarkedServiceAreas}">
                             <div class="bookmark-item clickable" data-sakey="${serviceArea.idx}">
-                                <span class="bookmark-name">${serviceArea.SAName} ${serviceArea.SADirection} 방면</span>
+                               <span class="bookmark-name">
+                               <span class="restarea-name">${serviceArea.SAName}</span>
+                               <span class="restarea-direction">${serviceArea.SADirection} 방면</span>
+                               </span>
                                 <button type="button" class="btn-delete-bookmark" title="즐겨찾기 삭제">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -355,13 +405,13 @@
         </div>
     </div>
 </main>
-<jsp:include page="/restAreaModal.jsp" />
+<jsp:include page="/restAreaModal.jsp"/>
 <%-- 푸터 --%>
 <jsp:include page="footer.jsp"/>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         const $userInfoCard = $('#userInfoCard');
         const $buttonGroup = $('#buttonGroup');
         const $editableFields = $userInfoCard.find('.edit-mode');
@@ -378,10 +428,15 @@
             }
         }
 
-        $('#edit-btn').on('click', function() { setEditMode(true); });
-        $('#cancel-btn').on('click', function() { setEditMode(false); $('#profile-form')[0].reset(); });
+        $('#edit-btn').on('click', function () {
+            setEditMode(true);
+        });
+        $('#cancel-btn').on('click', function () {
+            setEditMode(false);
+            $('#profile-form')[0].reset();
+        });
 
-        $('#profile-form').on('submit', function(e) {
+        $('#profile-form').on('submit', function (e) {
             e.preventDefault();
             const nickName = $('input[name="nickName"]').val().trim();
             if (nickName === '') {
@@ -396,7 +451,7 @@
                 url: $(this).attr('action'),
                 data: formData,
                 dataType: 'json',
-                success: function(data) {
+                success: function (data) {
                     if (data.success) {
                         alert(data.message || '성공적으로 수정되었습니다.');
                         const newNickName = $('input[name="nickName"]').val();
@@ -410,21 +465,21 @@
                         alert(data.message || '정보 수정에 실패했습니다.');
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     console.error("AJAX Error:", textStatus, errorThrown);
                     alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 }
             });
         });
 
-        $('#withdrawal-btn').on('click', function() {
+        $('#withdrawal-btn').on('click', function () {
             if (confirm('정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
                 window.location.href = '${pageContext.request.contextPath}/Controller?type=deleteAccount';
             }
         });
 
         // ==========================================================즐겨찾기 삭제========================================
-        $('.btn-delete-bookmark').on('click', function() {
+        $('.btn-delete-bookmark').on('click', function () {
             // 삭제할 대상 div 요소 찾기
             const itemToRemove = $(this).closest('.bookmark-item');
             // 삭제 확인 창
@@ -442,11 +497,11 @@
                     dataType: 'json', // 서버로부터는 json 형태로 응답을 기대
 
                     // 서버 요청이 성공했을 때
-                    success: function(response) {
+                    success: function (response) {
                         // 서버가 success:true 응답을 주면
                         if (response.success) {
                             // 화면에서 해당 항목을 사라지게 한 후 완전히 제거
-                            itemToRemove.fadeOut(400, function() {
+                            itemToRemove.fadeOut(400, function () {
                                 $(this).remove();
 
                                 // 만약 즐겨찾기 항목이 하나도 남지 않았다면
@@ -460,7 +515,7 @@
                         }
                     },
                     // 서버 요청이 실패했을 때
-                    error: function() {
+                    error: function () {
                         alert('삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
                     }
                 });
@@ -469,7 +524,7 @@
         // ==========================================================
         // mypage에서 휴게소 정보 클릭하면 나오게끔=============================================================================
 
-        $('.bookmark-item.clickable').on('click', function(e) {
+        $('.bookmark-item.clickable').on('click', function (e) {
             // 만약 클릭된 부분이 X 버튼이라면, 모달을 열지 않고 함수를 종료합니다.
             if ($(e.target).closest('.btn-delete-bookmark').length > 0) {
                 return;
@@ -485,7 +540,7 @@
                     saKey: saKey
                 },
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     // [수정됨] 성공/실패 구분 방법
                     // 성공 응답(vo)은 'idx' 같은 속성을 가지고 있고,
                     // 실패 응답({})은 속성이 없는 점을 이용해 구분합니다.
@@ -497,7 +552,7 @@
                         alert('휴게소 정보를 찾을 수 없습니다.');
                     }
                 },
-                error: function() {
+                error: function () {
                     alert('상세 정보를 불러오는 중 오류가 발생했습니다.');
                 }
             });
@@ -520,12 +575,12 @@
 
         /* ===== [추가된 코드 시작] ===== */
         // 모달의 닫기(X) 버튼 클릭 시 이벤트 처리
-        $('.modal .close').on('click', function() {
+        $('.modal .close').on('click', function () {
             closeModal();
         });
 
         // 모달 창 바깥의 어두운 영역을 클릭했을 때도 모달이 닫히도록 합니다.
-        $(window).on('click', function(e) {
+        $(window).on('click', function (e) {
             if ($(e.target).hasClass('modal')) {
                 closeModal();
             }
