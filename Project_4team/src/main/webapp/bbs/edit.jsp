@@ -108,7 +108,7 @@
             <tr>
                 <th>이름:</th>
                 <td><input type="text" name="writer" id="writer" size="12" value="${vo.writer}">
-                           readonly/></td>
+                    readonly/></td>
             </tr>
             <tr>
                 <th>내용:</th>
@@ -148,22 +148,41 @@
 <script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script> <%--ckEditor 파일 추가--%>
 <!-- 실제로 textarea에 에디터를 적용시키는 코드 -->
 <script>
-    let myEditor;
+    let myEditor = CKEDITOR.replace('content', {
+        filebrowserUploadUrl: 'http://localhost:8080/image/upload'
+    });
 
-    ClassicEditor
-        .create(document.querySelector('#content'), { // #editor에서 #content로 수정
-            ckfinder: {
-                // Summernote의 이미지 업로드 Controller 경로를 그대로 사용함
-                uploadUrl: 'Controller?type=saveImg'
-            }
-        })
-        .then(editor => {
-            console.log('CKEditor가 성공적으로 로드되었습니다.', editor);
-            myEditor = editor; // 생성된 에디터 인스턴스를 변수에 저장
-        })
-        .catch(error => {
-            console.error('CKEditor 로드 중 에러 발생:', error);
-        });
+    function sendData(){
+        // 에디터의 최신 내용을 <textarea>에 적용하는 코드 추가
+        myEditor.updateElement();
+
+        //유효성 검사
+        let subject = $("#subject").val();
+        if(subject.trim().length < 1){
+            alert("제목을 입력하세요");
+            $("#subject").val("");
+            $("#subject").focus();
+            return;
+        }
+
+        let writer = $("#writer").val();
+        if(writer.trim().length < 1){
+            alert("이름을 입력하세요:");
+            $("#writer").val("");
+            $("#writer").focus();
+            return;
+        }
+
+        let content = $("#content").val();
+        if(content.trim().length < 1){
+            alert("내용을 입력하세요:");
+            $("#content").val("");
+            $("#content").focus();
+            return;
+        }
+
+        document.forms[0].submit();
+    }
 
     function goBack() {
         const postNum = document.getElementById('hidden_postNum').value;
