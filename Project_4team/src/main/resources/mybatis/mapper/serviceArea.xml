@@ -47,7 +47,7 @@
         Lat = #{Lat},
         Lng = #{Lng},
         </if>
-        Tel = #{Tel},
+<!--        Tel = #{Tel},-->
         ShopCode = #{ShopCode}
         where
         Idx = #{Idx}
@@ -99,4 +99,14 @@
         Tel = values(Tel),
         ShopCode = values(ShopCode)
     </insert>-->
+
+    <select id="getbookmark" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        select * from ServiceArea sa inner join BookMark bm on sa.Idx=bm.SAKey
+        where bm.UserKey =#{n}
+    </select>
+
+    <delete id="deletebookmark" parameterType="Map">
+        DELETE FROM BookMark
+        WHERE UserKey = #{Useridx} AND SAKey = #{SAidx}
+    </delete>
 </mapper>
