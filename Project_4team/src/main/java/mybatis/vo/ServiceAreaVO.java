@@ -4,8 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceAreaVO {
-    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, Lat, Lng, ShopCode;
+    private String Idx;
+    private String SAName;
+    private String SADirection;
+    private String WayNum;
+    private String CompactParking;
+    private String LargeParking;
+    private String DisabledParking;
+    private String Address;
+    private String Tel;
+    private String Lat;
+    private String Lng;
+    private String ShopCode;
+    private String Convenience ;
     private List<ShopVO> Shoplist;
+
+    public String getConvenience() {
+        return Convenience;
+    }
+
+    public void setConvenience(String convenience) {
+        Convenience = convenience;
+    }
+
 
     public ServiceAreaVO() {
         Shoplist = new ArrayList<ShopVO>();
