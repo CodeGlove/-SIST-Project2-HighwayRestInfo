@@ -87,12 +87,12 @@
 
 <c:if test="${content eq null or content eq 'dashBoard'}">
     <div style="margin-top: 0">
-        <jsp:include page="dashBoard.jsp"/>
+        <jsp:include page="dashBoard.jsp" flush="true"/>
     </div>
 </c:if>
 <c:if test="${content eq 'member'}">
     <div style="margin-top: 0;">
-        <jsp:include page="member.jsp"/>
+        <jsp:include page="member.jsp" flush="true"/>
     </div>
 </c:if>
 
