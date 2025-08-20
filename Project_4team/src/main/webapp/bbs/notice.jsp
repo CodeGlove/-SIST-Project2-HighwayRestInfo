@@ -119,6 +119,24 @@
             color: #ffffff;
         }
 
+        .edit-btn {
+            padding: 6px 12px;
+            background: #ffffff;
+            color: #3182f6;
+            border: 1px solid #3182f6;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+
+        .edit-btn:hover {
+            background: #3182f6;
+            color: #ffffff;
+        }
+
         .pagination-container {
             padding: 60px 0 40px 0;
             display: flex;
@@ -284,7 +302,7 @@
 
         <!-- Write Button (관리자만) -->
         <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
-                      ne null and sessionScope.loginUser.authority == 1}">
+                      ne null and sessionScope.loginUser.authority eq '1'}">
             <div class="write-btn-container">
                 <button type="button" class="write-btn"
                         onclick="location.href='../Controller?type=write'">
@@ -316,9 +334,9 @@
                             <div class="notice-meta">
                                 <span class="notice-date">${vo.writeDate}</span>
                                 <span class="notice-author">${vo.writer}</span>
-                                    <%--관리자일 경우 삭제 버튼 추가--%>
+                                    <%--관리자일 경우 수정/삭제 버튼 추가--%>
                                 <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
-                        ne null and sessionScope.loginUser.authority == 1}">
+                        ne null and sessionScope.loginUser.authority eq '1'}">
                                     <div class="admin-actions">
                                         <button type="button" class="delete-btn"
                                                 onclick="delPost('${vo.postNum}', '${p.nowPage}')">
@@ -376,6 +394,10 @@
             // 삭제 요청
             location.href = "../Controller?type=del&PostNum=" + postNum + "&cPage=" + cPage;
         }
+    }
+
+    function editPost(postNum, cPage) {
+        location.href = "../Controller?type=edit&PostNum=" + postNum + "&cPage=" + cPage;
     }
 
     // 페이지 로드 시 부드러운 등장 효과
