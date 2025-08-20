@@ -2,9 +2,9 @@ package restinfo.action;
 
 import com.google.gson.Gson;
 import mybatis.vo.ServiceAreaVO;
-import mybatis.vo.gasVO;
+import mybatis.vo.GasVO;
 import restinfo.dao.ServiceAreaDAO;
-import restinfo.dao.gasDAO;
+import restinfo.dao.GasDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +19,7 @@ public class getRestAreaDetailsAction implements Action{
 
         // [수정] vo가 null이 아닌 것이 확인된 경우에만 주유소 정보를 조회하고 합칩니다.
         if (vo != null) {
-            gasVO gvo = gasDAO.getgas(saKey);
+            GasVO gvo = GasDAO.getgas(saKey);
             vo.setGasInfo(gvo); // gvo가 null이더라도 set하는 것은 괜찮습니다.
         }
 

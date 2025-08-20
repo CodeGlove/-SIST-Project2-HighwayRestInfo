@@ -19,13 +19,13 @@ public class ServiceAreaVO {
     private String Convenience ;
     private List<ShopVO> Shoplist;
     private String Star;
-    private gasVO gasInfo;
+    private GasVO gasInfo;
 
-    public gasVO getGasInfo() {
+    public GasVO getGasInfo() {
         return gasInfo;
     }
 
-    public void setGasInfo(gasVO gasInfo) {
+    public void setGasInfo(GasVO gasInfo) {
         this.gasInfo = gasInfo;
     }
 

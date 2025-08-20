@@ -2,9 +2,9 @@ package restinfo.action;
 
 import mybatis.vo.ServiceAreaVO;
 import mybatis.vo.UserVO;
-import mybatis.vo.gasVO;
+import mybatis.vo.GasVO;
 import restinfo.dao.ServiceAreaDAO;
-import restinfo.dao.gasDAO;
+import restinfo.dao.GasDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

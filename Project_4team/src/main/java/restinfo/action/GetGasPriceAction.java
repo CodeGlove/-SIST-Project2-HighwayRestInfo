@@ -1,10 +1,10 @@
 package restinfo.action;
 
-import mybatis.vo.gasVO;
+import mybatis.vo.GasVO;
 import mybatis.vo.ServiceAreaVO;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import restinfo.dao.gasDAO;
+import restinfo.dao.GasDAO;
 import restinfo.dao.ServiceAreaDAO;
 import restinfo.util.ConfigLoader;
 
@@ -26,7 +26,7 @@ public class GetGasPriceAction implements Action {
     public String execute(HttpServletRequest request, HttpServletResponse response) {
 
         String EXPRESSWAY_API_KEY = ConfigLoader.getProperty("EXPRESSWAY_ID");
-        List<gasVO> gasList = new ArrayList<>(); // 휴게소의 주유소가격 정보를 담을 리스트
+        List<GasVO> gasList = new ArrayList<>(); // 휴게소의 주유소가격 정보를 담을 리스트
 
         try {
             // DAO를 통해서 ServiceArea에 저장된 휴게소 목록을 불러온다.
@@ -112,7 +112,7 @@ public class GetGasPriceAction implements Action {
                     JSONArray gasPriceItems = json2.getJSONArray("list");
                     JSONObject priceData = gasPriceItems.getJSONObject(0);
 
-                    gasVO gvo = new gasVO();
+                    GasVO gvo = new GasVO();
                     gvo.setSAKey(serviceArea.getIdx());
                     gvo.setGasoline(priceData.optString("gasolinePrice", "0"));
                     gvo.setDisel(priceData.optString("diselPrice", "0"));
@@ -124,7 +124,7 @@ public class GetGasPriceAction implements Action {
             System.out.println("DAO 호출 직전, gasList 사이즈: " + gasList.size());
             System.out.println(gasList.get(0).getGasoline());
             if (!gasList.isEmpty()) {
-                gasVO firstItem = gasList.get(0);
+                GasVO firstItem = gasList.get(0);
                 System.out.println("첫 번째 데이터 샘플: SAKey=" + firstItem.getSAKey() + ", 휘발유=" + firstItem.getGasoline());
             }
 

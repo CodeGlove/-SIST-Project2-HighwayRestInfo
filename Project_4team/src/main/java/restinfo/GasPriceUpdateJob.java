@@ -1,7 +1,7 @@
 package restinfo;
 
 import mybatis.service.FactoryService;
-import mybatis.vo.gasVO;
+import mybatis.vo.GasVO;
 import mybatis.vo.ServiceAreaVO;
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONArray;
@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import restinfo.dao.gasDAO;
+import restinfo.dao.GasDAO;
 import restinfo.dao.ServiceAreaDAO;
 import restinfo.util.ConfigLoader;
 
@@ -30,7 +30,7 @@ public class GasPriceUpdateJob implements Job {
         System.out.println("=== [Quartz] 유가 정보 자동 업데이트 작업을 시작합니다. ===");
 
         String EXPRESSWAY_API_KEY = ConfigLoader.getProperty("EXPRESSWAY_ID");
-        List<gasVO> gasList = new ArrayList<>();
+        List<GasVO> gasList = new ArrayList<>();
 
         try {
             List<ServiceAreaVO> getSvarInfo = ServiceAreaDAO.getAll();
@@ -98,7 +98,7 @@ public class GasPriceUpdateJob implements Job {
 
                         JSONObject priceData = json2.getJSONArray("list").getJSONObject(0);
 
-                        gasVO gvo = new gasVO();
+                        GasVO gvo = new GasVO();
                         gvo.setSAKey(serviceArea.getIdx());
                         gvo.setGasoline(priceData.optString("gasolinePrice", "0"));
                         gvo.setDisel(priceData.optString("diselPrice", "0"));
@@ -121,11 +121,11 @@ public class GasPriceUpdateJob implements Job {
                     session = FactoryService.getFactory().openSession();
 
                     // INSERT할 데이터와 UPDATE할 데이터를 담을 리스트를 각각 생성
-                    List<gasVO> insertList = new ArrayList<>();
-                    List<gasVO> updateList = new ArrayList<>();
+                    List<GasVO> insertList = new ArrayList<>();
+                    List<GasVO> updateList = new ArrayList<>();
 
                     // 전체 gasList를 순회하며 데이터가 DB에 있는지 확인
-                    for (gasVO gvo : gasList) {
+                    for (GasVO gvo : gasList) {
                         int cnt = session.selectOne("gas.selectCntSAKey", gvo.getSAKey());
                         if (cnt > 0) {
                             updateList.add(gvo); //이미 있으면 updateList에 추가
@@ -136,11 +136,11 @@ public class GasPriceUpdateJob implements Job {
 
                     // 각 DAO 메서드 호출
                     if (!insertList.isEmpty()) {
-                        gasDAO.insertGasPrices(session, insertList);
+                        GasDAO.insertGasPrices(session, insertList);
                         System.out.println("총 " + insertList.size() + "개의 신규 데이터를 INSERT 했습니다.");
                     }
                     if (!updateList.isEmpty()) {
-                        gasDAO.updateGasPrices(session, updateList);
+                        GasDAO.updateGasPrices(session, updateList);
                         System.out.println("총 " + updateList.size() + "개의 기존 데이터를 UPDATE 했습니다.");
                     }
 
