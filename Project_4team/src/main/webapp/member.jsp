@@ -402,8 +402,8 @@
                 '<td>' + (member.ID || '') + '</td>' +
                 '<td>' + (member.NickName || '') + '</td>' +
                 '<td>' + (member.Name || '') + '</td>' +
-                '<td>주소 정보 없음</td>' +
-                '<td>관심사 정보 없음</td>' +
+                '<td>' + (member.Home || '주소 정보 없음') + '</td>' +
+                '<td>' + (member.Interest || ' 관심사 정보 없음') + '</td>' +
                 '<td><span class="platform-tag ' + platformClass + '">' + platformLabel + '</span></td>' +
                 '<td>' +
                     '<button class="delete-btn" data-member-id="' + (member.ID || '') + '">' +
