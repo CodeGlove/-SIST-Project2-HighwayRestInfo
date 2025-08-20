@@ -14,7 +14,6 @@
             border:1px solid black;
             border-collapse:collapse;
             font-size:14px;
-
         }
 
         #bbs table caption {
@@ -34,7 +33,10 @@
             border:1px solid black;
             padding:4px 10px;
         }
-
+        /*CK에디터 크기 지정*/
+        .ck-editor {
+            width: 100%;
+        }
 
         .no {width:15%}
         .subject {width:30%}
@@ -45,8 +47,6 @@
 
         .odd {background:silver}
         .t_bold{ font-weight: bold; color: #007bff; }
-
-
     </style>
 </head>
 <body>
@@ -56,8 +56,7 @@
         BbsVO vo = (BbsVO) obj;
 %>
 <div id="bbs">
-    <form action="Controller?type=edit" method="post"
-          encType="multipart/form-data">
+    <form action="Controller?type=edit" method="post" encType="multipart/form-data">
         <input type="hidden" id="hidden_postNum" value="${vo.postNum}"/>
         <input type="hidden" id="hidden_cPage" value="${param.cPage}"/>
 
@@ -72,13 +71,11 @@
             </tr>
             <tr>
                 <th>이름:</th>
-                <%-- writer 입력란 readonly 문법 수정 --%>
                 <td><input type="text" name="writer" id="writer" size="12" value="${vo.writer}" readonly/></td>
             </tr>
             <tr>
                 <th>내용:</th>
-                <%-- 내용이 태그로 보이는 문제 해결 --%>
-                <td><textarea name="content" cols="50" id="content" rows="8">${vo.content}</textarea></td>
+                <td><textarea name="content" cols="50" id="content" rows="8"></textarea></td>
             </tr>
             <tr>
                 <th>첨부파일:</th>
@@ -104,18 +101,31 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script src="<%=request.getContextPath()%>/ckeditor/ckeditor.js"></script>
+<script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script>
 <script>
-    // CKEditor 인스턴스 초기화
-    let myEditor = CKEDITOR.replace('content', {
-        filebrowserUploadUrl: 'http://localhost:8080/image/upload'
-    });
+    let myEditor;
 
-    function sendData(){
-        // 에디터의 최신 내용을 <textarea>에 적용
-        myEditor.updateElement();
+    ClassicEditor
+        .create(document.querySelector('#content'), {
+            ckfinder: {
+                uploadUrl: '${pageContext.request.contextPath}/Controller?type=saveImg'
+            }
+        })
+        .then(editor => {
+            console.log('CKEditor가 성공적으로 로드되었습니다.', editor);
+            myEditor = editor;
+            // CKEditor에 데이터베이스의 내용을 로드
+            const contentFromDB = '<c:out value="${vo.content}" escapeXml="false"/>';
+            editor.setData(contentFromDB);
+        })
+        .catch(error => {
+            console.error('CKEditor 로드 중 에러 발생:', error);
+        });
 
-        //유효성 검사
+    function sendData() {
+        const contentData = myEditor.getData();
+        document.getElementById('content').value = contentData;
+
         let subject = $("#subject").val();
         if(subject.trim().length < 1){
             alert("제목을 입력하세요");
@@ -132,15 +142,11 @@
             return;
         }
 
-        let content = $("#content").val();
-        if(content.trim().length < 1){
+        if(contentData.trim().length < 1){
             alert("내용을 입력하세요:");
-            $("#content").val("");
-            $("#content").focus();
             return;
         }
 
-        // 폼 전송
         document.forms[0].submit();
     }
 
