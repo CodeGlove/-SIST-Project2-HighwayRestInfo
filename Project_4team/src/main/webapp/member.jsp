@@ -5,7 +5,7 @@
   Time: 오전 11:02
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 
 <!-- Main Content -->
 <div class="manage-container">
@@ -15,85 +15,39 @@
     </div>
     
     <div class="manage-content">
-        <!-- 검색 및 필터 섹션 -->
+        <!-- 검색 섹션 -->
         <div class="search-section">
             <div class="search-container">
-                <div class="search-input-group">
-                    <input type="text" id="searchInput" placeholder="이름, 이메일, ID로 검색..." class="search-input">
-                    <button type="button" id="searchBtn" class="search-button">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                
-                <div class="filter-group">
-                    <select id="platformFilter" class="filter-select">
-                        <option value="">전체 플랫폼</option>
-                        <option value="KAKAO">카카오</option>
-                        <option value="NAVER">네이버</option>
-                        <option value="ORIGIN">자사계정</option>
-                    </select>
-                    
-                    <select id="sortFilter" class="filter-select">
-                        <option value="joinDate">가입일순</option>
-                        <option value="name">이름순</option>
-                        <option value="platform">플랫폼순</option>
-                    </select>
+                <input type="text" id="searchInput" placeholder="이름 또는 ID로 검색..." class="search-input">
+                <div class="search-info">
+                    <span id="memberCount">0</span>명의 회원이 있습니다.
                 </div>
             </div>
         </div>
         
         <!-- 회원 목록 테이블 -->
-        <div class="member-table-section">
-            <div class="member-stats">
-                <span class="stats-item">
-                    <i class="fas fa-users"></i>
-                    전체 회원: <span id="totalMembers">6</span>명
-                </span>
-                <span class="stats-item">
-                    <i class="fas fa-user-check"></i>
-                    활성 회원: <span id="activeMembers">6</span>명
-                </span>
-            </div>
-            
-            <div class="member-grid" id="memberGrid">
-                <!-- 회원 카드들이 정적으로 생성됩니다 -->
-            </div>
-        </div>
-        
-        <!-- 페이지네이션 -->
-        <div class="pagination-section">
-            <div class="pagination" id="pagination">
-                <!-- 페이지 번호들이 정적으로 생성됩니다 -->
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 회원 탈퇴 확인 모달 -->
-<div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>회원 탈퇴 확인</h3>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p>정말로 <strong id="deleteMemberName"></strong> 회원을 탈퇴 처리하시겠습니까?</p>
-            <p class="warning-text">이 작업은 되돌릴 수 없습니다.</p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-cancel" id="cancelDelete">취소</button>
-            <button type="button" class="btn btn-delete" id="confirmDelete">탈퇴 처리</button>
+        <div class="member-list-section">
+            <table class="member-table" id="memberTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>닉네임</th>
+                        <th>이름</th>
+                        <th>주소</th>
+                        <th>관심사</th>
+                        <th>가입경로</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="memberTableBody">
+                    <!-- 회원 목록이 동적으로 생성됩니다 -->
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <style>
-    /* 회원 관리 전용 스타일 */
-    .member-content {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    
     /* manage-content 스타일 오버라이드 - 1열 레이아웃으로 변경 */
     .manage-content {
         display: block !important;
@@ -102,7 +56,7 @@
         margin-bottom: 3rem !important;
     }
     
-    /* 검색 및 필터 섹션 */
+    /* 검색 섹션 */
     .search-section {
         background: white;
         border-radius: 16px;
@@ -118,17 +72,12 @@
         gap: 2rem;
     }
     
-    .search-input-group {
-        display: flex;
-        flex: 1;
-        max-width: 400px;
-    }
-    
     .search-input {
         flex: 1;
+        max-width: 400px;
         padding: 0.75rem 1rem;
         border: 2px solid #e1e5e9;
-        border-radius: 8px 0 0 8px;
+        border-radius: 8px;
         font-size: 1rem;
         transition: border-color 0.3s ease;
     }
@@ -138,134 +87,52 @@
         border-color: #667eea;
     }
     
-    .search-button {
-        padding: 0.75rem 1.5rem;
-        background: #667eea;
-        color: white;
-        border: none;
-        border-radius: 0 8px 8px 0;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    
-    .search-button:hover {
-        background: #5a6fd8;
-    }
-    
-    .filter-group {
-        display: flex;
-        gap: 1rem;
-    }
-    
-    .filter-select {
-        padding: 0.75rem 1rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        font-size: 1rem;
-        background: white;
-        cursor: pointer;
-        transition: border-color 0.3s ease;
-    }
-    
-    .filter-select:focus {
-        outline: none;
-        border-color: #667eea;
-    }
-    
-    /* 회원 통계 */
-    .member-stats {
-        display: flex;
-        gap: 2rem;
-        margin-bottom: 1.5rem;
-        padding: 1rem 0;
-    }
-    
-    .stats-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 1rem;
-        color: #666;
-    }
-    
-    .stats-item i {
-        color: #667eea;
-    }
-    
-    /* 회원 그리드 */
-    .member-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .member-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: 2px solid transparent;
-    }
-    
-    .member-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        border-color: #667eea;
-    }
-    
-    .member-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .member-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: white;
-        font-weight: bold;
-    }
-    
-    .avatar-kakao {
-        background: #FEE500;
-        color: #333;
-    }
-    
-    .avatar-naver {
-        background: #03C75A;
-    }
-    
-    .avatar-origin {
-        background: linear-gradient(135deg, #8B5CF6, #667eea);
-    }
-    
-    .member-info {
-        flex: 1;
-    }
-    
-    .member-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #222;
-        margin-bottom: 0.25rem;
-    }
-    
-    .member-email {
+    .search-info {
         font-size: 0.9rem;
         color: #666;
-        margin-bottom: 0.25rem;
     }
     
-    .member-platform {
+    /* 회원 테이블 */
+    .member-list-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow-x: auto;
+    }
+    
+    .member-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+    
+    .member-table th,
+    .member-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .member-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+        position: sticky;
+        top: 0;
+    }
+    
+    .member-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .member-table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    
+    /* 플랫폼 태그 */
+    .platform-tag {
         display: inline-block;
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
@@ -287,169 +154,44 @@
         background: linear-gradient(135deg, #8B5CF6, #667eea);
     }
     
-    .member-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #f0f0f0;
-    }
-    
-    .detail-item {
-        text-align: center;
-    }
-    
-    .detail-label {
-        font-size: 0.8rem;
-        color: #999;
-        margin-bottom: 0.25rem;
-    }
-    
-    .detail-value {
-        font-size: 0.9rem;
-        color: #333;
-        font-weight: 500;
-    }
-    
-    /* 페이지네이션 */
-    .pagination-section {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-    }
-    
-    .pagination {
-        display: flex;
-        gap: 0.5rem;
-    }
-    
-    .page-btn {
+    /* 삭제 버튼 */
+    .delete-btn {
         padding: 0.5rem 1rem;
-        border: 2px solid #e1e5e9;
-        background: white;
-        color: #666;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-    }
-    
-    .page-btn:hover {
-        border-color: #667eea;
-        color: #667eea;
-    }
-    
-    .page-btn.active {
-        background: #667eea;
-        border-color: #667eea;
-        color: white;
-    }
-    
-    .page-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
-    /* 모달 스타일 */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-    
-    .modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 0;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-    
-    .modal-header {
-        padding: 1.5rem 1.5rem 1rem;
-        border-bottom: 1px solid #f0f0f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-header h3 {
-        margin: 0;
-        color: #222;
-        font-size: 1.3rem;
-    }
-    
-    .close {
-        color: #aaa;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        line-height: 1;
-    }
-    
-    .close:hover {
-        color: #000;
-    }
-    
-    .modal-body {
-        padding: 1.5rem;
-        color: #666;
-        line-height: 1.6;
-    }
-    
-    .warning-text {
-        color: #e74c3c;
-        font-weight: 500;
-        margin-top: 1rem;
-        padding: 0.75rem;
-        background: #fdf2f2;
-        border-radius: 6px;
-        border-left: 4px solid #e74c3c;
-    }
-    
-    .modal-footer {
-        padding: 1rem 1.5rem 1.5rem;
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-    }
-    
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-cancel {
-        background: #f8f9fa;
-        color: #666;
-        border: 2px solid #e1e5e9;
-    }
-    
-    .btn-cancel:hover {
-        background: #e9ecef;
-        border-color: #adb5bd;
-    }
-    
-    .btn-delete {
         background: #e74c3c;
         color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background-color 0.2s ease;
     }
     
-    .btn-delete:hover {
+    .delete-btn:hover {
         background: #c0392b;
+    }
+    
+    /* 로딩 상태 */
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+    }
+    
+    .loading::after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 0.5rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
     
     /* 반응형 디자인 */
@@ -459,160 +201,273 @@
             align-items: stretch;
         }
         
-        .filter-group {
-            justify-content: center;
+        .search-input {
+            max-width: none;
         }
         
-        .member-grid {
-            grid-template-columns: 1fr;
+        .member-table {
+            font-size: 0.8rem;
         }
         
-        .member-details {
-            grid-template-columns: 1fr;
+        .member-table th,
+        .member-table td {
+            padding: 0.5rem;
         }
     }
 </style>
 
 <script>
     // ========================================
-    // 회원 관리 페이지 JavaScript (간단 버전)
+    // 회원 관리 페이지 JavaScript (새로운 컬럼 구조)
     // ========================================
     
     // 전역 변수
-    let selectedMemberId = null;
+    let allMembers = [];  // 전체 회원 데이터
+    let filteredMembers = [];  // 필터링된 회원 데이터
     
     // ========================================
     // 1. 페이지 로드 시 초기화
     // ========================================
     document.addEventListener('DOMContentLoaded', function() {
-        createMemberCards();
-        createPagination();
-        setupEventListeners();
+        loadMembers();        // 회원 데이터 로드
+        setupEventListeners(); // 이벤트 리스너 설정
     });
     
     // ========================================
-    // 2. 회원 카드 생성 (정적 데이터)
+    // 2. 이벤트 리스너 설정
     // ========================================
-    function createMemberCards() {
-        const memberGrid = document.getElementById('memberGrid');
-        if (!memberGrid) return;
-        
-        const members = [
+    function setupEventListeners() {
+        // 검색 입력 필드에 실시간 검색 이벤트 추가
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterMembers(this.value); // 타이핑할 때마다 검색 실행
+            });
+        }
+    }
+    
+    // ========================================
+    // 3. 회원 데이터 로드 (AJAX)
+    // ========================================
+    async function loadMembers() {
+        try {
+            showLoading(); // 로딩 상태 표시
+            
+            // 서버에서 회원 데이터 요청
+            const response = await fetch('Controller', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    type: 'Members',
+                    method: 'getAll'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            // 응답 내용 확인
+            const responseText = await response.text();
+            console.log('서버 응답:', responseText);
+            
+            // JSON 파싱 시도
+            const data = JSON.parse(responseText);
+            console.log('파싱된 데이터:', data);
+
+            allMembers = data.members || [];           // 전체 회원 데이터 저장
+            filteredMembers = [...allMembers];         // 필터링용 데이터 복사
+            
+            updateMemberTable();  // 테이블 업데이트
+            updateMemberCount();  // 회원 수 업데이트
+            
+        } catch (error) {
+            console.error('회원 데이터 로드 실패:', error);
+            loadTempData(); // 에러 시 임시 데이터로 표시
+        }
+    }
+    
+    // ========================================
+    // 4. 임시 데이터 로드 (테스트용)
+    // ========================================
+    function loadTempData() {
+        // 서버 연결 실패 시 사용할 샘플 데이터
+        allMembers = [
             {
-                id: 1,
-                name: '김철수',
-                email: 'kim@example.com',
-                platform: 'KAKAO',
-                joinDate: '2024-01-15',
-                lastLogin: '2024-08-19'
+                ID: 'user001',
+                NickName: '철수킹',
+                Name: '김철수',
+                Home: '서울시 강남구',
+                Interest: '운동, 여행',
+                platform: 'KAKAO'
             },
             {
-                id: 2,
-                name: '이영희',
-                email: 'lee@example.com',
-                platform: 'NAVER',
-                joinDate: '2024-02-20',
-                lastLogin: '2024-08-18'
+                ID: 'user002',
+                NickName: '영희공주',
+                Name: '이영희',
+                Home: '부산시 해운대구',
+                Interest: '독서, 영화감상',
+                platform: 'NAVER'
             },
             {
-                id: 3,
-                name: '박민수',
-                email: 'park@example.com',
-                platform: 'ORIGIN',
-                joinDate: '2024-03-10',
-                lastLogin: '2024-08-17'
+                ID: 'user003',
+                NickName: '민수맨',
+                Name: '박민수',
+                Home: '대구시 수성구',
+                Interest: '게임, 음악',
+                platform: 'ORIGIN'
             },
             {
-                id: 4,
-                name: '정수진',
-                email: 'jung@example.com',
-                platform: 'KAKAO',
-                joinDate: '2024-04-05',
-                lastLogin: '2024-08-16'
+                ID: 'user004',
+                NickName: '수진이',
+                Name: '정수진',
+                Home: '인천시 연수구',
+                Interest: '요리, 베이킹',
+                platform: 'KAKAO'
             },
             {
-                id: 5,
-                name: '최동현',
-                email: 'choi@example.com',
-                platform: 'NAVER',
-                joinDate: '2024-05-12',
-                lastLogin: '2024-08-15'
+                ID: 'user005',
+                NickName: '동현이',
+                Name: '최동현',
+                Home: '광주시 서구',
+                Interest: '축구, 농구',
+                platform: 'NAVER'
             },
             {
-                id: 6,
-                name: '한지민',
-                email: 'han@example.com',
-                platform: 'ORIGIN',
-                joinDate: '2024-06-08',
-                lastLogin: '2024-08-14'
+                ID: 'user006',
+                NickName: '지민이',
+                Name: '한지민',
+                Home: '대전시 유성구',
+                Interest: '등산, 캠핑',
+                platform: 'ORIGIN'
             }
         ];
         
-        memberGrid.innerHTML = '';
+        filteredMembers = [...allMembers];
+        updateMemberTable();  // 테이블 업데이트
+        updateMemberCount();  // 회원 수 업데이트
+    }
+    
+    // ========================================
+    // 5. 회원 목록 필터링 (이름과 ID로만 검색)
+    // ========================================
+    function filterMembers(searchTerm) {
+        if (!searchTerm.trim()) {
+            // 검색어가 없으면 전체 회원 표시
+            filteredMembers = [...allMembers];
+        } else {
+            // 검색어가 있으면 이름 또는 ID에 포함된 회원만 필터링
+            const term = searchTerm.toLowerCase();
+            filteredMembers = allMembers.filter(member => 
+                member.Name.toLowerCase().includes(term) ||
+                member.ID.toLowerCase().includes(term)
+            );
+        }
         
-        members.forEach(member => {
-            const memberCard = document.createElement('div');
-            memberCard.className = 'member-card';
-            memberCard.onclick = () => showDeleteModal(member);
+        updateMemberTable();  // 필터링된 결과로 테이블 업데이트
+        updateMemberCount();  // 필터링된 회원 수 업데이트
+    }
+    
+    // ========================================
+    // 6. 회원 테이블 업데이트
+    // ========================================
+    function updateMemberTable() {
+        const tableBody = document.getElementById('memberTableBody');
+        if (!tableBody) return;
+        
+        if (filteredMembers.length === 0) {
+            // 검색 결과가 없을 때 메시지 표시
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
+                        검색 결과가 없습니다.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tableBody.innerHTML = ''; // 기존 테이블 내용 초기화
+        
+        // 필터링된 회원 목록으로 테이블 행 생성
+        filteredMembers.forEach((member, index) => {
+            const row = document.createElement('tr');
+            row.onclick = () => confirmDelete(member); // 행 클릭 시 삭제 확인
             
+            // 플랫폼별 스타일 클래스와 라벨 가져오기
             const platformClass = getPlatformClass(member.platform);
             const platformLabel = getPlatformLabel(member.platform);
-            const avatarIcon = getAvatarIcon(member.platform);
             
-            memberCard.innerHTML = `
-                <div class="member-header">
-                    <div class="member-avatar ${platformClass}">
-                        ${avatarIcon}
-                    </div>
-                    <div class="member-info">
-                        <div class="member-name">${member.name}</div>
-                        <div class="member-email">${member.email}</div>
-                        <span class="member-platform ${platformClass}">${platformLabel}</span>
-                    </div>
-                </div>
-                <div class="member-details">
-                    <div class="detail-item">
-                        <div class="detail-label">가입일</div>
-                        <div class="detail-value">${formatDate(member.joinDate)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">최근 로그인</div>
-                        <div class="detail-value">${formatDate(member.lastLogin)}</div>
-                    </div>
-                </div>
-            `;
+            // 테이블 행 HTML 생성 - 실제 DB 필드명과 올바른 문법 사용
+            row.innerHTML = 
+                '<td>' + (member.ID || '') + '</td>' +
+                '<td>' + (member.NickName || '') + '</td>' +
+                '<td>' + (member.Name || '') + '</td>' +
+                '<td>주소 정보 없음</td>' +
+                '<td>관심사 정보 없음</td>' +
+                '<td><span class="platform-tag ' + platformClass + '">' + platformLabel + '</span></td>' +
+                '<td>' +
+                    '<button class="delete-btn" data-member-id="' + (member.ID || '') + '">' +
+                        '삭제' +
+                    '</button>' +
+                '</td>';
             
-            memberGrid.appendChild(memberCard);
+            // 삭제 버튼에 개별 이벤트 리스너 추가 (행 클릭과 분리)
+            const deleteBtn = row.querySelector('.delete-btn');
+            if (deleteBtn) {  // null 체크 추가
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                confirmDelete(member);
+            });
+        } else {
+            console.error('삭제 버튼을 찾을 수 없습니다:', member);
+        }
+            
+            tableBody.appendChild(row); // 테이블에 행 추가
         });
     }
     
     // ========================================
-    // 3. 페이지네이션 생성
+    // 7. 회원 수 업데이트
     // ========================================
-    function createPagination() {
-        const pagination = document.getElementById('pagination');
-        if (!pagination) return;
-        
-        pagination.innerHTML = `
-            <button class="page-btn" disabled>이전</button>
-            <button class="page-btn active">1</button>
-            <button class="page-btn" disabled>다음</button>
-        `;
+    function updateMemberCount() {
+        const memberCount = document.getElementById('memberCount');
+        if (memberCount) {
+            memberCount.textContent = filteredMembers.length; // 현재 표시되는 회원 수 업데이트
+        }
     }
     
     // ========================================
-    // 4. 플랫폼별 스타일 클래스 반환
+    // 8. 로딩 상태 표시
+    // ========================================
+    function showLoading() {
+        const tableBody = document.getElementById('memberTableBody');
+        if (tableBody) {
+            // 로딩 중일 때 스피너와 메시지 표시
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="loading">
+                        회원 데이터를 불러오는 중...
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // ========================================
+    // 9. 플랫폼별 스타일 클래스 반환
     // ========================================
     function getPlatformClass(platform) {
+        // 플랫폼에 따른 CSS 클래스 반환 (색상 구분용)
         switch(platform) {
-            case 'KAKAO': return 'avatar-kakao';
-            case 'NAVER': return 'avatar-naver';
-            case 'ORIGIN': return 'avatar-origin';
-            default: return 'avatar-origin';
+            case 'KAKAO': return 'platform-kakao';    // 노란색 배경
+            case 'NAVER': return 'platform-naver';    // 초록색 배경
+            case 'ORIGIN': return 'platform-origin';  // 보라색 그라데이션
+            default: return 'platform-origin';
         }
     }
     
     function getPlatformLabel(platform) {
+        // 플랫폼에 따른 한글 라벨 반환
         switch(platform) {
             case 'KAKAO': return '카카오';
             case 'NAVER': return '네이버';
@@ -621,94 +476,70 @@
         }
     }
     
-    function getAvatarIcon(platform) {
-        switch(platform) {
-            case 'KAKAO': return 'K';
-            case 'NAVER': return 'N';
-            case 'ORIGIN': return 'H';
-            default: return 'H';
+    // ========================================
+    // 10. 삭제 확인 및 처리
+    // ========================================
+    function confirmDelete(member) {
+        // 사용자에게 삭제 확인 대화상자 표시
+        if (!confirm('정말로 ' + member.Name + '(' + member.NickName + ') 회원을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+            return; // 취소 시 함수 종료
         }
+        
+        deleteMember(member.NickName); // 확인 시 삭제 함수 호출
     }
     
     // ========================================
-    // 5. 날짜 포맷팅
+    // 11. 회원 삭제 (AJAX)
     // ========================================
-    function formatDate(dateString) {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
-    }
-    
-    // ========================================
-    // 6. 이벤트 리스너 설정
-    // ========================================
-    function setupEventListeners() {
-        // 모달 닫기
-        const closeBtn = document.querySelector('.close');
-        const cancelBtn = document.getElementById('cancelDelete');
-        const confirmBtn = document.getElementById('confirmDelete');
-        
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeModal);
-        }
-        
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeModal);
-        }
-        
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', confirmDeleteMember);
-        }
-        
-        // 모달 외부 클릭 시 닫기
-        window.addEventListener('click', function(e) {
-            if (e.target === document.getElementById('deleteModal')) {
-                closeModal();
+    async function deleteMember(NickName) {
+        try {
+            // 서버에 회원 삭제 요청
+            const response = await fetch('Controller', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    type: 'Members',
+                    method: 'delete',
+                    NickName: NickName
+                })
+            });
+            
+            console.log('응답 상태:', response.status);
+            console.log('응답 헤더:', response.headers);
+            
+            // 응답 텍스트 먼저 확인
+            const responseText = await response.text();
+            console.log('응답 내용:', responseText);
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        });
-    }
-    
-    // ========================================
-    // 7. 탈퇴 모달 표시
-    // ========================================
-    function showDeleteModal(member) {
-        selectedMemberId = member.id;
-        const deleteMemberName = document.getElementById('deleteMemberName');
-        if (deleteMemberName) {
-            deleteMemberName.textContent = member.name;
+
+             // JSON 파싱 시도
+            let result;
+            try {
+                result = JSON.parse(responseText);
+                console.log('파싱된 결과:', result);
+            } catch (parseError) {
+                console.error('JSON 파싱 실패:', parseError);
+                throw new Error('응답 파싱 실패: ' + responseText);
+            }
+            
+            if (result.success) {
+                // 삭제 성공 시
+                alert('회원이 성공적으로 삭제되었습니다.');
+                // 로컬 데이터에서도 삭제된 회원 제거
+                allMembers = allMembers.filter(member => member.NickName !== NickName);
+                filteredMembers = filteredMembers.filter(member => member.NickName !== NickName);
+                updateMemberTable();  // 테이블 새로고침
+                updateMemberCount();  // 회원 수 업데이트
+            } else {
+                // 삭제 실패 시
+                alert('회원 삭제에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
+            }
+            
+        } catch (error) {
+            console.error('회원 삭제 실패:', error);
+            alert('회원 삭제 중 오류가 발생했습니다.');
         }
-        
-        const modal = document.getElementById('deleteModal');
-        if (modal) {
-            modal.style.display = 'block';
-        }
-    }
-    
-    // ========================================
-    // 8. 모달 닫기
-    // ========================================
-    function closeModal() {
-        const modal = document.getElementById('deleteModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-        selectedMemberId = null;
-    }
-    
-    // ========================================
-    // 9. 회원 탈퇴 확인
-    // ========================================
-    function confirmDeleteMember() {
-        if (!selectedMemberId) return;
-        
-        alert('회원 탈퇴 처리가 완료되었습니다. (실제 구현 시 서버 요청 필요)');
-        closeModal();
-        
-        // 실제 구현 시에는 여기서 AJAX 요청을 보내고
-        // 성공 시 해당 회원 카드를 DOM에서 제거
     }
 </script>
