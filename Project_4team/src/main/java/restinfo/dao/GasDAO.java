@@ -7,11 +7,18 @@ import org.apache.ibatis.session.SqlSession;
 import java.util.List;
 
 public class GasDAO {
-    public static List<GasVO> Search(String text) {
-        SqlSession ss = FactoryService.getFactory().openSession();
-        List<GasVO> list = ss.selectList()
+
+    //신규유가 정보들을 INSERT
+    public static void insertGasPrices(SqlSession session, List<GasVO> gasList) {
+        for (GasVO gvo : gasList) {
+            session.insert("gas.insertGasPrices", gvo);
+        }
     }
 
-    public static Object getInstance() {
+    //기존유가 정보들을 UPDATE
+    public static void updateGasPrices(SqlSession session, List<GasVO> gasList) {
+        for (GasVO gvo : gasList) {
+            session.update("gas.updateGasPrices", gvo);
+        }
     }
 }

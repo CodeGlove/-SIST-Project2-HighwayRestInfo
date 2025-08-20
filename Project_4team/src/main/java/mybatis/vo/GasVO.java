@@ -1,37 +1,37 @@
 package mybatis.vo;
 
 public class GasVO {
-    private int SAKey, Gasoline, Disel, LPG;
+    private String SAKey,Gasoline, Disel, LPG;
 
-    public int getSAKey() {
+    public String getSAKey() {
         return SAKey;
     }
 
-    public void setSAKey(int SAKey) {
+    public void setSAKey(String SAKey) {
         this.SAKey = SAKey;
     }
 
-    public int getGasoline() {
+    public String getGasoline() {
         return Gasoline;
     }
 
-    public void setGasoline(int gasoline) {
+    public void setGasoline(String gasoline) {
         Gasoline = gasoline;
     }
 
-    public int getDisel() {
+    public String getDisel() {
         return Disel;
     }
 
-    public void setDisel(int disel) {
+    public void setDisel(String disel) {
         Disel = disel;
     }
 
-    public int getLPG() {
+    public String getLPG() {
         return LPG;
     }
 
-    public void setLPG(int LPG) {
+    public void setLPG(String LPG) {
         this.LPG = LPG;
     }
 }
