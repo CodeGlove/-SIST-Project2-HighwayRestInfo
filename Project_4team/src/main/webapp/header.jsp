@@ -30,6 +30,11 @@
                 <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
                 <a href="Controller?type=mypage" class="btn btn-register">마이페이지</a>
             </c:if>
+            <c:if test="${sessionScope.loginUser ne null and sessionScope.loginUser.authority eq 1}">
+                <%--관리자일 경우--%>
+                <%--관리자 페이지로 돌아가게 함--%>
+                <a href="Controller?type=mainpage&goto=manage" class="btn btn-register">관리자화면</a>
+            </c:if>
         </div>
     </div>
 </header>
