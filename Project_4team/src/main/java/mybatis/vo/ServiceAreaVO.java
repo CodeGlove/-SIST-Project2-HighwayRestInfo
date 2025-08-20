@@ -18,6 +18,24 @@ public class ServiceAreaVO {
     private String ShopCode;
     private String Convenience ;
     private List<ShopVO> Shoplist;
+    private String Star;
+    private gasVO gasInfo;
+
+    public gasVO getGasInfo() {
+        return gasInfo;
+    }
+
+    public void setGasInfo(gasVO gasInfo) {
+        this.gasInfo = gasInfo;
+    }
+
+    public String getStar() {
+        return Star;
+    }
+
+    public void setStar(String star) {
+        Star = star;
+    }
 
     public String getConvenience() {
         return Convenience;
