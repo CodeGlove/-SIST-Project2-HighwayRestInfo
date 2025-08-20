@@ -1,18 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%
-    // 한글 인코딩 설정
-    request.setCharacterEncoding("UTF-8");
-    response.setCharacterEncoding("UTF-8");
-%>
-
+<%--한글 인코딩 삭제했는데 이상이 다음 버전까지 이상없으면 삭제한 상태 유지--%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚗 HighwayGuide - 휴게소 정보</title>
+    <title>휴게소 정보</title>
 
     <!-- 폰트 및 아이콘 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,34 +16,17 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <!-- CSS 파일 링크 -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/restareaStyle.css">
+    <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
 </head>
 <body>
-<!-- 헤더 -->
-<header class="header">
-    <div class="nav-container">
-        <a href="Controller" class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-road"></i>
-            </div>
-            HighwayGuide
-        </a>
-        <a href="Controller" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            길찾기로 돌아가기
-        </a>
-    </div>
-</header>
-
-<!-- 메인 컨테이너 -->
-<div class="main-container">
-    <!-- 페이지 제목 -->
-    <div class="page-title fade-in">
+<%@ include file="header.jsp" %>
+<div class="main-container"> <%-- 메인 --%>
+    <div class="page-title fade-in"> <%-- 제목  --%>
         <h1><i class="fas fa-map-marked-alt"></i> 경로상 휴게시설 정보</h1>
-        <p>발견된 휴게소와 졸음쉼터 정보를 확인하세요</p>
+        <p>휴게소와 졸음쉼터 정보를 확인하세요</p>
     </div>
-
     <!-- 경로 정보 표시 -->
     <c:if test="${not empty origin and not empty destination}">
         <div class="route-info">
@@ -103,9 +81,8 @@
                         </c:choose>
                     </span>
             </div>
-        </div>
+        </div> <%--  요약정보  --%>
     </c:if>
-
     <!-- 휴게시설 목록 -->
     <div class="info-card slide-up">
         <div class="card-header">
@@ -117,8 +94,7 @@
                 <i class="fas fa-bed button-icon"></i>
                 <span class="button-text">졸음쉼터 표시</span>
             </button>
-        </div>
-
+        </div> <!-- 카드헤더 -->
         <c:choose>
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
@@ -136,40 +112,80 @@
                                         <span class="rating-label">별점</span>
                                         <div class="stars">
                                             <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star"></i>
-                                            <i class="fas fa-star star empty"></i>
+                                            <!-- TODO: 별점 시스템 구현 -->
+                                            <!-- TODO: 실제 별점 데이터를 서버에서 받아와서 표시 -->
+                                            <!-- TODO: 사용자 리뷰 기반 별점 계산 로직 추가 -->
                                         </div>
 
                                     </div>
                                     <!-- 소요시간 표시 -->
-                                    <c:if test="${not empty allRestAreaDurations and status.index < allRestAreaDurations.size()}">
-                                        <div class="duration-info">
-                                            <i class="fas fa-clock duration-icon"></i>
-                                            <span class="duration-text">
-                                                                <c:set var="duration"
-                                                                       value="${allRestAreaDurations[status.index]}"/>
-                                                                <c:set var="totalHours" value="${duration / 3600}"/>
-                                                                <c:set var="hours" value="${totalHours.intValue()}"/>
-                                                                <c:set var="totalMinutes"
-                                                                       value="${(duration % 3600) / 60}"/>
-                                                                <c:set var="minutes"
-                                                                       value="${totalMinutes.intValue()}"/>
-                                                                <c:choose>
-                                                                    <c:when test="${status.index == 0}">
-                                                                        출발지부터 <c:if
-                                                                            test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                            test="${minutes > 0}">${minutes}분</c:if>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        이전 휴게시설부터 <c:if
-                                                                            test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                            test="${minutes > 0}">${minutes}분</c:if>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </span>
-                                        </div>
+                                    <c:if test="${restArea.contains('휴게소')}">
+                                        <c:set var="serviceAreaIndex" value="0"/>
+                                        <c:forEach var="restAreaItem" items="${allRestAreas}" varStatus="itemStatus">
+                                            <c:if test="${restAreaItem.contains('휴게소') and restAreaItem eq restArea}">
+                                                <c:if test="${not empty serviceAreaOnlyDurations and serviceAreaIndex < serviceAreaOnlyDurations.size()}">
+                                                    <div class="duration-info">
+                                                        <i class="fas fa-clock duration-icon"></i>
+                                                        <span class="duration-text">
+                                                            <c:set var="duration"
+                                                                   value="${serviceAreaOnlyDurations[serviceAreaIndex]}"/>
+                                                            <c:set var="totalHours" value="${duration / 3600}"/>
+                                                            <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                            <c:set var="totalMinutes"
+                                                                   value="${(duration % 3600) / 60}"/>
+                                                            <c:set var="minutes"
+                                                                   value="${totalMinutes.intValue()}"/>
+                                                            <c:choose>
+                                                                <c:when test="${serviceAreaIndex == 0}">
+                                                                    출발지부터 <c:if
+                                                                        test="${hours > 0}">${hours}시간</c:if><c:if
+                                                                        test="${minutes > 0}">${minutes}분</c:if>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    이전 휴게소부터 <c:if
+                                                                        test="${hours > 0}">${hours}시간</c:if><c:if
+                                                                        test="${minutes > 0}">${minutes}분</c:if>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </span>
+                                                    </div>
+                                                </c:if>
+                                            </c:if>
+                                            <c:if test="${restAreaItem.contains('휴게소')}">
+                                                <c:set var="serviceAreaIndex" value="${serviceAreaIndex + 1}"/>
+                                            </c:if>
+                                        </c:forEach>
+                                    </c:if>
+
+                                    <!-- 졸음쉼터 소요시간 표시 -->
+                                    <c:if test="${restArea.contains('졸음쉼터')}">
+                                        <c:if test="${not empty allRestAreaDurations and status.index < allRestAreaDurations.size()}">
+                                            <div class="duration-info">
+                                                <i class="fas fa-clock duration-icon"></i>
+                                                <span class="duration-text">
+                                                    <c:set var="duration"
+                                                           value="${allRestAreaDurations[status.index]}"/>
+                                                    <c:set var="totalHours" value="${duration / 3600}"/>
+                                                    <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                    <c:set var="totalMinutes"
+                                                           value="${(duration % 3600) / 60}"/>
+                                                    <c:set var="minutes"
+                                                           value="${totalMinutes.intValue()}"/>
+                                                    <c:choose>
+                                                        <c:when test="${status.index == 0}">
+                                                            출발지부터 <c:if
+                                                                test="${hours > 0}">${hours}시간</c:if><c:if
+                                                                test="${minutes > 0}">${minutes}분</c:if>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            이전 휴게시설부터 <c:if
+                                                                test="${hours > 0}">${hours}시간</c:if><c:if
+                                                                test="${minutes > 0}">${minutes}분</c:if>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </div>
+                                        </c:if>
                                     </c:if>
                                 </div>
 
@@ -345,66 +361,6 @@
                     • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
                     • 긴급상황 시 1588-2504로 연락하세요<br>
                     • 휴게소 내에서는 안전수칙을 준수해주세요
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 졸음쉼터 상세정보 모달 -->
-<div id="restStopModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">
-                <i class="fas fa-bed"></i>
-                <span id="modalTitle2">졸음쉼터 정보</span>
-            </div>
-            <span class="close" onclick="closeModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-map-marker-alt"></i>
-                    위치
-                </div>
-                <div class="info-value" id="modalLocation2">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-clock"></i>
-                    운영시간
-                </div>
-                <div class="info-value">
-                    24시간 운영
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-list"></i>
-                    편의시설
-                </div>
-                <div class="facilities-list">
-                    <span class="facility-tag">주차장</span>
-                    <span class="facility-tag">화장실</span>
-                    <span class="facility-tag">휴식공간</span>
-                    <span class="facility-tag">안전시설</span>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    안전수칙
-                </div>
-                <div class="info-value">
-                    • 졸음이 느껴지면 즉시 휴식을 취하세요<br>
-                    • 15-20분 정도의 짧은 휴식이 효과적입니다<br>
-                    • 졸음쉼터는 임시 휴식용이므로 장시간 이용을 피하세요<br>
-                    • 긴급상황 시 1588-2504로 연락하세요
                 </div>
             </div>
         </div>
@@ -636,32 +592,52 @@
 
     // 원래 소요시간으로 복원 (부드러운 애니메이션)
     function restoreOriginalDurations(serviceAreaCards, allRestAreaDurations) {
-        if (window.originalDurations) {
-            const serviceAreaElements = [];
-            serviceAreaCards.forEach(card => {
-                const durationElement = card.querySelector('.duration-text');
-                if (durationElement) {
-                    serviceAreaElements.push(durationElement);
-                }
-            });
+        // 모든 휴게시설 카드들을 가져와서 휴게소 인덱스 매핑
+        const allCards = document.querySelectorAll('.rest-area-card');
+        const serviceAreaIndices = [];
 
-            serviceAreaElements.forEach((element, index) => {
-                const originalItem = window.originalDurations.find(item => item.element === element);
-                if (originalItem && originalItem.originalText) {
+        let serviceAreaIndex = 0;
+        allCards.forEach((card, index) => {
+            if (card.classList.contains('service-area')) {
+                serviceAreaIndices.push(index);
+            }
+        });
+
+        serviceAreaCards.forEach((card, cardIndex) => {
+            const durationElement = card.querySelector('.duration-text');
+            if (durationElement) {
+                // 해당 휴게소의 전체 휴게시설 인덱스 찾기
+                const allRestAreaIndex = serviceAreaIndices[cardIndex];
+
+                if (allRestAreaIndex !== undefined && allRestAreaIndex < allRestAreaDurations.length) {
+                    const duration = allRestAreaDurations[allRestAreaIndex];
+                    const hours = Math.floor(duration / 3600);
+                    const minutes = Math.floor((duration % 3600) / 60);
+
+                    let newTimeText = '';
+                    if (allRestAreaIndex === 0) {
+                        newTimeText = '출발지부터 ';
+                    } else {
+                        newTimeText = '이전 휴게시설부터 ';
+                    }
+
+                    if (hours > 0) newTimeText += hours + '시간';
+                    if (minutes > 0) newTimeText += minutes + '분';
+
                     setTimeout(() => {
-                        element.classList.add('updating');
+                        durationElement.classList.add('updating');
 
                         setTimeout(() => {
-                            element.innerHTML = originalItem.originalText;
+                            durationElement.innerHTML = newTimeText;
 
                             setTimeout(() => {
-                                element.classList.remove('updating');
-                            }, 250); // 더 긴 시간
-                        }, 200); // 더 여유로운 타이밍
-                    }, index * 120); // 순차적 복원 - 더 여유로운 간격
+                                durationElement.classList.remove('updating');
+                            }, 250);
+                        }, 200);
+                    }, cardIndex * 120);
                 }
-            });
-        }
+            }
+        });
     }
 
 
@@ -685,7 +661,7 @@
 </script>
 
 <!-- Footer Include -->
-<jsp:include page="footer.jsp" />
+<jsp:include page="footer.jsp"/>
 
 </body>
 </html>

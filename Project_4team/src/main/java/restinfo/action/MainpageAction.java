@@ -13,11 +13,14 @@ public class MainpageAction implements Action {
 
 		HttpSession session = request.getSession();
 		UserVO vo = (UserVO) session.getAttribute("loginUser");
+		// 목적지 화면
+		String page = request.getParameter("goto");
 
-		if(vo==null	|| vo.getAuthority().equals("0"))
-			redirectUrl = "index.jsp";
-		else if (vo.getAuthority().equals("1"))
+		// 관리자인 동시에 관리자 페이지로 가고자 한다면
+		if (vo != null && page != null && vo.getAuthority().equals("1") && page.equals("manage"))
 			redirectUrl = "manage.jsp";
+		else
+			redirectUrl = "index.jsp";
 
 		return redirectUrl;
 	}
