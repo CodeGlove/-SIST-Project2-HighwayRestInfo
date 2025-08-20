@@ -6,6 +6,10 @@
         <i class="fas fa-utensils"></i>
         <span id="modalTitle">휴게소 정보</span>
       </div>
+      <div id="modalStarRating" class="star-rating">
+        <span id="starIconContainer"></span>
+        <span id="starText"></span>
+      </div>
       <span class="close" onclick="closeModal()">&times;</span>
     </div>
     <div class="modal-body">
@@ -52,6 +56,26 @@
 
       <div class="info-section">
         <div class="info-label">
+          <i class="fas fa-gas-pump"></i>
+          주유 가격
+        </div>
+        <div class="gas-info-grid">
+          <div class="gas-item">
+            <span class="gas-label">휘발유</span>
+            <span class="gas-value" id="modalGasoline">-</span>
+          </div>
+          <div class="gas-item">
+            <span class="gas-label">경유</span>
+            <span class="gas-value" id="modalDiesel">-</span>
+          </div>
+          <div class="gas-item">
+            <span class="gas-label">LPG</span>
+            <span class="gas-value" id="modalLpg">-</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-section">
+        <div class="info-label">
           <i class="fas fa-clock"></i>
           운영시간
         </div>
@@ -78,6 +102,35 @@
           • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
           • 긴급상황 시 1588-2504로 연락하세요<br>
           • 휴게소 내에서는 안전수칙을 준수해주세요
+        </div>
+
+        <div class="modal-button-container">
+          <button id="showStoresBtn" class="modal-btn">
+            <i class="fas fa-store"></i>
+            매장 정보 확인
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="storesModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fas fa-store"></i>
+        <span id="storesModalTitle"></span>
+      </div>
+      <span class="close" onclick="closeStoresModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="search-and-list-container">
+        <div class="store-search-container">
+          <input type="text" id="storeSearchInput" placeholder="매장 이름 검색">
+          <button id="storeSearchBtn">검색</button>
+        </div>
+        <div class="store-list" id="storeList">
         </div>
       </div>
     </div>
