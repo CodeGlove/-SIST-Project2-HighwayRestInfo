@@ -8,7 +8,6 @@
         select count(*) from User where Platform = #{str}
     </select>
 
-
     <update id="update" parameterType="Map">
         UPDATE User
         SET
@@ -32,4 +31,13 @@
         AND Platform = #{platform}
     </update>
 
+    <select id="getAllUsers" resultType="mybatis.vo.UserVO">
+        select * from User where Authority = 0 and Cancel = 0
+    </select>
+
+    <update id="deactivateAccountByNickName" parameterType="String">
+        UPDATE User SET
+        Cancel = 1 WHERE
+        NickName = #{str}
+    </update>
 </mapper>
