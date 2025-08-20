@@ -3,16 +3,18 @@ package restinfo.dao;
 import mybatis.service.FactoryService;
 import mybatis.vo.ServiceAreaVO;
 import mybatis.vo.ShopVO;
+import mybatis.vo.UserVO;
 import org.apache.ibatis.session.SqlSession;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ManageDAO {
 
     public static int[] getPlatformCount(){
-
+        // 가입플랫폼별 회원수 가져오는 메서드
         SqlSession ss = null;
 
         int[] counts = new int[3];
@@ -33,6 +35,7 @@ public class ManageDAO {
     }
 
     public static List<Map<String, Object>> getSARank(){
+        // 휴게소 순위 가져오는 메서드
         SqlSession ss = FactoryService.getFactory().openSession();
         List<Map<String, Object>> list = new ArrayList<>();
         try {
@@ -46,6 +49,7 @@ public class ManageDAO {
     }
 
     public static void initSA(List<ServiceAreaVO> list) {
+        // 휴게소 업데이트하는 메서드
         int cnt = 0;
         SqlSession ss = null;
         try {
@@ -71,6 +75,7 @@ public class ManageDAO {
     }
 
     public static void initShop(List<ServiceAreaVO> list) {
+        // 입점업체 업데이트하는 메서드
         int cnt = 0;
         SqlSession ss = null;
         try {
@@ -92,6 +97,37 @@ public class ManageDAO {
             if (ss != null)
                 ss.close();
         }
+    }
+
+    public static List<UserVO> getAll() {
+        // 모든회원 가져오는 메서드
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<UserVO> list = null;
+        try {
+            list = ss.selectList("User.getAllUsers");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            ss.close();
+        }
+        return  list;
+    }
+
+    public static int deactivateAccount(String NickName) {
+        SqlSession ss = FactoryService.getFactory().openSession();
+        int cnt = 0;
+        try {
+            cnt = ss.update("User.deactivateAccountByNickName", NickName);
+            if (cnt > 0)
+                ss.commit();
+            else
+                ss.rollback();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }  finally {
+            ss.close();
+        }
+        return cnt;
     }
 
 }

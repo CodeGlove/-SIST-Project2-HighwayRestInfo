@@ -12,7 +12,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link rel="stylesheet" href="css/restareaStyle.css">
 
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -84,8 +83,8 @@
             padding: 5px;
         }
         .kakao_infowindow .body video {
-            width: 320px;
-            height: 240px;
+            width: 100%;
+            height: 100%;
             display: block;
         }
         .kakao_infowindow .cctv-close {
@@ -146,99 +145,40 @@
             border-style: solid;
             border-color: #ccc transparent transparent transparent;
         }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .star-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* 별점 아이콘과 텍스트 사이의 간격 */
+        }
+
+        .star-rating i {
+            font-size: 1.2rem; /* 별 아이콘 크기 */
+        }
+
+        .star-rating .fas {
+            color: #ffc107; /* 채워진 별 색상 */
+        }
+
+        .star-rating .far {
+            color: #e9ecef; /* 빈 별 색상 */
+        }
+
+        #starText {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333; /* 텍스트 색상 */
+        }
     </style>
 </head>
 <body>
-<%--모달창 ***************************************************************--%>
-<div id="restAreaModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">
-                <i class="fas fa-utensils"></i>
-                <span id="modalTitle">휴게소 정보</span>
-            </div>
-            <span class="close" onclick="closeModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-map-marker-alt"></i>
-                    위치
-                </div>
-                <div class="info-value" id="modalLocation">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-phone"></i>
-                    연락처
-                </div>
-                <div class="info-value" id="modalPhone">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-parking"></i>
-                    주차 정보
-                </div>
-                <div class="parking-info-grid">
-                    <div class="parking-item">
-                        <span class="parking-label">소형차</span>
-                        <span class="parking-value" id="modalCompactParking">-</span>
-                    </div>
-                    <div class="parking-item">
-                        <span class="parking-label">대형차</span>
-                        <span class="parking-value" id="modalLargeParking">-</span>
-                    </div>
-                    <div class="parking-item">
-                        <span class="parking-label">장애인</span>
-                        <span class="parking-value" id="modalDisabledParking">-</span>
-                    </div>
-                </div>
-            </div>
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-clock"></i>
-                    운영시간
-                </div>
-                <div class="info-value" id="modalHours">
-                    24시간 운영
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-list"></i>
-                    편의시설
-                </div>
-                <div class="facilities-list" id="modalFacilities">
-                    <span class="facility-tag">주유소</span>
-                    <span class="facility-tag">충전소</span>
-                    <span class="facility-tag">음식점</span>
-                    <span class="facility-tag">화장실</span>
-                    <span class="facility-tag">편의점</span>
-                    <span class="facility-tag">휴식공간</span>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-info-circle"></i>
-                    안내사항
-                </div>
-                <div class="info-value">
-                    • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
-                    • 긴급상황 시 1588-2504로 연락하세요<br>
-                    • 휴게소 내에서는 안전수칙을 준수해주세요
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<%-- 모달창을 restAreaModal.jsp에서 인클루드합니다. --%>
+<jsp:include page="/restAreaModal.jsp"/>
 
 
 <div class="search-container">
@@ -323,9 +263,9 @@
     });
 
     const restIconImage = new kakao.maps.MarkerImage(
-        '/Project_4team_war_exploded/image/rest_icon.png',
-        new kakao.maps.Size(40, 40),
-        { offset: new kakao.maps.Point(19, 38) }
+        'image/rest_icon1.png',
+        new kakao.maps.Size(30, 30),
+        { offset: new kakao.maps.Point(15, 30) }
     );
 
     function addRestAreaMarkersToMap(data) {
@@ -380,9 +320,9 @@
     }
 
     const cctvIconImage = new kakao.maps.MarkerImage(
-        '/Project_4team_war_exploded/image/cctv_icon.png',
+        'image/cctv_icon.png',
         new kakao.maps.Size(20, 20),
-        { offset: new kakao.maps.Point(19, 38) }
+        { offset: new kakao.maps.Point(10, 20) }
     );
 
     function addCctvMarkersToMap(data) {
@@ -483,7 +423,7 @@
         player.on('error', function() {
             const error = player.error();
             console.error('video.js 플레이어 오류 발생:', error);
-            player.poster('/Project_4team_war_exploded/image/error.png');
+            player.poster('image/error.png');
             if (error.code === 4) {
                 console.error('영상 재생 실패: 소스(URL)가 유효하지 않거나 재생할 수 없는 형식입니다.');
             }
@@ -492,7 +432,7 @@
         console.log("영상 URL 가져오기 시작:", temporaryUrl);
 
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=getVideoUrl',
+            url: 'Controller?type=getVideoUrl',
             type: 'GET',
             data: { temporaryUrl: temporaryUrl },
             dataType: 'text'
@@ -506,12 +446,12 @@
                 player.play();
             } else {
                 console.error("영상 URL이 유효하지 않습니다. 서버 응답이 비어있습니다.");
-                player.poster('/Project_4team_war_exploded/image/error.png');
+                player.poster('image/error.png');
             }
         }).fail(function(jqXHR, textStatus, errorThrown) {
             console.error("영상 URL 가져오기 실패:", textStatus, errorThrown);
             console.log("서버 응답:", jqXHR.responseText);
-            player.poster('/Project_4team_war_exploded/image/error.png');
+            player.poster('image/error.png');
         });
     }
 
@@ -524,7 +464,7 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
+            url: 'Controller?type=pjyrest',
             type: 'GET',
             data: { swLat: sw.getLat(), swLng: sw.getLng(), neLat: ne.getLat(), neLng: ne.getLng() },
             dataType: 'json'
@@ -538,7 +478,7 @@
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=Cctv',
+            url: 'Controller?type=Cctv',
             type: 'GET',
             data: {
                 minX: sw.getLng(),
@@ -584,7 +524,7 @@
             return;
         }
         $.ajax({
-            url: '/Project_4team_war_exploded/Controller?type=pjyrest',
+            url: 'Controller?type=pjyrest',
             type: 'POST',
             data: { searchText: searchText },
             dataType: 'json'
@@ -600,9 +540,6 @@
 
                     map.setCenter(position);
                     map.setLevel(newLevel, { animate: true });
-
-                    // ❌ 이 부분을 삭제하거나 주석 처리하여 검색 시 상세정보 모달창이 바로 뜨지 않게 수정했습니다.
-                    // showModalForRestArea(firstResult.Idx.toString());
 
                 } else {
                     alert("검색 결과가 없습니다.");
@@ -630,14 +567,67 @@
 
         document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
         document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
+
         let formattedPhone = '제공되지 않음';
         if (ra.Tel) {
             formattedPhone = ra.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
         }
         document.getElementById('modalPhone').textContent = formattedPhone;
-        document.getElementById('modalCompactParking').textContent = ra.CompactParking+"대";
-        document.getElementById('modalLargeParking').textContent = ra.LargeParking+"대";
-        document.getElementById('modalDisabledParking').textContent = ra.DisabledParking+"대";
+
+        document.getElementById('modalCompactParking').textContent = (ra.CompactParking || 0) + "대";
+        document.getElementById('modalLargeParking').textContent = (ra.LargeParking || 0) + "대";
+        document.getElementById('modalDisabledParking').textContent = (ra.DisabledParking || 0) + "대";
+
+        // 편의시설 정보 동적으로 채우기
+        const facilitiesListElement = document.getElementById('modalFacilities');
+        facilitiesListElement.innerHTML = ''; // 기존 내용을 비웁니다.
+
+        if (ra.Convenience) {
+            const facilities = ra.Convenience.split(',');
+            if (facilities.length > 0) {
+                facilities.forEach(facility => {
+                    const tag = document.createElement('span');
+                    tag.className = 'facility-tag';
+                    tag.textContent = facility.trim();
+                    facilitiesListElement.appendChild(tag);
+                });
+            } else {
+                facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+            }
+        } else {
+            facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+        }
+
+        const starValue = parseFloat(ra.Star);
+        const starIconContainer = document.getElementById('starIconContainer');
+        const starText = document.getElementById('starText');
+
+        // 별점 컨테이너 초기화
+        starIconContainer.innerHTML = '';
+        starText.textContent = '';
+
+        if (isNaN(starValue) || !ra.Star) { // 데이터가 없거나 유효하지 않을 경우
+            starText.textContent = '평점 없음';
+        } else {
+            const fullStars = Math.floor(starValue);
+            const halfStar = (starValue % 1) >= 0.25 && (starValue % 1) <= 0.75;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+            let starsHtml = '';
+            for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<i class="fas fa-star"></i>';
+            }
+            if (halfStar) {
+                starsHtml += '<i class="fas fa-star-half-alt"></i>';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<i class="far fa-star"></i>';
+            }
+
+            starIconContainer.innerHTML = starsHtml;
+            starText.textContent = starValue.toFixed(1);
+        }
+
         document.getElementById('restAreaModal').style.display = 'block';
     }
 

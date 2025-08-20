@@ -16,25 +16,24 @@ public class ServiceAreaDAO {
 
         return list;
     }
-
-    public static ServiceAreaVO getOneArea(String idx) {
+    public static ServiceAreaVO getOneArea(String idx){
         // idx는 클릭한 휴게소의 값임 그걸로 찾아서 휴게소 정보 갖고온 후
-        // pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
-        SqlSession ss = FactoryService.getFactory().openSession();
-        ServiceAreaVO vo = ss.selectOne("SA.getOne", idx);
+        //pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
+        SqlSession ss =FactoryService.getFactory().openSession();
+        ServiceAreaVO vo = ss.selectOne("SA.getOne",idx);
         ss.close();
+
 
         return vo;
     }
-
     public static int updateXY(String idx, double lat, double lng) {
         int cnt = 0;
         SqlSession ss = FactoryService.getFactory().openSession();
         Map<String, Object> m = new HashMap<>();
 
-        m.put("idx", idx); // String 타입
-        m.put("lat", lat); // double 타입
-        m.put("lng", lng); // double 타입
+        m.put("idx", idx);   // String 타입
+        m.put("lat", lat);  // double 타입
+        m.put("lng", lng);  // double 타입
 
         cnt = ss.update("SA.xY", m);
         if (cnt > 0) {
@@ -70,7 +69,7 @@ public class ServiceAreaDAO {
 
     /**
      * Excel 데이터로 별점과 편의시설을 업데이트합니다.
-     * 
+     *
      * @param idx         휴게소 인덱스
      * @param rating      별점
      * @param convenience 편의시설
@@ -116,7 +115,7 @@ public class ServiceAreaDAO {
 
     /**
      * Excel 데이터로 별점, 편의시설, AI 코멘트를 업데이트합니다.
-     * 
+     *
      * @param idx         휴게소 인덱스
      * @param rating      별점
      * @param convenience 편의시설
@@ -165,7 +164,7 @@ public class ServiceAreaDAO {
 
     /**
      * Excel 데이터로 AI 코멘트를 업데이트합니다.
-     * 
+     *
      * @param idx       휴게소 인덱스
      * @param aiComment AI 코멘트
      * @return 업데이트된 행 수
@@ -204,7 +203,7 @@ public class ServiceAreaDAO {
 
     /**
      * Excel 데이터로 전화번호를 업데이트합니다.
-     * 
+     *
      * @param idx   휴게소 인덱스
      * @param phone 전화번호
      * @return 업데이트된 행 수
@@ -243,7 +242,7 @@ public class ServiceAreaDAO {
 
     /**
      * idx로 휴게소 정보를 조회합니다.
-     * 
+     *
      * @param idx 휴게소 인덱스
      * @return 휴게소 정보
      */
@@ -252,5 +251,26 @@ public class ServiceAreaDAO {
         ServiceAreaVO serviceArea = ss.selectOne("SA.getByIdx", idx);
         ss.close();
         return serviceArea;
+    }
+    public static List<ServiceAreaVO> bookmarkedArea(String idx){
+        SqlSession ss = FactoryService.getFactory().openSession();
+        List<ServiceAreaVO> list = ss.selectList("SA.getbookmark",idx);
+        ss.close();
+
+        return list;
+    }
+    public static int deletebookmark(String idx,String Useridx){
+        SqlSession ss= FactoryService.getFactory().openSession();
+        Map<String,String> m = new HashMap<>();
+        m.put("SAidx",idx);
+        m.put("Useridx",Useridx);
+        int cnt = ss.delete("SA.deletebookmark",m);
+        if(cnt>0)
+            ss.commit();
+        else
+            ss.rollback();
+
+        ss.close();
+        return cnt;
     }
 }

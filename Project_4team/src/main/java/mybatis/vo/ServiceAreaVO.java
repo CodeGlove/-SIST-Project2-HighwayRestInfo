@@ -4,10 +4,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceAreaVO {
-    private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, Lat,
-            Lng, ShopCode;
-    private String Star, Convenience, AiComment; // 별점, 편의시설, AI 코멘트 필드 추가
+    private String Idx;
+    private String SAName;
+    private String SADirection;
+    private String WayNum;
+    private String CompactParking;
+    private String LargeParking;
+    private String DisabledParking;
+    private String Address;
+    private String Tel;
+    private String Lat;
+    private String Lng;
+    private String ShopCode;
+    private String Convenience ;
     private List<ShopVO> Shoplist;
+    private String Star;
+	private String AiComment;
+	private gasVO gasInfo;
+
+    public gasVO getGasInfo() {
+        return gasInfo;
+    }
+
+    public void setGasInfo(gasVO gasInfo) {
+        this.gasInfo = gasInfo;
+    }
+
+    public String getStar() {
+        return Star;
+    }
+
+    public void setStar(String star) {
+        Star = star;
+    }
+
+    public String getConvenience() {
+        return Convenience;
+    }
+
+    public void setConvenience(String convenience) {
+        Convenience = convenience;
+    }
+
 
     public ServiceAreaVO() {
         Shoplist = new ArrayList<ShopVO>();
@@ -28,7 +66,7 @@ public class ServiceAreaVO {
     public void setShoplist(List<ShopVO> shoplist) {
         Shoplist = shoplist;
     }
-
+    
     public String getWayNum() {
         return WayNum;
     }
@@ -52,6 +90,7 @@ public class ServiceAreaVO {
     public void setSADirection(String SADirection) {
         this.SADirection = SADirection;
     }
+
 
     public String getCompactParking() {
         return CompactParking;
@@ -116,26 +155,8 @@ public class ServiceAreaVO {
     public void setShopCode(String shopCode) {
         ShopCode = shopCode;
     }
-
-    // Star 필드 getter/setter
-    public String getStar() {
-        return Star;
-    }
-
-    public void setStar(String star) {
-        Star = star;
-    }
-
-    // Convenience 필드 getter/setter
-    public String getConvenience() {
-        return Convenience;
-    }
-
-    public void setConvenience(String convenience) {
-        Convenience = convenience;
-    }
-
-    // AiComment 필드 getter/setter
+	
+	// AiComment 필드 getter/setter
     public String getAiComment() {
         return AiComment;
     }
