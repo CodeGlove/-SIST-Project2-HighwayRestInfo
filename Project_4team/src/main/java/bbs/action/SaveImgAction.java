@@ -15,17 +15,41 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Properties; // 추가
 import java.util.UUID;
 
 public class SaveImgAction implements Action {
-    // 여기에 AWS Access Key와 Secret Key를 직접 입력
-    // 경고: 이 방법은 보안상 매우 취약하며, 절대 GitHub에 푸시하면 안됩니다.
-    // .gitignore에 추가하거나 환경 변수를 사용하는 것이 안전합니다.
-    private static final String ACCESS_KEY = "AKIA6FS6YJWCUSI5JIIW";
-    private static final String SECRET_KEY = "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";
-    private static final String BUCKET_NAME = "highway-restinfo-uploads";
-    private static final String BUCKET_URL = "https://highway-restinfo-uploads.s3.ap-northeast-2.amazonaws.com/";
+
+    // AWS 키를 담을 변수 선언
+    private String accessKey;
+    private String secretKey;
+    private String bucketName;
+    private String bucketUrl;
+
+    // 생성자에서 properties 파일 읽어오기
+    public SaveImgAction() {
+        Properties prop = new Properties();
+        // properties 파일 경로를 InputStream으로 읽어온다
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+            if (input == null) {
+                System.out.println("Sorry, unable to find application.properties");
+                return;
+            }
+            // 프로퍼티 파일 로드
+            prop.load(input);
+
+            // 프로퍼티 값들을 변수에 할당
+            this.accessKey = prop.getProperty("aws.accessKeyId");
+            this.secretKey = prop.getProperty("aws.secretAccessKey");
+            this.bucketName = prop.getProperty("aws.s3.bucketName");
+            this.bucketUrl = prop.getProperty("aws.s3.bucketUrl");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
@@ -52,10 +76,10 @@ public class SaveImgAction implements Action {
                 String contentType = mr.getContentType("upload");
 
                 // AWS S3 클라이언트 생성 및 파일 업로드
-                AWSCredentials credentials = new BasicAWSCredentials(ACCESS_KEY, SECRET_KEY);
+                AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
                 AmazonS3Client s3Client = new AmazonS3Client(credentials).withRegion(Regions.AP_NORTHEAST_2);
 
-                s3Client.putObject(new PutObjectRequest(BUCKET_NAME, newFileName, f)
+                s3Client.putObject(new PutObjectRequest(this.bucketName, newFileName, f)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
 
                 // 임시 파일 삭제
@@ -70,7 +94,7 @@ public class SaveImgAction implements Action {
                 json.addProperty("fileName", newFileName);
 
                 // 웹에서 접근 가능한 S3 URL 경로 생성
-                String url = BUCKET_URL + newFileName;
+                String url = this.bucketUrl + newFileName;
                 json.addProperty("url", url);
 
                 out.print(json.toString());
