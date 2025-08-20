@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RestAreaAction implements Action {
-	
+
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response) {
 		// KakaoMapAction에서 setAttribute로 전달받은 데이터 처리
-		
+
 		// Attribute에서 직접 List 객체 가져오기
 		@SuppressWarnings("unchecked")
 		List<String> allRestAreas = (List<String>) request.getAttribute("allRestAreas");
@@ -24,20 +24,17 @@ public class RestAreaAction implements Action {
 		List<Integer> restAreaDurations = (List<Integer>) request.getAttribute("restAreaDurations");
 		@SuppressWarnings("unchecked")
 		List<Integer> restStopDurations = (List<Integer>) request.getAttribute("restStopDurations");
-		
+
 		// 문자열 데이터 가져오기
-		String allRestAreasStr = (String) request.getAttribute("allRestAreasStr");
-		String restAreasStr = (String) request.getAttribute("restAreasStr");
-		String restStopsStr = (String) request.getAttribute("restStopsStr");
 		String origin = (String) request.getAttribute("origin");
 		String destination = (String) request.getAttribute("destination");
-		
+
 		// 숫자 데이터 가져오기
 		Integer distance = (Integer) request.getAttribute("distance");
 		Integer duration = (Integer) request.getAttribute("duration");
 		Integer taxiFare = (Integer) request.getAttribute("taxiFare");
 		Integer tollFare = (Integer) request.getAttribute("tollFare");
-		
+
 		// 기본값 설정
 		if (allRestAreas == null)
 			allRestAreas = new ArrayList<>();
@@ -51,10 +48,6 @@ public class RestAreaAction implements Action {
 			restAreaDurations = new ArrayList<>();
 		if (restStopDurations == null)
 			restStopDurations = new ArrayList<>();
-		
-		// 통합 방식인지 확인 (allRestAreas가 있으면 통합 방식)
-		boolean isUnifiedMode = (allRestAreas != null && !allRestAreas.isEmpty());
-		
 		// serviceAreaOnlyDurations 계산
 		List<Integer> serviceAreaOnlyDurations = new ArrayList<>();
 		if (!restAreas.isEmpty() && !restAreaDurations.isEmpty()) {
@@ -62,21 +55,42 @@ public class RestAreaAction implements Action {
 			if (!restAreaDurations.isEmpty()) {
 				serviceAreaOnlyDurations.add(restAreaDurations.get(0));
 			}
-			
+
 			// 나머지 휴게소들은 이전 휴게소와의 간격
 			for (int i = 1; i < restAreaDurations.size(); i++) {
 				serviceAreaOnlyDurations.add(restAreaDurations.get(i));
 			}
 		}
-		
+
 		// request에 데이터 다시 저장 (JSP에서 사용하기 위해)
-		request.setAttribute("isUnifiedMode", isUnifiedMode);
+		setRequestAttributes(request, allRestAreas, restAreas, restStops,
+				allRestAreaDurations, restAreaDurations, restStopDurations,
+				serviceAreaOnlyDurations, origin, destination, distance,
+				duration, taxiFare, tollFare);
+
+		return "restArea.jsp";
+	}
+
+	/**
+	 * request에 모든 속성을 설정하는 메서드
+	 */
+	private void setRequestAttributes(HttpServletRequest request,
+			List<String> allRestAreas,
+			List<String> restAreas,
+			List<String> restStops,
+			List<Integer> allRestAreaDurations,
+			List<Integer> restAreaDurations,
+			List<Integer> restStopDurations,
+			List<Integer> serviceAreaOnlyDurations,
+			String origin,
+			String destination,
+			Integer distance,
+			Integer duration,
+			Integer taxiFare,
+			Integer tollFare) {
 		request.setAttribute("allRestAreas", allRestAreas);
 		request.setAttribute("restAreas", restAreas);
 		request.setAttribute("restStops", restStops);
-		request.setAttribute("allRestAreasStr", allRestAreasStr);
-		request.setAttribute("restAreasStr", restAreasStr);
-		request.setAttribute("restStopsStr", restStopsStr);
 		request.setAttribute("allRestAreaDurations", allRestAreaDurations);
 		request.setAttribute("restAreaDurations", restAreaDurations);
 		request.setAttribute("restStopDurations", restStopDurations);
@@ -87,9 +101,5 @@ public class RestAreaAction implements Action {
 		request.setAttribute("duration", duration);
 		request.setAttribute("taxiFare", taxiFare);
 		request.setAttribute("tollFare", tollFare);
-		
-		// 디버깅 로그
-		
-		return "restArea.jsp";
 	}
 }

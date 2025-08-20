@@ -6,7 +6,7 @@ import java.util.List;
 public class ServiceAreaVO {
     private String Idx, SAName, SADirection, WayNum, CompactParking, LargeParking, DisabledParking, Address, Tel, Lat,
             Lng, ShopCode;
-    private String Star, Convenience; // 별점과 편의시설 필드 추가
+    private String Star, Convenience, AiComment; // 별점, 편의시설, AI 코멘트 필드 추가
     private List<ShopVO> Shoplist;
 
     public ServiceAreaVO() {
@@ -133,5 +133,14 @@ public class ServiceAreaVO {
 
     public void setConvenience(String convenience) {
         Convenience = convenience;
+    }
+
+    // AiComment 필드 getter/setter
+    public String getAiComment() {
+        return AiComment;
+    }
+
+    public void setAiComment(String aiComment) {
+        AiComment = aiComment;
     }
 }

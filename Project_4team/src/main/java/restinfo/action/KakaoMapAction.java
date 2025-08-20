@@ -24,7 +24,6 @@ public class KakaoMapAction implements Action {
 			throws UnsupportedEncodingException {
 		String origin = request.getParameter("origin");
 		String destination = request.getParameter("destination");
-		String waypoints = request.getParameter("waypoints");
 		String priority = request.getParameter("priority");
 		// 요청 후 어떤 Action으로 포워딩할지 결정하는 파라미터
 		// "restArea"인 경우 RestAreaAction으로 자동 포워딩됨
@@ -45,15 +44,13 @@ public class KakaoMapAction implements Action {
 				request.setAttribute("origin", origin);
 				request.setAttribute("destination", destination);
 				// forwardTo와 관계없이 index.jsp로 돌아가기
-				return "index.jsp";
+				return "Controller";
 			}
-			// 경유지 좌표 변환
-			String waypointsCoords = processWaypoints(waypoints, apiKey);
 			// 카카오 모빌리티 API 호출
-			JSONObject routeData = callKakaoMobilityAPI(originCoords, destinationCoords, waypointsCoords, priority,
+			JSONObject routeData = callKakaoMobilityAPI(originCoords, destinationCoords, priority,
 					apiKey);
 			// 경로 데이터 처리 및 저장
-			processRouteData(request, routeData, origin, destination, waypoints, waypointsCoords);
+			processRouteData(request, routeData, origin, destination);
 			
 			// forwardTo가 "restArea"이면 RestAreaAction으로 포워딩
 			if ("restArea".equalsIgnoreCase(forwardTo)) {
@@ -73,15 +70,14 @@ public class KakaoMapAction implements Action {
 			}
 			request.setAttribute("error", "서버 오류");
 			request.setAttribute("errorMessage", e.getMessage());
+			// "Controller"를 반환하면 컨트롤러가 해당 문자열을 JSP 파일명으로 인식하여 Controller.jsp를 찾게 됩니다.
+			// 만약 Controller.java 액션을 실행하려면 별도의 포워딩 로직이나 다른 방식이 필요합니다.
 			return "Controller";
 		}
 	}
-	
-	// 입력값 검증
-	private boolean isValidInput(String origin, String destination) {
-		return origin != null && destination != null &&
-				!origin.trim().isEmpty() && !destination.trim().isEmpty();
-	}
+
+
+//    -------------- 함수 --------------
 	
 	// JSON 에러 응답 전송
 	private void sendJsonError(HttpServletResponse response, int status, String error, String message) {
@@ -98,40 +94,14 @@ public class KakaoMapAction implements Action {
 		}
 	}
 	
-	// 경유지 처리
-	private String processWaypoints(String waypoints, String apiKey) {
-		if (waypoints == null || waypoints.trim().isEmpty()) {
-			return null;
-		}
-		
-		String[] waypointAddresses = waypoints.split("\\|");
-		StringBuilder waypointsBuilder = new StringBuilder();
-		
-		for (String waypointAddress : waypointAddresses) {
-			String waypointCoords = getCoordinates(waypointAddress.trim(), apiKey);
-			if (waypointCoords != null) {
-				if (waypointsBuilder.length() > 0) {
-					waypointsBuilder.append("|");
-				}
-				waypointsBuilder.append(waypointCoords);
-			}
-		}
-		
-		return waypointsBuilder.length() > 0 ? waypointsBuilder.toString() : null;
-	}
-	
 	// 카카오 모빌리티 API 호출
 	private JSONObject callKakaoMobilityAPI(String originCoords, String destinationCoords,
-	                                        String waypointsCoords, String priority, String apiKey) {
+	                                        String priority, String apiKey) {
 		try {
 			StringBuilder urlBuilder = new StringBuilder();
 			urlBuilder.append("https://apis-navi.kakaomobility.com/v1/directions");
 			urlBuilder.append("?origin=").append(URLEncoder.encode(originCoords, StandardCharsets.UTF_8));
 			urlBuilder.append("&destination=").append(URLEncoder.encode(destinationCoords, StandardCharsets.UTF_8));
-			
-			if (waypointsCoords != null && !waypointsCoords.trim().isEmpty()) {
-				urlBuilder.append("&waypoints=").append(URLEncoder.encode(waypointsCoords, StandardCharsets.UTF_8));
-			}
 			
 			if (priority != null && !priority.trim().isEmpty()) {
 				urlBuilder.append("&priority=").append(priority);
@@ -177,7 +147,7 @@ public class KakaoMapAction implements Action {
 	
 	// 경로 데이터 처리
 	private void processRouteData(HttpServletRequest request, JSONObject routeData,
-	                              String origin, String destination, String waypoints, String waypointsCoords) {
+	                              String origin, String destination) {
 		try {
 			if (routeData.has("routes") && routeData.getJSONArray("routes").length() > 0) {
 				JSONObject route = routeData.getJSONArray("routes").getJSONObject(0);
@@ -198,7 +168,7 @@ public class KakaoMapAction implements Action {
 				// request에 데이터 저장
 				saveRouteDataToRequest(request, route, sections, allRestAreas, restAreas, restStops,
 						allRestAreaDurations, restAreaDurations, restStopDurations,
-						origin, destination, waypoints, waypointsCoords, routeData);
+						origin, destination, routeData);
 				
 			}
 		} catch (Exception e) {
@@ -237,22 +207,16 @@ public class KakaoMapAction implements Action {
 	                                    List<String> allRestAreas, List<String> restAreas, List<String> restStops,
 	                                    List<Integer> allRestAreaDurations, List<Integer> restAreaDurations,
 	                                    List<Integer> restStopDurations, String origin, String destination,
-	                                    String waypoints, String waypointsCoords, JSONObject routeData) {
+	                                    JSONObject routeData) {
 		
 		// 기본 정보
 		request.setAttribute("origin", origin);
 		request.setAttribute("destination", destination);
-		request.setAttribute("waypoints", waypoints);
-		request.setAttribute("waypointsCoords", waypointsCoords);
 		
 		// 휴게소 정보
 		request.setAttribute("allRestAreas", allRestAreas);
 		request.setAttribute("restAreas", restAreas);
 		request.setAttribute("restStops", restStops);
-		request.setAttribute("allRestAreasStr", String.join(", ", allRestAreas));
-		request.setAttribute("restAreasStr", String.join(", ", restAreas));
-		request.setAttribute("restStopsStr", String.join(", ", restStops));
-		
 		// 소요시간 정보
 		request.setAttribute("allRestAreaDurations", allRestAreaDurations);
 		request.setAttribute("restAreaDurations", restAreaDurations);
@@ -272,45 +236,8 @@ public class KakaoMapAction implements Action {
 			}
 		}
 		
-		// 상세 경로 정보
-		if (route.has("sections")) {
-			request.setAttribute("sections", convertSectionsToMap(sections));
-		}
-		
 		// 전체 JSON 응답 (디버깅용)
 		request.setAttribute("jsonResponse", routeData);
-	}
-	
-	// sections를 Map으로 변환
-	private List<Map<String, Object>> convertSectionsToMap(JSONArray sections) {
-		List<Map<String, Object>> sectionsList = new ArrayList<>();
-		
-		for (int i = 0; i < sections.length(); i++) {
-			JSONObject sectionJson = sections.getJSONObject(i);
-			Map<String, Object> sectionMap = new HashMap<>();
-			
-			sectionMap.put("distance", sectionJson.optInt("distance", 0));
-			sectionMap.put("duration", sectionJson.optInt("duration", 0));
-			
-			if (sectionJson.has("roads")) {
-				JSONArray roadsJson = sectionJson.getJSONArray("roads");
-				List<Map<String, Object>> roadsList = new ArrayList<>();
-				
-				for (int j = 0; j < roadsJson.length(); j++) {
-					JSONObject roadJson = roadsJson.getJSONObject(j);
-					Map<String, Object> roadMap = new HashMap<>();
-					roadMap.put("name", roadJson.optString("name", ""));
-					roadMap.put("distance", roadJson.optInt("distance", 0));
-					roadsList.add(roadMap);
-				}
-				
-				sectionMap.put("roads", roadsList);
-			}
-			
-			sectionsList.add(sectionMap);
-		}
-		
-		return sectionsList;
 	}
 	
 	/**

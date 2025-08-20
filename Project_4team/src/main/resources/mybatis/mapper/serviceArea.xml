@@ -61,6 +61,22 @@
         WHERE Idx = #{Idx}
     </update>
     
+    <!-- Excel 데이터로 별점, 편의시설, AI 코멘트 업데이트 -->
+    <update id="updateStarConvenienceAndAiComment" parameterType="mybatis.vo.ServiceAreaVO">
+        UPDATE ServiceArea 
+        SET Star = #{Star}, 
+            Convenience = #{Convenience},
+            AiComment = #{AiComment}
+        WHERE Idx = #{Idx}
+    </update>
+    
+    <!-- Excel 데이터로 AI 코멘트만 업데이트 -->
+    <update id="updateAiComment" parameterType="mybatis.vo.ServiceAreaVO">
+        UPDATE ServiceArea 
+        SET AiComment = #{AiComment}
+        WHERE Idx = #{Idx}
+    </update>
+    
     <!-- Excel 데이터로 전화번호 업데이트 -->
     <update id="updateTel" parameterType="mybatis.vo.ServiceAreaVO">
         UPDATE ServiceArea 
