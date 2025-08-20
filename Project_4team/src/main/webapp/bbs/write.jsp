@@ -95,14 +95,16 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script>
+<!-- CKEditor는 로컬 경로가 아닌 CDN을 사용하는 것이 안정적입니다. -->
+<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
 <script>
     let myEditor;
 
     ClassicEditor
         .create(document.querySelector('#content'), {
             ckfinder: {
-                uploadUrl: '${pageContext.request.contextPath}/Controller?type=saveImg' // 올바른 이미지 업로드 URL로 수정
+                // 이미지 업로드 URL은 서버의 Controller와 연결되어 있어야 합니다.
+                uploadUrl: 'Controller?type=saveImg'
             }
         })
         .then(editor => {
@@ -114,12 +116,11 @@
         });
 
     function sendData() {
-        // CKEditor 5는 .updateSourceElement()를 사용하지 않음.
-        // 대신 .getData()로 내용을 가져와 textarea에 직접 할당해야 함.
+        // CKEditor의 내용을 <textarea>에 업데이트합니다.
         const contentData = myEditor.getData();
         document.getElementById('content').value = contentData;
 
-        //유효성 검사
+        // 유효성 검사
         let subject = $("#subject").val();
         if(subject.trim().length < 1){
             alert("제목을 입력하세요");
@@ -136,7 +137,6 @@
             return;
         }
 
-        // 카테고리 유효성 검사 수정
         let category = $("#category").val();
         if(category === ""){
             alert("카테고리를 선택하세요");
@@ -144,12 +144,19 @@
             return;
         }
 
-        // CKEditor에서 가져온 내용으로 유효성 검사
         if(contentData.trim().length < 1){
             alert("내용을 입력하세요:");
             return;
         }
 
+        // 파일 첨부 유효성 검사 (선택 사항)
+        // const fileInput = document.getElementById('file');
+        // if (fileInput.files.length === 0) {
+        //     alert("파일을 첨부하세요.");
+        //     return;
+        // }
+
+        // 모든 유효성 검사를 통과하면 폼을 전송합니다.
         document.forms[0].submit();
     }
 </script>

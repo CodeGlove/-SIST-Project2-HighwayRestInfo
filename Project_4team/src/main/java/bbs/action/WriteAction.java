@@ -13,59 +13,64 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Properties;
+import java.util.UUID; // 파일명 중복 방지를 위한 UUID 추가
+
+// S3 관련 라이브러리 추가
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 
 public class WriteAction implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
 
-
-
-        //******** 권한 확인 *********
-        /*HttpSession session = request.getSession();
-        UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-
-        //관리자 유효성 검사
-        //로그인을 하지 않거나 관리자가 아닌 경우 공지사항 목록으로 이동
-        if (loginUser == null || !(loginUser.getAuthority().equals("1"))) {
-            try {
-                response.sendRedirect("Controller?type=notice");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null; //권한이 없다면 forward 막기
-        }*/
-
         String viewPath = null;
 
-        //list.jsp에 있는 [글쓰기]버튼을 클릭하면 get방식으로
-        //현재 객체를 수행한다. 이때 요청시 contentType을 얻어낸다. 분명
-        // get방식 null값을 받게된다.
-        String enc_type = request.getContentType(); //get방식은 contentType이 없다.(post는 form)
-        //System.out.println(enc_type);
+        String enc_type = request.getContentType();
 
-        if (enc_type == null)
+        if (enc_type == null) {
+            // GET 요청일 경우, 글쓰기 페이지로 이동
             viewPath = "/bbs/write.jsp";
-        else if (enc_type.startsWith("multipart")) {
-            //여기는 write.jsp에서 내용을 입력한 후 [완료] 버튼을
-            // 클릭했을 때 수행하는 곳!
-            // 첨부파일을 받아서 bbs_upload라는 폴더에 저장해야 합니다.
+        } else if (enc_type.startsWith("multipart")) {
+            // POST 요청 (첨부파일 포함)일 경우, 파일 처리 및 DB 저장
             try {
-                ServletContext application = request.getServletContext(); //절대경로 얻기 위해 선언
-                String realPath = application.getRealPath("/bbs_upload"); //절대경로 얻음
-                // --- 추가된 코드 ---
+                // S3 설정 정보를 application.properties 파일에서 읽어옴
+                Properties prop = new Properties();
+                InputStream is = getClass().getClassLoader().getResourceAsStream("application.properties");
+                if (is == null) {
+                    throw new IOException("application.properties 파일을 찾을 수 없습니다.");
+                }
+                prop.load(is);
+
+                final String accessKey = prop.getProperty("aws.accessKeyId");
+                final String secretKey = prop.getProperty("aws.secretAccessKey");
+                final String bucketName = prop.getProperty("aws.s3.bucketName");
+                final Regions region = Regions.fromName(prop.getProperty("aws.s3.region"));
+
+                // 파일을 임시로 저장할 로컬 경로 설정
+                ServletContext application = request.getServletContext();
+                String realPath = application.getRealPath("/bbs_upload");
+
                 File saveDir = new File(realPath);
                 if (!saveDir.exists()) {
-                    saveDir.mkdirs(); // 디렉터리가 없으면 생성합니다.
+                    saveDir.mkdirs();
                 }
-                // --- 추가된 코드 끝 ---
 
-                //첨부파일과 다른 파라미터들을 받기위해 MultipartRequest생성(cos 라이브러리 필요함)
+                // MultipartRequest를 사용하여 파일 및 폼 데이터 파싱
                 MultipartRequest mr = new MultipartRequest(request, realPath,
                         1024 * 1024 * 5, "utf-8",
-                        new DefaultFileRenamePolicy()); //동일한 이름이 있다면 바꿔라
-                //이때 첨부파일이 있다면 realPath경로에 저장된 상태다.
-                //나머지 파라미터들 얻기(title, writer, content) -> (write.jsp에서 name 확인 얻어내야 한다)
+                        new DefaultFileRenamePolicy());
+
+                // 폼 데이터 얻기
                 String subject = mr.getParameter("subject");
                 String writer = mr.getParameter("writer");
                 String content = mr.getParameter("content");
@@ -79,29 +84,64 @@ public class WriteAction implements Action {
                     Pwd = "";
                 }
 
-
-                //첨부파일이 있다면 fname과 oname을 얻어내야 한다.
+                // 파일 업로드 관련 변수
                 File f = mr.getFile("file");
-                String FileName = null;
+                String s3FileKey = null; // S3에 저장될 고유한 파일명
+
                 if (f != null) {
-                    FileName = f.getName(); // 현재 저장된 파일명
+                    try {
+                        // S3 클라이언트 생성
+                        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+                        AmazonS3 s3client = AmazonS3ClientBuilder.standard()
+                                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                                .withRegion(region)
+                                .build();
+
+                        // 파일명 중복을 피하기 위해 고유한 S3 Key 생성
+                        String originalFileName = mr.getFilesystemName("file");
+                        String fileExtension = "";
+                        int dotIndex = originalFileName.lastIndexOf('.');
+                        if (dotIndex > 0) {
+                            fileExtension = originalFileName.substring(dotIndex);
+                        }
+                        s3FileKey = UUID.randomUUID().toString() + fileExtension;
+
+                        // S3에 업로드할 요청 객체 생성
+                        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, s3FileKey, f);
+
+                        // 파일 업로드
+                        s3client.putObject(putObjectRequest);
+
+                        // 로컬 임시 파일 삭제 (매우 중요!)
+                        f.delete();
+
+                    } catch (AmazonServiceException ase) {
+                        System.err.println("S3 서비스 오류: " + ase.getMessage());
+                        // S3 업로드 실패 시 예외 처리
+                        throw new IOException("S3 업로드에 실패했습니다.", ase);
+                    } catch (SdkClientException sce) {
+                        System.err.println("S3 클라이언트 오류: " + sce.getMessage());
+                        // S3 클라이언트 측 오류 발생 시 예외 처리
+                        throw new IOException("S3 클라이언트 오류가 발생했습니다.", sce);
+                    }
                 }
-                //DB에 저장
-                int result = BbsDAO.add(subject, writer, content, FileName, category,
-                                        writeDate, ThumbsUp, ThumbsDown, Delete, Pwd);
-                //DB에 저장이 완료되면 페이지 이동
+
+                // DB에 저장할 파일명은 S3에 저장된 고유 키(s3FileKey)로 변경
+                int result = BbsDAO.add(subject, writer, content, s3FileKey, category,
+                        writeDate, ThumbsUp, ThumbsDown, Delete, Pwd);
+
                 if(result > 0) {
-                    response.sendRedirect("Controller?type=notice"); //저장 완료되면 공지사항 목록 페이지로 리다이렉트
+                    response.sendRedirect("Controller?type=notice");
                 } else {
                     response.setContentType("text/html;charset=utf-8");
                     PrintWriter out = response.getWriter();
                     out.println("<script>alert('게시글 등록에 실패했습니다.'); history.back();</script>");
                     out.flush();
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 try {
-                    // 예외 발생 시 사용자에게 알림창을 띄우고 이전 페이지로 이동
                     response.setContentType("text/html; charset=UTF-8");
                     PrintWriter out = response.getWriter();
                     out.println("<script>alert('게시글 등록 중 오류가 발생했습니다.'); history.back();</script>");
@@ -110,7 +150,7 @@ public class WriteAction implements Action {
                     ex.printStackTrace();
                 }
             }
-            return null; //직접 response 처리해서 null 반환
+            return null;
         }
         return viewPath;
     }
