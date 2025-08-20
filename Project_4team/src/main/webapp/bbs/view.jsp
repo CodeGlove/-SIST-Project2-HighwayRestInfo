@@ -68,6 +68,22 @@
             word-break: break-word;
         }
 
+        /* 이미지 반응형 처리 */
+        .content-text img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-text img:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
         .attachment-section {
             padding: 24px 0;
             border-bottom: 1px solid #f2f4f6;
@@ -113,44 +129,90 @@
         .reaction-buttons {
             display: flex;
             justify-content: center;
-            gap: 16px;
+            gap: 20px;
         }
 
         .reaction-btn {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 20px;
+            padding: 16px 24px;
             background: #ffffff;
-            border: 1px solid #e5e8eb;
-            border-radius: 24px;
-            font-size: 14px;
-            font-weight: 500;
+            border: 2px solid #e5e8eb;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 120px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reaction-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .reaction-btn:hover::before {
+            left: 100%;
         }
 
         .reaction-btn:hover:not(:disabled) {
-            background: #f8fafc;
-            border-color: #d0d5dd;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .reaction-btn:disabled {
             background: #f8fafc;
             color: #8b95a1;
             cursor: not-allowed;
+            border-color: #e5e8eb;
+            transform: none;
+            box-shadow: none;
         }
 
-        .reaction-btn.like:not(:disabled):hover {
-            background: #e6f3ff;
-            border-color: #3182f6;
+        .reaction-btn.like {
             color: #3182f6;
+            border-color: #3182f6;
         }
 
-        .reaction-btn.hate:not(:disabled):hover {
-            background: #fef2f2;
-            border-color: #f04452;
+        .reaction-btn.like:hover:not(:disabled) {
+            background: #3182f6;
+            color: #ffffff;
+            border-color: #3182f6;
+        }
+
+        .reaction-btn.hate {
             color: #f04452;
+            border-color: #f04452;
+        }
+
+        .reaction-btn.hate:hover:not(:disabled) {
+            background: #f04452;
+            color: #ffffff;
+            border-color: #f04452;
+        }
+
+        .reaction-btn i {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .reaction-btn:hover:not(:disabled) i {
+            transform: scale(1.2);
+        }
+
+        .reaction-btn span {
+            font-weight: 700;
+            font-size: 16px;
         }
 
         .action-buttons {
@@ -198,84 +260,6 @@
             background: #fef2f2;
         }
 
-        .comment-section {
-            padding: 40px 0;
-        }
-
-        .comment-form {
-            background: #f8fafc;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-        }
-
-        .comment-form h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #191f28;
-            margin: 0 0 20px 0;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #4e5968;
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e5e8eb;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #ffffff;
-            transition: border-color 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #3182f6;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e5e8eb;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #ffffff;
-            resize: vertical;
-            min-height: 100px;
-            transition: border-color 0.2s;
-        }
-
-        .form-textarea:focus {
-            outline: none;
-            border-color: #3182f6;
-        }
-
-        .submit-btn {
-            padding: 12px 24px;
-            background: #3182f6;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .submit-btn:hover {
-            background: #1b64da;
-        }
-
         /* 삭제 다이얼로그 스타일 */
         .ui-dialog {
             border-radius: 12px !important;
@@ -319,6 +303,18 @@
             .action-btn {
                 flex: 1;
                 min-width: 0;
+            }
+
+            /* 모바일에서 이미지 처리 */
+            .content-text img {
+                max-width: 100%;
+                height: auto;
+                margin: 15px auto;
+                border-radius: 6px;
+            }
+
+            .content-text img:hover {
+                transform: none; /* 모바일에서는 호버 효과 제거 */
             }
         }
 
@@ -407,12 +403,12 @@
                 <div class="reaction-buttons">
                     <button type="button" id="btn-like" class="reaction-btn like" onclick="sendReaction('like')"
                             <c:if test="${hasReacted}">disabled</c:if>>
-                        <span>👍</span>
+                        <i class="fas fa-thumbs-up"></i>
                         <span id="likeCount">${likeCount}</span>
                     </button>
                     <button type="button" id="btn-hate" class="reaction-btn hate" onclick="sendReaction('hate')"
                             <c:if test="${hasReacted}">disabled</c:if>>
-                        <span>👎</span>
+                        <i class="fas fa-thumbs-down"></i>
                         <span id="hateCount">${hateCount}</span>
                     </button>
                 </div>
@@ -421,31 +417,12 @@
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <button type="button" class="action-btn primary" onclick="goList()">목록</button>
-                <button type="button" class="action-btn" onclick="goEdit()">수정</button>
-                <button type="button" class="action-btn danger" onclick="goDel()">삭제</button>
-            </div>
-
-            <!-- Comment Section -->
-            <div class="comment-section">
-                <form method="post" action="../Controller" class="comment-form">
-                    <h3>댓글 작성</h3>
-                    <div class="form-group">
-                        <label class="form-label">이름</label>
-                        <input type="text" name="writer" class="form-input" required/>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">내용</label>
-                        <textarea name="content" class="form-textarea" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">비밀번호</label>
-                        <input type="password" name="pwd" class="form-input" required/>
-                    </div>
-                    <input type="hidden" name="PostNum" value="${vo.postNum}">
-                    <input type="hidden" name="cPage" value="${param.cPage}"/>
-                    <input type="hidden" name="type" value="commadd"/>
-                    <button type="submit" class="submit-btn">댓글 등록</button>
-                </form>
+                <%--관리자일 경우에만 수정/삭제 버튼 표시--%>
+                <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
+                      ne null and sessionScope.loginUser.authority eq '1'}">
+                    <button type="button" class="action-btn" onclick="goEdit()">수정</button>
+                    <button type="button" class="action-btn danger" onclick="goDel()">삭제</button>
+                </c:if>
             </div>
 
             <!-- Hidden Forms -->

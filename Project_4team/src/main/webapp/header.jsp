@@ -9,19 +9,16 @@
             </div>
             HighwayGuide
         </a>
-        <nav>
+        <nav class="main-nav">
             <ul class="nav-links">
-                <li><a href="#">회사 소개</a></li>
-                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
-                <%--08.04-한결 수정--%>
-                <li><a href="#">고객센터</a></li>
-                <li><a href="#">자주 묻는 질문</a></li>
-                <li><a href="#">채용</a></li>
+                <li><a href="Controller?type=notice" class="nav-link">공지사항</a></li>
+                <li><a href="#" class="nav-link">휴게소 정보</a></li>
+                <li><a href="#" class="nav-link">교통정보</a></li>
+                <li><a href="#" class="nav-link">고객센터</a></li>
+                <li><a href="#" class="nav-link">도움말</a></li>
             </ul>
         </nav>
         <div class="auth-buttons">
-            <a href="#" class="btn btn-login">KOR</a>
-            <a href="#" class="btn btn-login">ENG</a>
             <%--***** 로그인 되지 않은 경우 --%>
             <c:if test="${empty sessionScope.loginUser}">
                 <a href="Controller?type=login" class="btn btn-login">로그인</a>
