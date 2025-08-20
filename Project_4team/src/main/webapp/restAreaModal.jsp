@@ -31,6 +31,27 @@
 
       <div class="info-section">
         <div class="info-label">
+          <i class="fas fa-parking"></i>
+          주차 정보
+        </div>
+        <div class="parking-info-grid">
+          <div class="parking-item">
+            <span class="parking-label">소형차</span>
+            <span class="parking-value" id="modalCompactParking">-</span>
+          </div>
+          <div class="parking-item">
+            <span class="parking-label">대형차</span>
+            <span class="parking-value" id="modalLargeParking">-</span>
+          </div>
+          <div class="parking-item">
+            <span class="parking-label">장애인</span>
+            <span class="parking-value" id="modalDisabledParking">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-label">
           <i class="fas fa-clock"></i>
           운영시간
         </div>
@@ -45,12 +66,6 @@
           편의시설
         </div>
         <div class="facilities-list" id="modalFacilities">
-          <span class="facility-tag">주유소</span>
-          <span class="facility-tag">충전소</span>
-          <span class="facility-tag">음식점</span>
-          <span class="facility-tag">화장실</span>
-          <span class="facility-tag">편의점</span>
-          <span class="facility-tag">휴식공간</span>
         </div>
       </div>
 

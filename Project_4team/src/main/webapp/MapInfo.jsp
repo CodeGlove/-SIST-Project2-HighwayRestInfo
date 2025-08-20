@@ -148,96 +148,8 @@
     </style>
 </head>
 <body>
-<%--모달창 ***************************************************************--%>
-<div id="restAreaModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">
-                <i class="fas fa-utensils"></i>
-                <span id="modalTitle">휴게소 정보</span>
-            </div>
-            <span class="close" onclick="closeModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-map-marker-alt"></i>
-                    위치
-                </div>
-                <div class="info-value" id="modalLocation">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-phone"></i>
-                    연락처
-                </div>
-                <div class="info-value" id="modalPhone">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-parking"></i>
-                    주차 정보
-                </div>
-                <div class="parking-info-grid">
-                    <div class="parking-item">
-                        <span class="parking-label">소형차</span>
-                        <span class="parking-value" id="modalCompactParking">-</span>
-                    </div>
-                    <div class="parking-item">
-                        <span class="parking-label">대형차</span>
-                        <span class="parking-value" id="modalLargeParking">-</span>
-                    </div>
-                    <div class="parking-item">
-                        <span class="parking-label">장애인</span>
-                        <span class="parking-value" id="modalDisabledParking">-</span>
-                    </div>
-                </div>
-            </div>
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-clock"></i>
-                    운영시간
-                </div>
-                <div class="info-value" id="modalHours">
-                    24시간 운영
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-list"></i>
-                    편의시설
-                </div>
-                <div class="facilities-list" id="modalFacilities">
-                    <span class="facility-tag">주유소</span>
-                    <span class="facility-tag">충전소</span>
-                    <span class="facility-tag">음식점</span>
-                    <span class="facility-tag">화장실</span>
-                    <span class="facility-tag">편의점</span>
-                    <span class="facility-tag">휴식공간</span>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-info-circle"></i>
-                    안내사항
-                </div>
-                <div class="info-value">
-                    • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
-                    • 긴급상황 시 1588-2504로 연락하세요<br>
-                    • 휴게소 내에서는 안전수칙을 준수해주세요
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<%-- 모달창을 restAreaModal.jsp에서 인클루드합니다. --%>
+<jsp:include page="/restAreaModal.jsp"/>
 
 
 <div class="search-container">
@@ -600,9 +512,6 @@
                     map.setCenter(position);
                     map.setLevel(newLevel, { animate: true });
 
-                    // ❌ 이 부분을 삭제하거나 주석 처리하여 검색 시 상세정보 모달창이 바로 뜨지 않게 수정했습니다.
-                    // showModalForRestArea(firstResult.Idx.toString());
-
                 } else {
                     alert("검색 결과가 없습니다.");
                 }
@@ -629,14 +538,37 @@
 
         document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
         document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
+
         let formattedPhone = '제공되지 않음';
         if (ra.Tel) {
             formattedPhone = ra.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
         }
         document.getElementById('modalPhone').textContent = formattedPhone;
-        document.getElementById('modalCompactParking').textContent = ra.CompactParking+"대";
-        document.getElementById('modalLargeParking').textContent = ra.LargeParking+"대";
-        document.getElementById('modalDisabledParking').textContent = ra.DisabledParking+"대";
+
+        document.getElementById('modalCompactParking').textContent = (ra.CompactParking || 0) + "대";
+        document.getElementById('modalLargeParking').textContent = (ra.LargeParking || 0) + "대";
+        document.getElementById('modalDisabledParking').textContent = (ra.DisabledParking || 0) + "대";
+
+        // 편의시설 정보 동적으로 채우기
+        const facilitiesListElement = document.getElementById('modalFacilities');
+        facilitiesListElement.innerHTML = ''; // 기존 내용을 비웁니다.
+
+        if (ra.Convenience) {
+            const facilities = ra.Convenience.split(',');
+            if (facilities.length > 0) {
+                facilities.forEach(facility => {
+                    const tag = document.createElement('span');
+                    tag.className = 'facility-tag';
+                    tag.textContent = facility.trim();
+                    facilitiesListElement.appendChild(tag);
+                });
+            } else {
+                facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+            }
+        } else {
+            facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+        }
+
         document.getElementById('restAreaModal').style.display = 'block';
     }
 
