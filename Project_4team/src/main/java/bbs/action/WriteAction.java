@@ -53,6 +53,12 @@ public class WriteAction implements Action {
             try {
                 ServletContext application = request.getServletContext(); //절대경로 얻기 위해 선언
                 String realPath = application.getRealPath("/bbs_upload"); //절대경로 얻음
+                // --- 추가된 코드 ---
+                File saveDir = new File(realPath);
+                if (!saveDir.exists()) {
+                    saveDir.mkdirs(); // 디렉터리가 없으면 생성합니다.
+                }
+                // --- 추가된 코드 끝 ---
 
                 //첨부파일과 다른 파라미터들을 받기위해 MultipartRequest생성(cos 라이브러리 필요함)
                 MultipartRequest mr = new MultipartRequest(request, realPath,

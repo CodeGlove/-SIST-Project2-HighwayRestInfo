@@ -79,8 +79,8 @@ public class SaveImgAction implements Action {
                 AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
                 AmazonS3Client s3Client = new AmazonS3Client(credentials).withRegion(Regions.AP_NORTHEAST_2);
 
-                s3Client.putObject(new PutObjectRequest(this.bucketName, newFileName, f)
-                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                s3Client.putObject(new PutObjectRequest(this.bucketName, newFileName, f));
+                        //.withCannedAcl(CannedAccessControlList.PublicRead));
 
                 // 임시 파일 삭제
                 f.delete();

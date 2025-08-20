@@ -86,8 +86,7 @@
             <tr>
                 <td colspan="2">
                     <input type="button" value="완료" onclick="sendData()"/>
-                    <input type="button" value="수정"/>
-                    <input type="button" value="목록"/>
+                    <input type="button" value="목록" onclick="location.href='Controller?type=notice'"/>
                 </td>
             </tr>
             </tbody>
@@ -131,9 +130,17 @@
 
         let writer = $("#writer").val();
         if(writer.trim().length < 1){
-            alert("이름을 입력하세요:");
+            alert("이름을 입력하세요");
             $("#writer").val("");
             $("#writer").focus();
+            return;
+        }
+
+        // 카테고리 유효성 검사 수정
+        let category = $("#category").val();
+        if(category === ""){
+            alert("카테고리를 선택하세요");
+            $("#category").focus();
             return;
         }
 

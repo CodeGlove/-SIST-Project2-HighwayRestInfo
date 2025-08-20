@@ -497,25 +497,22 @@
   });
 
   function goList() {
-    document.ff.action = "../Controller";
-    document.ff.type.value = "notice";
-    document.ff.submit();
+      location.href = "${pageContext.request.contextPath}/Controller?type=notice&cPage=${param.cPage}";
   }
-  
+
   function goDel() {
     $("#del_dialog").dialog("open");
   }
-  
+
   function del(frm) {
     frm.submit();
   }
-  
+
+  // 수정한 goEdit() 함수
   function goEdit() {
-    document.ff.action = "../Controller";
-    document.ff.type.value = "edit";
-    document.ff.submit();
+      location.href = "${pageContext.request.contextPath}/Controller?type=edit&PostNum=${vo.postNum}&cPage=${param.cPage}";
   }
-  
+
   function down(FileName) {
     document.ff.action = "../download.jsp";
     document.ff.FileName.value = FileName;
