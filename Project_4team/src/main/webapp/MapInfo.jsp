@@ -145,6 +145,35 @@
             border-style: solid;
             border-color: #ccc transparent transparent transparent;
         }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .star-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* 별점 아이콘과 텍스트 사이의 간격 */
+        }
+
+        .star-rating i {
+            font-size: 1.2rem; /* 별 아이콘 크기 */
+        }
+
+        .star-rating .fas {
+            color: #ffc107; /* 채워진 별 색상 */
+        }
+
+        .star-rating .far {
+            color: #e9ecef; /* 빈 별 색상 */
+        }
+
+        #starText {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333; /* 텍스트 색상 */
+        }
     </style>
 </head>
 <body>
@@ -567,6 +596,36 @@
             }
         } else {
             facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+        }
+
+        const starValue = parseFloat(ra.Star);
+        const starIconContainer = document.getElementById('starIconContainer');
+        const starText = document.getElementById('starText');
+
+        // 별점 컨테이너 초기화
+        starIconContainer.innerHTML = '';
+        starText.textContent = '';
+
+        if (isNaN(starValue) || !ra.Star) { // 데이터가 없거나 유효하지 않을 경우
+            starText.textContent = '평점 없음';
+        } else {
+            const fullStars = Math.floor(starValue);
+            const halfStar = (starValue % 1) >= 0.25 && (starValue % 1) <= 0.75;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+            let starsHtml = '';
+            for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<i class="fas fa-star"></i>';
+            }
+            if (halfStar) {
+                starsHtml += '<i class="fas fa-star-half-alt"></i>';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<i class="far fa-star"></i>';
+            }
+
+            starIconContainer.innerHTML = starsHtml;
+            starText.textContent = starValue.toFixed(1);
         }
 
         document.getElementById('restAreaModal').style.display = 'block';
