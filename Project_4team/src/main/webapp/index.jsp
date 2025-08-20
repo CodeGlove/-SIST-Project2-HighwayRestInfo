@@ -1,5 +1,5 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -17,116 +17,64 @@
 
 </head>
 <body>
-<!-- Header -->
-<c:if test="${sessionScope.loginUser ne null and sessionScope.loginUser.authority eq 1}">
-    <%--로그인이 안되어있거나 관리자일 경우--%>
-    <%--관리자 페이지로 돌아가게 함--%>
-    <c:redirect url="Controller">
-        <c:param name="type" value="mainpage"/>
-        <c:param name="vo" value="${sessionScope.loginUser}"/>
-    </c:redirect>
-</c:if>
+<%@ include file="header.jsp" %>
 
-<header class="header">
-    <div class="nav-container">
-        <a href="Controller" class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-road"></i>
-            </div>
-            HighwayGuide
-        </a>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="#">회사 소개</a></li>
-                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
-                <%--08.04-한결 수정--%>
-                <li><a href="#">고객센터</a></li>
-                <li><a href="#">자주 묻는 질문</a></li>
-                <li><a href="#">채용</a></li>
-            </ul>
-        </nav>
-        <div class="auth-buttons">
-            <a href="#" class="btn btn-login">KOR</a>
-            <a href="#" class="btn btn-login">ENG</a>
-            <%--***** 로그인 되지 않은 경우 --%>
-            <c:if test="${empty sessionScope.loginUser}">
-                <a href="Controller?type=login" class="btn btn-login">로그인</a>
-                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
-            </c:if>
-
-            <%--***** 로그인된 경우 --%>
-            <c:if test="${not empty sessionScope.loginUser}">
-                <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
-                <a href="Controller?type=mypage" class="btn btn-register">마이페이지</a>
-            </c:if>
-        </div>
-    </div>
-</header>
 
 <!-- Hero Section -->
 <main>
     <section class="hero">
-        <div class="floating-icons">
-            <div class="floating-icon">
-                <i class="fas fa-car"></i>
+        <!-- Search Section -->
+        <section class="search-section slide-up">
+            <div class="search-decoration">
+                <div class="decoration-line decoration-line-1"></div>
+                <div class="decoration-line decoration-line-2"></div>
             </div>
-            <div class="floating-icon">
-                <i class="fas fa-building"></i>
-            </div>
-            <div class="floating-icon">
-                <i class="fas fa-mobile-alt"></i>
-            </div>
-            <div class="floating-icon">
-                <i class="fas fa-gift"></i>
-            </div>
-        </div>
-    </section>
 
-    <!-- Search Section -->
-    <section class="search-section slide-up">
-        <h2 class="section-title">경로내 휴게시설 검색</h2>
-        <div class="search-container">
-            <form action="Controller?type=kakaoMap" method="post" id="routeForm">
-                <!-- 출발지 입력 섹션 -->
-                <div class="input-wrapper">
-                    <input type="text" name="origin" id="origin" class="search-input" placeholder="출발지를 입력하세요"
-                           value="<c:out value='${origin}'/>" required autocomplete="off">
-                    <div id="origin-suggestions" class="suggestions-dropdown"></div>
-                </div>
-
-                <!-- 목적지 입력 섹션 -->
-                <div class="input-wrapper">
-                    <input type="text" name="destination" id="destination" class="search-input" placeholder="목적지를 입력하세요"
-                           value="<c:out value='${destination}'/>" required autocomplete="off">
-                    <div id="destination-suggestions" class="suggestions-dropdown"></div>
-                </div>
-
-                <!-- 폼 제출 후 KakaoMapAction에서 경로 계산 완료 후 RestAreaAction으로 자동 포워딩하도록 지시하는 숨겨진 필드 -->
-                <input type="hidden" name="forwardTo" value="restArea">
-                <button type="submit" class="search-btn" id="searchRouteBtn"><i class="fas fa-search"></i> 길찾기</button>
-
-                <!-- 에러 메시지 표시 -->
-                <c:if test="${not empty error}">
-                    <div class="error-text">
-                        <i class="fas fa-exclamation-circle"></i>
-                        올바른 주소를 입력해주세요
+            <h2 class="section-title">경로내 휴게시설 검색</h2>
+            <p class="search-description">출발지와 목적지를 입력하여 최적의 경로와 휴게시설을 찾아보세요</p>
+            <div class="search-container">
+                <form action="Controller?type=kakaoMap" method="post" id="routeForm">
+                    <!-- 출발지 입력 섹션 -->
+                    <div class="input-wrapper">
+                        <input type="text" name="origin" id="origin" class="search-input" placeholder="출발지를 입력하세요"
+                               value="<c:out value='${origin}'/>" required autocomplete="off">
+                        <div id="origin-suggestions" class="suggestions-dropdown"></div>
                     </div>
-                </c:if>
-            </form>
-        </div>
-        <div class="search-tags">
-            <a href="#" class="search-tag"><i class="fas fa-gas-pump"></i>주유소</a>
-            <a href="#" class="search-tag"><i class="fas fa-charging-station"></i>충전소</a>
-            <a href="#" class="search-tag"><i class="fas fa-utensils"></i>음식점</a>
-            <a href="#" class="search-tag"><i class="fas fa-hotel"></i>호텔</a>
-            <a href="#" class="search-tag"><i class="fas fa-restroom"></i>화장실</a>
-            <a href="#" class="search-tag"><i class="fas fa-parking"></i>주차장</a>
-            <a href="#" class="search-tag"><i class="fas fa-wifi"></i>WiFi</a>
-        </div>
+
+                    <!-- 목적지 입력 섹션 -->
+                    <div class="input-wrapper">
+                        <input type="text" name="destination" id="destination" class="search-input"
+                               placeholder="목적지를 입력하세요"
+                               value="<c:out value='${destination}'/>" required autocomplete="off">
+                        <div id="destination-suggestions" class="suggestions-dropdown"></div>
+                    </div>
+
+                    <!-- 폼 제출 후 KakaoMapAction에서 경로 계산 완료 후 RestAreaAction으로 자동 포워딩하도록 지시하는 숨겨진 필드 -->
+                    <input type="hidden" name="forwardTo" value="restArea">
+                    <button type="submit" class="search-btn" id="searchRouteBtn"><i class="fas fa-search"></i> 길찾기
+                    </button>
+
+                    <!-- 에러 메시지 표시 -->
+                    <c:if test="${not empty error}">
+                        <div class="error-text">
+                            <i class="fas fa-exclamation-circle"></i>
+                            올바른 주소를 입력해주세요
+                        </div>
+                    </c:if>
+                </form>
+            </div>
+            <div class="search-tags">
+            </div>
+        </section>
     </section>
+
+    <!-- 섹션 구분선 -->
+    <div class="section-divider" id="sectionDivider"></div>
+
+    <div style="height: 50px;"></div>
 
     <!-- Features Section -->
-    <section class="features">
+    <section class="features" id="featuresSection">
         <h2 class="features-title">고속도로 관리</h2>
         <p class="features-subtitle">지출부터 똑똑하게 똑똑하게</p>
         <div class="feature-grid">
@@ -194,20 +142,39 @@
     // 스크롤 애니메이션 초기화
     function initializeScrollAnimation() {
         const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+                    if (entry.target.id === 'featuresSection') {
+                        entry.target.classList.add('visible');
+                    } else if (entry.target.id === 'sectionDivider') {
+                        entry.target.classList.add('visible');
+                    } else {
+                        // 기존 feature-card 애니메이션
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
                 }
             });
         }, observerOptions);
 
-        // 관찰할 요소들
+        // 기능 섹션 관찰
+        const featuresSection = document.getElementById('featuresSection');
+        if (featuresSection) {
+            observer.observe(featuresSection);
+        }
+
+        // 구분선 관찰
+        const sectionDivider = document.getElementById('sectionDivider');
+        if (sectionDivider) {
+            observer.observe(sectionDivider);
+        }
+
+        // 기존 feature-card 애니메이션
         document.querySelectorAll('.feature-card').forEach(card => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(30px)';

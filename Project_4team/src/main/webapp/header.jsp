@@ -9,19 +9,16 @@
             </div>
             HighwayGuide
         </a>
-        <nav>
+        <nav class="main-nav">
             <ul class="nav-links">
-                <li><a href="#">회사 소개</a></li>
-                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
-                <%--08.04-한결 수정--%>
-                <li><a href="#">고객센터</a></li>
-                <li><a href="#">자주 묻는 질문</a></li>
-                <li><a href="#">채용</a></li>
+                <li><a href="Controller?type=notice" class="nav-link">공지사항</a></li>
+                <li><a href="#" class="nav-link">휴게소 정보</a></li>
+                <li><a href="#" class="nav-link">교통정보</a></li>
+                <li><a href="#" class="nav-link">고객센터</a></li>
+                <li><a href="#" class="nav-link">도움말</a></li>
             </ul>
         </nav>
         <div class="auth-buttons">
-            <a href="#" class="btn btn-login">KOR</a>
-            <a href="#" class="btn btn-login">ENG</a>
             <%--***** 로그인 되지 않은 경우 --%>
             <c:if test="${empty sessionScope.loginUser}">
                 <a href="Controller?type=login" class="btn btn-login">로그인</a>
@@ -32,6 +29,11 @@
             <c:if test="${not empty sessionScope.loginUser}">
                 <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
                 <a href="Controller?type=mypage" class="btn btn-register">마이페이지</a>
+            </c:if>
+            <c:if test="${sessionScope.loginUser ne null and sessionScope.loginUser.authority eq 1}">
+                <%--관리자일 경우--%>
+                <%--관리자 페이지로 돌아가게 함--%>
+                <a href="Controller?type=mainpage&goto=manage" class="btn btn-register">관리자화면</a>
             </c:if>
         </div>
     </div>

@@ -1,7 +1,7 @@
 package mybatis.vo;
 
-public class gasVO {
-    private String SAKey, Gasoline, Disel, LPG;
+public class GasVO {
+    private String SAKey,Gasoline, Disel, LPG;
 
     public String getLPG() {
         return LPG;

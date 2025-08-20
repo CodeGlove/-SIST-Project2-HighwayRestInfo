@@ -102,6 +102,18 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
         </dependency>
+        
+        <!--Excel 파일 처리를 위한 Apache POI 라이브러리-->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -142,6 +154,13 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>
             <version>1.12.721</version> </dependency>
+
+        <!--주유소가격정보 업데이트를 위한 쿼츠 lib-->
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.3.2</version>
+        </dependency>
     </dependencies>
 
     <build>

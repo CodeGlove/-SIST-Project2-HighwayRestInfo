@@ -30,4 +30,8 @@
         <filter-name>CorsFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    <!-- 스케줄러(쿼츠) 주유소가격정보 업데이트 -->
+    <listener>
+        <listener-class>restinfo.QuartzSchedulerListener</listener-class>
+    </listener>
 </web-app>
