@@ -3,6 +3,33 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="SA">
+    <!-- ServiceArea와 Gas를 조인하는 resultMap -->
+    <resultMap id="ServiceAreaWithGasMap" type="mybatis.vo.ServiceAreaVO">
+        <!-- ServiceArea 기본 필드들 -->
+        <id property="Idx" column="Idx"/>
+        <result property="SAName" column="SAName"/>
+        <result property="SADirection" column="SADirection"/>
+        <result property="WayNum" column="WayNum"/>
+        <result property="CompactParking" column="CompactParking"/>
+        <result property="LargeParking" column="LargeParking"/>
+        <result property="DisabledParking" column="DisabledParking"/>
+        <result property="Address" column="Address"/>
+        <result property="Tel" column="Tel"/>
+        <result property="Lat" column="Lat"/>
+        <result property="Lng" column="Lng"/>
+        <result property="ShopCode" column="ShopCode"/>
+        <result property="Convenience" column="Convenience"/>
+        <result property="Star" column="Star"/>
+        <result property="AiComment" column="AiComment"/>
+        
+        <!-- Gas 정보를 gasInfo에 매핑 -->
+        <association property="gasInfo" javaType="mybatis.vo.GasVO">
+            <id property="SAKey" column="SAKey"/>
+            <result property="Gasoline" column="Gasoline"/>
+            <result property="Disel" column="Disel"/>
+            <result property="LPG" column="LPG"/>
+        </association>
+    </resultMap>
     <select id="all" resultType="mybatis.vo.ServiceAreaVO">
         select * from ServiceArea
     </select>
@@ -146,4 +173,59 @@
         DELETE FROM BookMark
         WHERE UserKey = #{Useridx} AND SAKey = #{SAidx}
     </delete>
+
+    <!-- 휴게소 이름과 방향으로 정확히 매칭하는 쿼리 -->
+    <select id="getByNameAndDirection" resultMap="ServiceAreaWithGasMap" parameterType="Map">
+        SELECT s.*, g.SAKey, g.Gasoline, g.Disel, g.LPG
+        FROM ServiceArea s
+        LEFT JOIN Gas g ON s.Idx = g.SAKey
+        WHERE s.SAName = #{saname} 
+        AND s.SADirection LIKE CONCAT('%', #{sadirection}, '%')
+        LIMIT 1
+    </select>
+
+    <!-- 휴게소 이름만으로 검색하는 쿼리 (방향 정보가 없는 경우 사용) -->
+    <select id="getByNameOnly" resultMap="ServiceAreaWithGasMap" parameterType="String">
+        SELECT s.*, g.SAKey, g.Gasoline, g.Disel, g.LPG
+        FROM ServiceArea s
+        LEFT JOIN Gas g ON s.Idx = g.SAKey
+        WHERE s.SAName = #{saname}
+        LIMIT 1
+    </select>
+
+    <!-- 🚀 퍼지 매칭을 위한 새로운 쿼리들 -->
+    
+    <!-- 부분 이름으로 검색 (LIKE 검색) -->
+    <select id="findByPartialName" resultMap="ServiceAreaWithGasMap" parameterType="String">
+        SELECT s.*, g.SAKey, g.Gasoline, g.Disel, g.LPG
+        FROM ServiceArea s
+        LEFT JOIN Gas g ON s.Idx = g.SAKey
+        WHERE s.SAName LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY LENGTH(s.SAName) ASC
+        LIMIT 1
+    </select>
+
+    <!-- 키워드로 검색 (휴게소 이름에서 키워드 포함 여부 확인) -->
+    <select id="findByKeywords" resultMap="ServiceAreaWithGasMap" parameterType="String">
+        SELECT s.*, g.SAKey, g.Gasoline, g.Disel, g.LPG
+        FROM ServiceArea s
+        LEFT JOIN Gas g ON s.Idx = g.SAKey
+        WHERE s.SAName LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY 
+            CASE 
+                WHEN s.SAName LIKE CONCAT(#{keyword}, '%') THEN 1
+                WHEN s.SAName LIKE CONCAT('%', #{keyword}, '%') THEN 2
+                ELSE 3
+            END,
+            LENGTH(s.SAName) ASC
+        LIMIT 1
+    </select>
+
+    <!-- 유사도 기반 검색을 위한 전체 휴게소 조회 -->
+    <select id="getAllForSimilarity" resultMap="ServiceAreaWithGasMap">
+        SELECT s.*, g.SAKey, g.Gasoline, g.Disel, g.LPG
+        FROM ServiceArea s
+        LEFT JOIN Gas g ON s.Idx = g.SAKey
+        ORDER BY s.SAName
+    </select>
 </mapper>

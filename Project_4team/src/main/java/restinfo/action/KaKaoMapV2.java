@@ -1,7 +1,9 @@
 package restinfo.action;
 
+import mybatis.vo.ServiceAreaVO;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import restinfo.dao.ServiceAreaDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +19,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KakaoMapAction implements Action {
+// Guide 정보를 담는 클래스
+class GuideInfo {
+	String name;
+	double x;
+	double y;
+	int roadIndex;
+	String type; // "IC", "휴게소", "졸음쉼터"
+	
+	public GuideInfo(String name, double x, double y, int roadIndex, String type) {
+		this.name = name;
+		this.x = x;
+		this.y = y;
+		this.roadIndex = roadIndex;
+		this.type = type;
+	}
+}
+
+public class KaKaoMapV2 implements Action {
+	
+	// 서울역 좌표 (기준점)
+	private static final double SEOUL_STATION_X = 37.553452224808936;
+	private static final double SEOUL_STATION_Y = 126.97288438634867;
 	
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response)
@@ -75,9 +98,8 @@ public class KakaoMapAction implements Action {
 			return "Controller";
 		}
 	}
-
-
-//    -------------- 함수 --------------
+	
+	// -------------- 함수 --------------
 	
 	// JSON 에러 응답 전송
 	private void sendJsonError(HttpServletResponse response, int status, String error, String message) {
@@ -153,22 +175,36 @@ public class KakaoMapAction implements Action {
 				JSONObject route = routeData.getJSONArray("routes").getJSONObject(0);
 				JSONArray sections = route.getJSONArray("sections");
 				
-				// 휴게소 정보 추출
+				// 휴게소 정보 추출 (이전 IC 정보 및 방향 포함)
 				List<String> allRestAreas = new ArrayList<>();
 				List<String> restAreas = new ArrayList<>();
 				List<String> restStops = new ArrayList<>();
+				Map<String, GuideInfo> restAreaToPrevIC = new HashMap<>();
+				Map<String, String> restAreaDirections = new HashMap<>();
 				
-				extractRestAreas(sections, allRestAreas, restAreas, restStops);
+				extractRestAreas(sections, allRestAreas, restAreas, restStops, restAreaToPrevIC, restAreaDirections);
 				
 				// 소요시간 계산
 				List<Integer> allRestAreaDurations = calculateDurationsToRestAreas(sections, allRestAreas);
 				List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
 				List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
 				
+				// 🚀 DB에서 휴게소 상세 정보 조회 (졸음쉼터 제외)
+				Map<String, ServiceAreaVO> serviceAreaVOs = new HashMap<>();
+				if (!restAreas.isEmpty()) {
+					
+					// 휴게소만 DB 조회
+					serviceAreaVOs = ServiceAreaDAO.getServiceAreasByNameAndDirection(
+							restAreas, restAreaDirections);
+					
+				} else {
+					System.out.println("=== 휴게소가 없어 DB 조회 생략 ===");
+				}
+				
 				// request에 데이터 저장
 				saveRouteDataToRequest(request, route, sections, allRestAreas, restAreas, restStops,
 						allRestAreaDurations, restAreaDurations, restStopDurations,
-						origin, destination, routeData);
+						origin, destination, routeData, restAreaToPrevIC, restAreaDirections, serviceAreaVOs);
 				
 			}
 		} catch (Exception e) {
@@ -176,9 +212,15 @@ public class KakaoMapAction implements Action {
 		}
 	}
 	
-	// 휴게소 정보 추출
+	// 휴게소 정보 추출 (이전 IC 정보 및 방향 포함)
 	private void extractRestAreas(JSONArray sections, List<String> allRestAreas,
-	                              List<String> restAreas, List<String> restStops) {
+	                              List<String> restAreas, List<String> restStops,
+	                              Map<String, GuideInfo> restAreaToPrevIC,
+	                              Map<String, String> restAreaDirections) {
+		
+		List<GuideInfo> allGuides = new ArrayList<>();
+		
+		// 1단계: 모든 guide 정보를 순서대로 수집
 		for (int i = 0; i < sections.length(); i++) {
 			JSONObject section = sections.getJSONObject(i);
 			if (section.has("guides")) {
@@ -187,19 +229,95 @@ public class KakaoMapAction implements Action {
 					JSONObject guide = guides.getJSONObject(j);
 					if (guide.has("name") && !guide.getString("name").isEmpty()) {
 						String guideName = guide.getString("name");
+						double x = guide.getDouble("x");
+						double y = guide.getDouble("y");
+						int roadIndex = guide.getInt("road_index");
 						
-						if (guideName.contains("휴게소") || guideName.contains("서비스") ||
+						// IC인지 휴게소인지 졸음쉼터인지 판별
+						String type = "기타";
+						if (guideName.contains("IC")) {
+							type = "IC";
+						} else if (guideName.contains("휴게소") || guideName.contains("서비스") ||
 								guideName.contains("REST") || guideName.contains("SERVICE")) {
-							restAreas.add(guideName);
-							allRestAreas.add(guideName);
+							type = "휴게소";
 						} else if (guideName.contains("졸음쉼터")) {
-							restStops.add(guideName);
-							allRestAreas.add(guideName);
+							type = "졸음쉼터";
 						}
+						
+						GuideInfo guideInfo = new GuideInfo(guideName, x, y, roadIndex, type);
+						allGuides.add(guideInfo);
 					}
 				}
 			}
 		}
+		
+		// 2단계: 휴게소를 찾고 이전 IC와 매핑, 방향 계산
+		for (int i = 0; i < allGuides.size(); i++) {
+			GuideInfo current = allGuides.get(i);
+			
+			if ("휴게소".equals(current.type)) {
+				restAreas.add(current.name);
+				allRestAreas.add(current.name);
+				
+				// 이전 IC 찾기
+				GuideInfo prevIC = findPreviousIC(allGuides, i);
+				if (prevIC != null) {
+					restAreaToPrevIC.put(current.name, prevIC);
+					
+					// 방향 계산 및 저장
+					String direction = calculateDirection(prevIC, current);
+					restAreaDirections.put(current.name, direction);
+				}
+			} else if ("졸음쉼터".equals(current.type)) {
+				restStops.add(current.name);
+				allRestAreas.add(current.name);
+			}
+		}
+		
+	}
+	
+	// 이전 IC 찾기
+	private GuideInfo findPreviousIC(List<GuideInfo> allGuides, int currentIndex) {
+		// 현재 위치에서 역순으로 검색하여 가장 가까운 IC 찾기
+		for (int i = currentIndex - 1; i >= 0; i--) {
+			if ("IC".equals(allGuides.get(i).type)) {
+				return allGuides.get(i);
+			}
+		}
+		return null;
+	}
+	
+	// 상행/하행 방향 계산
+	private String calculateDirection(GuideInfo ic, GuideInfo restArea) {
+		// IC에서 휴게소로의 벡터 계산
+		double vectorX = restArea.x - ic.x;
+		double vectorY = restArea.y - ic.y;
+		
+		// 서울역에서 IC로의 벡터
+		double seoulToICX = ic.x - SEOUL_STATION_X;
+		double seoulToICY = ic.y - SEOUL_STATION_Y;
+		
+		// 두 벡터의 내적 계산 (방향 일치도 확인)
+		double dotProduct = vectorX * seoulToICX + vectorY * seoulToICY;
+		
+		// 방향 결정
+		String direction;
+		if (dotProduct > 0) {
+			direction = "하행";
+		} else if (dotProduct < 0) {
+			direction = "상행";
+		} else {
+			direction = "방향불명"; // 수직인 경우
+		}
+		
+		return direction;
+	}
+	
+	// 서울역까지의 거리 계산 (디버깅용)
+	private double calculateDistanceToSeoul(double x, double y) {
+		double deltaX = x - SEOUL_STATION_X;
+		double deltaY = y - SEOUL_STATION_Y;
+		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 	
 	// request에 경로 데이터 저장
@@ -207,7 +325,8 @@ public class KakaoMapAction implements Action {
 	                                    List<String> allRestAreas, List<String> restAreas, List<String> restStops,
 	                                    List<Integer> allRestAreaDurations, List<Integer> restAreaDurations,
 	                                    List<Integer> restStopDurations, String origin, String destination,
-	                                    JSONObject routeData) {
+	                                    JSONObject routeData, Map<String, GuideInfo> restAreaToPrevIC,
+	                                    Map<String, String> restAreaDirections, Map<String, ServiceAreaVO> serviceAreaVOs) {
 		
 		// 기본 정보
 		request.setAttribute("origin", origin);
@@ -237,8 +356,36 @@ public class KakaoMapAction implements Action {
 		}
 		
 		// 전체 JSON 응답 (디버깅용)
-		System.out.println(routeData.toString());
 		request.setAttribute("jsonResponse", routeData);
+		
+		// 휴게소별 이전 IC 정보 및 방향 저장
+		request.setAttribute("restAreaToPrevIC", restAreaToPrevIC);
+		request.setAttribute("restAreaDirections", restAreaDirections);
+		
+		// 휴게소 이름 리스트와 방향을 매핑하여 저장
+		Map<String, String> restAreaNameToDirection = createRestAreaNameToDirectionMapping(restAreas,
+				restAreaDirections);
+		request.setAttribute("restAreaNameToDirection", restAreaNameToDirection);
+		
+		// 🚀 DB에서 조회한 휴게소 상세 정보 저장
+		request.setAttribute("serviceAreaVOs", serviceAreaVOs);
+		
+		// API 응답용 데이터 구조 생성
+		List<Map<String, Object>> restAreaApiData = createRestAreaApiData(restAreas, restAreaDirections,
+				restAreaToPrevIC, serviceAreaVOs);
+		request.setAttribute("restAreaApiData", restAreaApiData);
+		
+		// 간략한 방향 통계만 출력
+		int upboundCount = 0, downboundCount = 0, unknownCount = 0;
+		for (Map.Entry<String, String> entry : restAreaDirections.entrySet()) {
+			String direction = entry.getValue();
+			if ("상행".equals(direction))
+				upboundCount++;
+			else if ("하행".equals(direction))
+				downboundCount++;
+			else
+				unknownCount++;
+		}
 	}
 	
 	/**
@@ -351,6 +498,110 @@ public class KakaoMapAction implements Action {
 		}
 		
 		return durations;
+	}
+	
+	// 휴게소 이름 리스트와 방향을 매핑하는 메서드
+	private Map<String, String> createRestAreaNameToDirectionMapping(List<String> restAreas,
+	                                                                 Map<String, String> restAreaDirections) {
+		Map<String, String> nameToDirection = new HashMap<>();
+		
+		for (String restAreaName : restAreas) {
+			String direction = restAreaDirections.get(restAreaName);
+			if (direction != null) {
+				nameToDirection.put(restAreaName, direction);
+			} else {
+				// 방향 정보가 없는 경우 기본값 설정
+				nameToDirection.put(restAreaName, "방향불명");
+			}
+		}
+		
+		return nameToDirection;
+	}
+	
+	// API 응답용 데이터 구조 생성 메서드
+	private List<Map<String, Object>> createRestAreaApiData(List<String> restAreas,
+	                                                        Map<String, String> restAreaDirections, Map<String, GuideInfo> restAreaToPrevIC,
+	                                                        Map<String, ServiceAreaVO> serviceAreaVOs) {
+		List<Map<String, Object>> apiData = new ArrayList<>();
+		
+		for (String restAreaName : restAreas) {
+			Map<String, Object> restAreaInfo = new HashMap<>();
+			
+			// 기본 정보
+			restAreaInfo.put("name", restAreaName);
+			restAreaInfo.put("direction", restAreaDirections.getOrDefault(restAreaName, "방향불명"));
+			
+			// 이전 IC 정보
+			GuideInfo prevIC = restAreaToPrevIC.get(restAreaName);
+			if (prevIC != null) {
+				Map<String, Object> icInfo = new HashMap<>();
+				icInfo.put("name", prevIC.name);
+				icInfo.put("x", prevIC.x);
+				icInfo.put("y", prevIC.y);
+				icInfo.put("roadIndex", prevIC.roadIndex);
+				restAreaInfo.put("previousIC", icInfo);
+				
+				// 서울역까지의 거리 계산
+				double icDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
+				double restAreaDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
+				restAreaInfo.put("icDistanceToSeoul", String.format("%.6f", icDistanceToSeoul));
+				restAreaInfo.put("restAreaDistanceToSeoul", String.format("%.6f", restAreaDistanceToSeoul));
+			} else {
+				restAreaInfo.put("previousIC", null);
+				restAreaInfo.put("icDistanceToSeoul", "0.000000");
+				restAreaInfo.put("restAreaDistanceToSeoul", "0.000000");
+			}
+			
+			// DB에서 휴게소 상세 정보 조회
+			ServiceAreaVO serviceAreaVO = serviceAreaVOs.get(restAreaName);
+			if (serviceAreaVO != null) {
+				Map<String, Object> serviceAreaInfo = new HashMap<>();
+				serviceAreaInfo.put("name", serviceAreaVO.getSAName());
+				serviceAreaInfo.put("address", serviceAreaVO.getAddress());
+				serviceAreaInfo.put("phone", serviceAreaVO.getTel());
+				serviceAreaInfo.put("star", serviceAreaVO.getStar());
+				serviceAreaInfo.put("convenience", serviceAreaVO.getConvenience());
+				serviceAreaInfo.put("aiComment", serviceAreaVO.getAiComment());
+				serviceAreaInfo.put("compactParking", serviceAreaVO.getCompactParking());
+				serviceAreaInfo.put("largeParking", serviceAreaVO.getLargeParking());
+				serviceAreaInfo.put("disabledParking", serviceAreaVO.getDisabledParking());
+				serviceAreaInfo.put("latitude", serviceAreaVO.getLat());
+				serviceAreaInfo.put("longitude", serviceAreaVO.getLng());
+				serviceAreaInfo.put("wayNum", serviceAreaVO.getWayNum());
+				serviceAreaInfo.put("direction", restAreaDirections.getOrDefault(restAreaName, "방향불명"));
+				serviceAreaInfo.put("previousIC", prevIC != null ? prevIC.name : null);
+				
+				// 서울역까지의 거리 계산
+				if (prevIC != null) {
+					double icDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
+					double restAreaDistanceToSeoul = calculateDistanceToSeoul(
+							serviceAreaVO.getLat() != null ? Double.parseDouble(serviceAreaVO.getLat()) : 0,
+							serviceAreaVO.getLng() != null ? Double.parseDouble(serviceAreaVO.getLng()) : 0);
+					serviceAreaInfo.put("icDistanceToSeoul", String.format("%.6f", icDistanceToSeoul));
+					serviceAreaInfo.put("restAreaDistanceToSeoul", String.format("%.6f", restAreaDistanceToSeoul));
+				}
+				
+				restAreaInfo.put("serviceArea", serviceAreaInfo);
+			}
+			
+			apiData.add(restAreaInfo);
+		}
+		
+		return apiData;
+	}
+	
+	// 휴게소 이름으로 방향을 조회하는 메서드 (외부에서 사용 가능)
+	public String getDirectionByRestAreaName(String restAreaName, Map<String, String> restAreaDirections) {
+		return restAreaDirections.getOrDefault(restAreaName, "방향불명");
+	}
+	
+	// 모든 휴게소의 방향 정보를 리스트로 반환하는 메서드 (외부에서 사용 가능)
+	public List<String> getAllRestAreaDirections(List<String> restAreas, Map<String, String> restAreaDirections) {
+		List<String> directions = new ArrayList<>();
+		for (String restAreaName : restAreas) {
+			directions.add(restAreaDirections.getOrDefault(restAreaName, "방향불명"));
+		}
+		return directions;
 	}
 	
 }
