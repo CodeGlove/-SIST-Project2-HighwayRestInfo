@@ -117,8 +117,8 @@
                                             <!-- TODO: 사용자 리뷰 기반 별점 계산 로직 추가 -->
                                         </div>
                                     </div>
-                                    
-                                   
+
+
                                     <!-- 소요시간 표시 -->
                                     <c:if test="${restArea.contains('휴게소')}">
                                         <c:set var="serviceAreaIndex" value="0"/>
@@ -158,13 +158,22 @@
                                         </c:forEach>
                                     </c:if>
 
-                                     <!-- 즐겨찾기 하트 버튼 (휴게소만 표시) -->
-                                     <c:if test="${restArea.contains('휴게소')}">
+                                    <!-- 즐겨찾기 하트 버튼 (휴게소만 표시) -->
+                                    <c:if test="${restArea.contains('휴게소')}">
                                         <div class="favorite-section">
-                                            <button class="favorite-btn" onclick="toggleFavorite('${restArea}', ${status.index}, event)">
+                                            <button class="favorite-btn"
+                                                    onclick="toggleFavorite('${restArea}', ${status.index}, event)">
                                                 <i class="fas fa-heart favorite-icon"></i>
                                                 <span class="favorite-text">즐겨찾기</span>
                                             </button>
+                                        </div>
+                                        
+                                        <!-- 디버그용 방향 정보 표시 -->
+                                        <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                                            <c:set var="direction" value="${restAreaNameToDirection[restArea]}" />
+                                            <c:if test="${not empty direction}">
+                                                <strong>방향:</strong> ${direction}
+                                            </c:if>
                                         </div>
                                     </c:if>
 
