@@ -27,6 +27,9 @@
         <h1><i class="fas fa-map-marked-alt"></i> 경로상 휴게시설 정보</h1>
         <p>휴게소와 졸음쉼터 정보를 확인하세요</p>
     </div>
+
+
+
     <!-- 경로 정보 표시 -->
     <c:if test="${not empty origin and not empty destination}">
         <div class="route-info">
@@ -111,13 +114,24 @@
                                     <div class="rest-area-rating">
                                         <span class="rating-label">별점</span>
                                         <div class="stars">
-                                            <i class="fas fa-star star"></i>
-                                            <!-- TODO: 별점 시스템 구현 -->
-                                            <!-- TODO: 실제 별점 데이터를 서버에서 받아와서 표시 -->
-                                            <!-- TODO: 사용자 리뷰 기반 별점 계산 로직 추가 -->
+                                            <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+                                            <c:choose>
+                                                <c:when test="${not empty serviceAreaVO and not empty serviceAreaVO.star and serviceAreaVO.star != '0' and serviceAreaVO.star != '0.0'}">
+                                                    <!-- 노란별 하나만 표시 -->
+                                                    <i class="fas fa-star star filled"></i>
+                                                    <!-- 소수점 2자리까지 점수 표시 -->
+                                                    <span class="rating-score"><fmt:formatNumber value="${serviceAreaVO.star}" pattern="#.##" /></span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- 평가 없을 때는 회색 별 -->
+                                                    <i class="fas fa-star star"></i>
+                                                    <span class="rating-score">평가 없음</span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </div>
-
                                     </div>
+
+
                                     <!-- 소요시간 표시 -->
                                     <c:if test="${restArea.contains('휴게소')}">
                                         <c:set var="serviceAreaIndex" value="0"/>
@@ -200,22 +214,73 @@
                                                     편의시설
                                                 </div>
                                                 <div class="facilities-grid">
-                                                    <div class="facility-item">
-                                                        <i class="fas fa-baby facility-icon"></i>
-                                                        <span>수유실</span>
-                                                    </div>
-                                                    <div class="facility-item">
-                                                        <i class="fas fa-first-aid facility-icon"></i>
-                                                        <span>약국</span>
-                                                    </div>
-                                                    <div class="facility-item">
-                                                        <i class="fas fa-bus facility-icon"></i>
-                                                        <span>버스환승</span>
-                                                    </div>
-                                                    <div class="facility-item">
-                                                        <i class="fas fa-credit-card facility-icon"></i>
-                                                        <span>ATM</span>
-                                                    </div>
+                                                    <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+                                                    <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.convenience}">
+                                                        <c:forEach var="facility" items="${serviceAreaVO.convenience.split(',')}" varStatus="facilityStatus">
+                                                            <c:choose>
+                                                                <c:when test="${facility.contains('수유실')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-baby facility-icon"></i>
+                                                                        <span>수유실</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('약국')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-first-aid facility-icon"></i>
+                                                                        <span>약국</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('버스')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-bus facility-icon"></i>
+                                                                        <span>버스환승</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('ATM')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-credit-card facility-icon"></i>
+                                                                        <span>ATM</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('주유소')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-gas-pump facility-icon"></i>
+                                                                        <span>주유소</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('충전소')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-charging-station facility-icon"></i>
+                                                                        <span>충전소</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('음식점')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-utensils facility-icon"></i>
+                                                                        <span>음식점</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('편의점')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-store facility-icon"></i>
+                                                                        <span>편의점</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-check facility-icon"></i>
+                                                                        <span>${facility.trim()}</span>
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </c:forEach>
+                                                    </c:if>
+                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.convenience}">
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-info-circle facility-icon"></i>
+                                                            <span>편의시설 정보 없음</span>
+                                                        </div>
+                                                    </c:if>
                                                 </div>
                                             </c:when>
                                         </c:choose>
@@ -225,17 +290,36 @@
                                     <div class="content-section">
                                         <c:choose>
                                             <c:when test="${restArea.contains('휴게소')}">
+                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+                                                
                                                 <div class="section-title-with-date">
                                                     <div class="section-title-left">
                                                         <i class="fas fa-gas-pump"></i>
                                                         주유비
                                                     </div>
-                                                    <div class="section-title-date">2025.08.05</div>
+                                                    <div class="section-title-date">
+                                                        <jsp:useBean id="now" class="java.util.Date" />
+                                                        <fmt:formatDate value="${now}" pattern="yyyy.MM.dd" />
+                                                    </div>
                                                 </div>
                                                 <div class="fuel-info">
-                                                    <div class="fuel-price">휘발유: 1,618원</div>
-                                                    <div class="fuel-price">경유: 1,474원</div>
-                                                    <div class="fuel-price">LPG: 1,074원</div>
+                                                    <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.gasInfo}">
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.gasoline}">
+                                                            <div class="fuel-price">휘발유: ${serviceAreaVO.gasInfo.gasoline}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.disel}">
+                                                            <div class="fuel-price">경유: ${serviceAreaVO.gasInfo.disel}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price">LPG: ${serviceAreaVO.gasInfo.LPG}</div>
+                                                        </c:if>
+                                                        <c:if test="${empty serviceAreaVO.gasInfo.gasoline and empty serviceAreaVO.gasInfo.disel and empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price">주유소 정보 없음</div>
+                                                        </c:if>
+                                                    </c:if>
+                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.gasInfo}">
+                                                        <div class="fuel-price">주유소 정보 없음</div>
+                                                    </c:if>
                                                 </div>
                                             </c:when>
                                         </c:choose>
@@ -370,7 +454,7 @@
 <script>
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
-        // 탭 기능 구현
+        // 기존 탭 기능 구현
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
 
@@ -658,6 +742,8 @@
             }
         });
     }
+
+
 </script>
 
 <!-- Footer Include -->
