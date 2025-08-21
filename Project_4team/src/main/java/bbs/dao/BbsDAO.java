@@ -77,13 +77,14 @@ public class BbsDAO {
     }
 
     //수정
-    public static int edit(String PostNum, String subject, String content, String FileName){
+    // ***** 수정된 부분: category 매개변수 추가 *****
+    public static int edit(String PostNum, String subject, String content, String FileName, String category){
 
         Map<String, String> map = new HashMap<>();
         map.put("PostNum", PostNum);
         map.put("subject", subject);
         map.put("content", content);
-        map.put("FileName", FileName);
+        map.put("category", category); // ***** 추가된 부분: map에 category 값 넣기 *****
 
         if(FileName != null){ //UPDATE절에 구동되지 않게 하기 위해 검사
             map.put("FileName", FileName);

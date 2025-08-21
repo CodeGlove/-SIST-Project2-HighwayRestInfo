@@ -8,45 +8,115 @@
     <meta charset="UTF-8">
     <title>공지사항 수정</title>
     <style type="text/css">
-        #bbs table {
-            width:580px;
-            margin-left:10px;
-            border:1px solid black;
-            border-collapse:collapse;
-            font-size:14px;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        #bbs table caption {
-            font-size:20px;
-            font-weight:bold;
-            margin-bottom:10px;
-        }
-
-        #bbs table th {
-            text-align:center;
-            border:1px solid black;
-            padding:4px 10px;
-        }
-
-        #bbs table td {
-            text-align:left;
-            border:1px solid black;
-            padding:4px 10px;
-        }
-        /*CK에디터 크기 지정*/
-        .ck-editor {
+        #bbs {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             width: 100%;
+            max-width: 700px;
         }
 
-        .no {width:15%}
-        .subject {width:30%}
-        .writer {width:20%}
-        .reg {width:20%}
-        .hit {width:15%}
-        .title{background:lightsteelblue}
+        #bbs h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
 
-        .odd {background:silver}
-        .t_bold{ font-weight: bold; color: #007bff; }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            width: 100px; /* 라벨 너비를 고정 */
+            font-weight: bold;
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            flex-grow: 1; /* 입력 필드가 남은 공간을 채우도록 함 */
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* CKEditor 컨테이너 */
+        #content-container {
+            margin-bottom: 15px;
+        }
+
+        /* 파일 입력 필드에 대한 스타일을 CKEditor와 유사하게 지정 */
+        .file-upload-container {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        /* 파일 입력 필드와 파일명을 감싸는 컨테이너 */
+        .file-display-box {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            border: 1px solid #ccc; /* 카테고리와 동일한 테두리 색상 */
+            border-radius: 4px;
+            padding: 5px;
+            gap: 10px; /* 파일 선택과 파일명 사이의 간격 */
+        }
+
+        .file-upload-container input[type="file"] {
+            border: none;
+            padding: 0;
+            flex-grow: 1;
+        }
+
+        .file-upload-container span {
+            /* span 태그에 별도 스타일링 */
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap; /* 줄바꿈 방지 */
+            overflow: hidden; /* 넘치는 텍스트 숨기기 */
+            text-overflow: ellipsis; /* ...으로 표시 */
+        }
+
+        /* CKEditor 테두리 정렬을 위한 스타일 */
+        .ck-editor__main {
+            border: 1px solid #000 !important;
+            border-radius: 4px;
+        }
+
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button-group input[type="button"] {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            margin: 0 5px;
+        }
+
+        .button-group input[type="button"]:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -56,47 +126,60 @@
         BbsVO vo = (BbsVO) obj;
 %>
 <div id="bbs">
+    <h2>공지사항 수정</h2>
     <form action="Controller?type=edit" method="post" encType="multipart/form-data">
         <input type="hidden" id="hidden_postNum" value="${vo.postNum}"/>
         <input type="hidden" id="hidden_cPage" value="${param.cPage}"/>
-
         <input type="hidden" name="PostNum" value="${vo.postNum}"/>
         <input type="hidden" name="cPage" value="${param.cPage}"/>
-        <table summary="공지사항 수정">
-            <caption>공지사항 수정</caption>
-            <tbody>
-            <tr>
-                <th>제목:</th>
-                <td><input type="text" name="subject" id="subject" size="45" value="${vo.subject}"/></td>
-            </tr>
-            <tr>
-                <th>이름:</th>
-                <td><input type="text" name="writer" id="writer" size="12" value="${vo.writer}" readonly/></td>
-            </tr>
-            <tr>
-                <th>내용:</th>
-                <td><textarea name="content" cols="50" id="content" rows="8"></textarea></td>
-            </tr>
-            <tr>
-                <th>첨부파일:</th>
-                <td><input type="file" id="file" name="file"/>
-                    <%
-                        if(vo.getFileName() != null){
-                    %>
-                    <p class="t_bold">(<%=vo.getFileName()%>)</p>
-                    <%
-                        }
-                    %>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="button" value="완료" onclick="sendData()"/>
-                    <input type="button" value="취소" onclick="goBack()"/>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <input type="hidden" name="oldFileName" value="${vo.fileName}"/>
+
+        <div class="form-group">
+            <label for="subject">제목:</label>
+            <input type="text" name="subject" id="subject" value="${vo.subject}"/>
+        </div>
+
+        <div class="form-group">
+            <label for="writer">이름:</label>
+            <input type="text" name="writer" id="writer" value="${vo.writer}" readonly/>
+        </div>
+
+        <div class="form-group">
+            <label for="category">카테고리:</label>
+            <select id="category" name="category">
+                <option value="">::: 카테고리를 선택하세요 :::</option>
+                <option value="HighWay" <c:if test="${vo.category eq 'HighWay'}">selected</c:if>>고속도로</option>
+                <option value="RestArea" <c:if test="${vo.category eq 'RestArea'}">selected</c:if>>졸음쉼터</option>
+                <option value="ServiceArea" <c:if test="${vo.category eq 'ServiceArea'}">selected</c:if>>휴게소</option>
+                <option value="Shop" <c:if test="${vo.category eq 'Shop'}">selected</c:if>>매장</option>
+                <option value="Guide" <c:if test="${vo.category eq 'Guide'}">selected</c:if>>이용안내</option>
+                <option value="Other" <c:if test="${vo.category eq 'Other'}">selected</c:if>>기타</option>
+            </select>
+        </div>
+
+        <div id="content-container">
+            <label for="content">내용:</label>
+            <textarea name="content" id="content" rows="8"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="file" style="cursor: default;">첨부파일:</label>
+            <div class="file-display-box">
+                <input type="file" id="file" name="file" style="cursor: pointer;"/>
+                <%
+                    if(vo.getFileName() != null){
+                %>
+                <span><%=vo.getFileName()%></span>
+                <%
+                    }
+                %>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <input type="button" value="완료" onclick="sendData()"/>
+            <input type="button" value="취소" onclick="goBack()"/>
+        </div>
     </form>
 </div>
 
@@ -108,7 +191,7 @@
     ClassicEditor
         .create(document.querySelector('#content'), {
             ckfinder: {
-                uploadUrl: '${pageContext.request.contextPath}/Controller?type=saveImg'
+                uploadUrl: 'Controller?type=saveImg'
             }
         })
         .then(editor => {
@@ -139,6 +222,14 @@
             alert("이름을 입력하세요:");
             $("#writer").val("");
             $("#writer").focus();
+            return;
+        }
+
+        // 카테고리 유효성 검사 추가
+        let category = $("#category").val();
+        if(category === ""){
+            alert("카테고리를 선택하세요");
+            $("#category").focus();
             return;
         }
 

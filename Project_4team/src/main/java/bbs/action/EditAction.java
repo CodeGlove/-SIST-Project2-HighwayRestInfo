@@ -100,6 +100,9 @@ public class EditAction implements Action {
                 String cPage = mr.getParameter("cPage");
                 String oldFileName = mr.getParameter("oldFileName"); // 기존 파일명 (edit.jsp 폼에 hidden으로 추가해야 함)
 
+                // ***** 수정된 부분: 카테고리 값 얻기 *****
+                String category = mr.getParameter("category");
+
                 // 파일 첨부 관련 변수
                 File newFile = mr.getFile("file");
                 String s3FileKey = oldFileName; // 기본값은 기존 파일명
@@ -140,7 +143,8 @@ public class EditAction implements Action {
                 }
 
                 // 3. 데이터베이스 업데이트
-                BbsDAO.edit(postNum, subject, content, s3FileKey); // BbsDAO의 edit 메서드에 파일명 전달
+                // ***** 수정된 부분: edit() 메서드에 category 값 전달 *****
+                BbsDAO.edit(postNum, subject, content, s3FileKey, category); // BbsDAO의 edit 메서드에 파일명과 카테고리 전달
 
                 // 4. 수정 후 상세 페이지로 리다이렉션
                 response.sendRedirect("Controller?type=view&PostNum=" + postNum + "&cPage=" + cPage);
