@@ -21,6 +21,12 @@ public class ServiceAreaVO {
     private String Star;
     private GasVO gasInfo;
 	private String AiComment;
+    
+    private boolean isBookmarked;
+
+    public boolean isBookmarked() { return isBookmarked; }
+    public void setBookmarked(boolean bookmarked) { isBookmarked = bookmarked; }
+
 
     public GasVO getGasInfo() {
         return gasInfo;

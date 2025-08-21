@@ -13,334 +13,140 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/restareaStyle.css">
-
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modal.css">
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
 
-    <style>
-        html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: 100%; }
-        .search-container {
-            position: absolute; top: 10px; left: 50px; z-index: 1000; background-color: white;
-            padding: 8px; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            display: flex; gap: 8px; align-items: center;
-        }
-        .select-wrapper { position: relative; display: inline-block; }
-        .select-wrapper::after {
-            content: '▼'; font-size: 14px; color: #555; position: absolute;
-            top: 50%; right: 12px; transform: translateY(-50%); pointer-events: none;
-        }
-        .search-container select {
-            -webkit-appearance: none; -moz-appearance: none; appearance: none;
-            padding: 10px 35px 10px 15px; border: 1px solid #ccc; border-radius: 3px;
-            font-size: 16px; background-color: white; cursor: pointer;
-        }
-        .search-container input, .search-container button {
-            padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 16px;
-        }
-        .search-container input { width: 200px; }
-        .search-container button {
-            background-color: #007bff; color: white; cursor: pointer; border-color: #007bff;
-        }
-        #cctv-toggle-button {
-            background-color: #6c757d;
-            border-color: #6c757d;
-        }
 
-        @media (max-width: 768px) {
-            .search-container {
-                flex-direction: column;
-                align-items: stretch;
-                width: 90%;
-                left: 5%;
-                gap: 5px;
-            }
-            .search-container input, .search-container select, .search-container button {
-                width: 100%;
-                box-sizing: border-box;
-            }
-        }
+<style>
+ html, body { height: 100%; margin: 0; }
+#map { width: 100%; height: 100%; }
+.search-container {
+    position: absolute; top: 10px; left: 50px; z-index: 1000; background-color: white;
+    padding: 8px; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    display: flex; gap: 8px; align-items: center;
+}
+.select-wrapper { position: relative; display: inline-block; }
+.select-wrapper::after {
+    content: '▼'; font-size: 14px; color: #555; position: absolute;
+    top: 50%; right: 12px; transform: translateY(-50%); pointer-events: none;
+}
+.search-container select {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    padding: 10px 35px 10px 15px; border: 1px solid #ccc; border-radius: 3px;
+    font-size: 16px; background-color: white; cursor: pointer;
+}
+.search-container input, .search-container button {
+    padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 16px;
+}
+.search-container input { width: 200px; }
+.search-container button {
+    background-color: #007bff; color: white; cursor: pointer; border-color: #007bff;
+}
+#cctv-toggle-button {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
 
-        /* 카카오 지도 InfoWindow 스타일 */
-        .kakao_infowindow {
-            position: relative;
-            z-index: 9999;
-            border-bottom: 2px solid #ccc;
-            background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .kakao_infowindow .title {
-            font-size: 16px;
-            font-weight: bold;
-            padding: 10px;
-            text-align: center;
-            background-color: #f8f9fa;
-        }
-        .kakao_infowindow .body {
-            padding: 5px;
-        }
-        .kakao_infowindow .body video {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .kakao_infowindow .cctv-close {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            cursor: pointer;
-            color: #888;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .kakao_infowindow .cctv-close:hover {
-            color: #333;
-        }
-        .kakao_infowindow:after {
-            content: '';
-            position: absolute;
-            margin-left: -12px;
-            left: 50%;
-            bottom: -12px;
-            width: 22px;
-            height: 12px;
-            background: url('https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/round_triangle.png') no-repeat;
-        }
+@media (max-width: 768px) {
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+        width: 90%;
+        left: 5%;
+        gap: 5px;
+    }
+    .search-container input, .search-container select, .search-container button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
 
-        /* 💡 마우스오버 시 표시될 커스텀 오버레이 스타일 */
-        .custom-overlay {
-            position: relative;
-            background: #ffffff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            white-space: nowrap;
-            text-align: center;
-        }
-        .custom-overlay .overlay-name {
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 3px;
-        }
-        .custom-overlay .overlay-address {
-            font-size: 12px;
-            font-weight: normal;
-            color: #666;
-        }
-        .custom-overlay::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 5px;
-            border-style: solid;
-            border-color: #ccc transparent transparent transparent;
-        }
+/* 카카오 지도 InfoWindow 스타일 */
+.kakao_infowindow {
+    position: relative;
+    z-index: 9999;
+    border-bottom: 2px solid #ccc;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.kakao_infowindow .title {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+    background-color: #f8f9fa;
+}
+.kakao_infowindow .body {
+    padding: 5px;
+}
+.kakao_infowindow .body video {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.kakao_infowindow .cctv-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
+    color: #888;
+    font-size: 18px;
+    font-weight: bold;
+}
+.kakao_infowindow .cctv-close:hover {
+    color: #333;
+}
+.kakao_infowindow:after {
+    content: '';
+    position: absolute;
+    margin-left: -12px;
+    left: 50%;
+    bottom: -12px;
+    width: 22px;
+    height: 12px;
+    background: url('https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/round_triangle.png') no-repeat;
+}
 
-        .star-rating {
-            display: flex;
-            align-items: center;
-            gap: 5px; /* 별점 아이콘과 텍스트 사이의 간격 */
-        }
-
-        .star-rating i {
-            font-size: 1.2rem; /* 별 아이콘 크기 */
-        }
-
-        .star-rating .fas {
-            color: #ffc107; /* 채워진 별 색상 */
-        }
-
-        .star-rating .far {
-            color: #e9ecef; /* 빈 별 색상 */
-        }
-
-        #starText {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #333; /* 텍스트 색상 */
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .star-rating {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .star-rating i {
-            font-size: 1.2rem;
-        }
-
-        .star-rating .fas {
-            color: #ffc107;
-        }
-
-        .star-rating .far {
-            color: #e9ecef;
-        }
-
-        #starText {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .modal-button-container {
-            margin-top: 20px;
-            text-align: center; /* 버튼을 중앙에 배치 */
-            width: 100%;
-        }
-
-        .modal-btn {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: #495057;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            display: inline-flex; /* 아이콘과 텍스트 정렬 */
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-btn:hover {
-            background-color: #e9ecef;
-            color: #212529;
-            border-color: #ced4da;
-        }
-
-        .modal-btn i {
-            margin-right: 8px;
-            font-size: 1.1rem;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            box-sizing: border-box;
-        }
-        .modal-content {
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            max-width: 550px;
-            width: 100%;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e9ecef;
-            flex-shrink: 0;
-        }
-
-        .modal-body {
-            overflow-y: auto;
-            padding: 1.5rem;
-        }
-
-        .gas-info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            width: 100%;
-            text-align: center;
-        }
-        .gas-item {
-            display: flex;
-            flex-direction: column;
-            padding: 0.75rem;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
-        .gas-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 0.25rem;
-        }
-        .gas-value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #007bff;
-        }
-
-        #storeList {
-            background-color: #f8f9fa; /* 연한 회색 배경 */
-            border: 1px solid #e9ecef;   /* 옅은 테두리 */
-            border-radius: 8px;        /* 둥근 모서리 */
-            padding: 1rem;             /* 내부 여백 */
-            min-height: 200px;         /* 최소 높이 설정으로 안정감 부여 */
-            text-align: center;
-            line-height: 2;
-            font-size: 1.1rem;
-        }
-
-        .ai-comment-section {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .ai-comment-box {
-            width: 100%;
-            margin-top: 0.75rem;
-            padding: 1rem;
-            background-color: #f0f7ff;
-            border-radius: 8px;
-            border-left: 4px solid #007bff;
-            color: #333;
-            font-size: 1rem;
-            line-height: 1.6;
-            box-sizing: border-box;
-        }
-
-        /* 두 번째 모달 (매장 정보) 관련 스타일 */
-        .store-search-container {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 1rem;
-        }
-        #storeSearchInput {
-            flex-grow: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #storeSearchBtn {
-            padding: 8px 12px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-    </style>
+/* 💡 마우스오버 시 표시될 커스텀 오버레이 스타일 */
+.custom-overlay {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    white-space: nowrap;
+    text-align: center;
+}
+.custom-overlay .overlay-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 3px;
+}
+.custom-overlay .overlay-address {
+    font-size: 12px;
+    font-weight: normal;
+    color: #666;
+}
+.custom-overlay::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #ccc transparent transparent transparent;
+}
+</style>
 </head>
 <body>
 <%-- 모달창을 restAreaModal.jsp에서 인클루드합니다. --%>
@@ -404,13 +210,6 @@
                 $storeList.html('<p class="store-empty">매장 정보를 불러오는 중 오류가 발생했습니다.</p>');
             }
         });
-    }
-
-    function showModalForRestArea(restAreaId) {
-        const restArea = restAreaDataStore.get(restAreaId.toString());
-        if (restArea) {
-            showRestAreaDetailModal(restArea);
-        }
     }
 
     $(window).on('load', function () {
@@ -782,6 +581,39 @@
         $('#modalTitle').text(data.SAName || '정보 없음');
         $('#modalLocation').text(data.Address || '정보 없음');
 
+
+        //===================================================즐겨찾기 액션======================
+        const bookmarkIcon = $('#bookmarkIcon');
+        const tooltip = bookmarkIcon.find('.tooltip-text');
+        const iconElement = bookmarkIcon.find('i');
+
+        // 아이콘에 현재 휴게소 ID를 데이터 속성으로 저장
+        bookmarkIcon.data('sakey', data.Idx);
+
+        // 로그인 여부를 JSP 세션 정보로 판단 (정확함)
+        const isLoggedIn = '${not empty sessionScope.loginUser}';
+
+        if (isLoggedIn === 'true') {
+            bookmarkIcon.show(); // 로그인 상태면 아이콘 보이기
+
+            // 백엔드에서 받은 즐겨찾기 상태(data.bookmarked)에 따라 아이콘과 툴팁 초기화
+            if (data.isBookmarked) {
+                iconElement.removeClass('far').addClass('fas'); // 채워진 하트
+                bookmarkIcon.addClass('bookmarked');
+                tooltip.text('즐겨찾기 삭제');
+            } else {
+                iconElement.removeClass('fas').addClass('far'); // 빈 하트
+                bookmarkIcon.removeClass('bookmarked');
+                tooltip.text('즐겨찾기 추가');
+            }
+        } else {
+            // 비로그인 상태일 때는 아이콘을 보여주되, 클릭 시 로그인 안내
+            bookmarkIcon.show();
+            iconElement.removeClass('fas').addClass('far'); // 항상 빈 하트
+            bookmarkIcon.removeClass('bookmarked');
+            tooltip.text('즐겨찾기 추가');
+        }
+        //===========================즐겨찾기 액션
         let formattedPhone = '정보 없음';
         if (data.Tel) {
             formattedPhone = data.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
@@ -866,10 +698,6 @@
         }
     });
 
-    // 모달 내용 클릭 시 배경 클릭 이벤트가 실행되지 않도록 함
-    $('.modal-content').on('click', function(e) {
-        e.stopPropagation();
-    });
 
     // 매장 정보 버튼 클릭
     $('#showStoresBtn').on('click', function () {
@@ -897,6 +725,51 @@
             $('#storeSearchBtn').click();
         }
     });
+
+    $(document).on('click', '#bookmarkIcon', function() {
+        const isLoggedIn = '${not empty sessionScope.loginUser}';
+        if (isLoggedIn !== 'true') {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+
+        const iconWrapper = $(this);
+        const saKey = iconWrapper.data('sakey');
+        const iconElement = iconWrapper.find('i');
+        const tooltip = iconWrapper.find('.tooltip-text');
+
+        const isBookmarked = iconWrapper.hasClass('bookmarked');
+        const action = isBookmarked ? 'delete' : 'add';
+
+        $.ajax({
+            url: '${pageContext.request.contextPath}/Controller?type=Heartbookmark',
+            type: 'POST',
+            data: {
+                saKey: saKey,
+                action: action
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    if (action === 'add') {
+                        iconElement.removeClass('far').addClass('fas');
+                        iconWrapper.addClass('bookmarked');
+                        tooltip.text('즐겨찾기 삭제');
+                    } else {
+                        iconElement.removeClass('fas').addClass('far');
+                        iconWrapper.removeClass('bookmarked');
+                        tooltip.text('즐겨찾기 추가');
+                    }
+                } else {
+                    alert(response.message || '요청 처리에 실패했습니다.');
+                }
+            },
+            error: function() {
+                alert('즐겨찾기 처리 중 오류가 발생했습니다.');
+            }
+        });
+    });
+
 </script>
 
 </body>
