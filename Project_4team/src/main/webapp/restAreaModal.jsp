@@ -1,17 +1,26 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <div id="restAreaModal" class="modal">
   <div class="modal-content">
+
     <div class="modal-header">
       <div class="modal-title">
         <i class="fas fa-utensils"></i>
         <span id="modalTitle">휴게소 정보</span>
       </div>
-      <div id="modalStarRating" class="star-rating">
-        <span id="starIconContainer"></span>
-        <span id="starText"></span>
+      <div class="header-icons">
+        <div id="modalStarRating" class="star-rating">
+          <span id="starIconContainer"></span>
+          <span id="starText"></span>
+        </div>
+        <span id="bookmarkIcon" class="bookmark-icon">
+  <i class="far fa-heart"></i>
+  <span class="tooltip-text">즐겨찾기 추가</span>
+  </span>
       </div>
-      <span class="close" onclick="closeModal()">&times;</span>
+      <span class="close">&times;</span>
     </div>
+
     <div class="modal-body">
       <div class="info-section">
         <div class="info-label">
@@ -84,6 +93,7 @@
           </div>
         </div>
       </div>
+
       <div class="info-section">
         <div class="info-label">
           <i class="fas fa-clock"></i>
@@ -113,20 +123,23 @@
           • 긴급상황 시 1588-2504로 연락하세요<br>
           • 휴게소 내에서는 안전수칙을 준수해주세요
         </div>
-
         <div class="modal-button-container">
           <button id="showStoresBtn" class="modal-btn">
             <i class="fas fa-store"></i>
             매장 정보 확인
           </button>
         </div>
-
-
       </div>
     </div>
-  </div>
-</div>
+    <%-- ▲▲▲ 모달 바디 종료 ▲▲▲ --%>
 
+  </div> <%-- modal-content 종료 --%>
+</div> <%-- restAreaModal 종료 --%>
+
+
+<%-- ========================================================== --%>
+<%-- =============== 두 번째 모달: 매장 정보 =============== --%>
+<%-- ========================================================== --%>
 <div id="storesModal" class="modal" style="display: none;">
   <div class="modal-content">
     <div class="modal-header">
@@ -134,7 +147,7 @@
         <i class="fas fa-store"></i>
         <span id="storesModalTitle"></span>
       </div>
-      <span class="close" onclick="closeStoresModal()">&times;</span>
+      <span class="close">&times;</span>
     </div>
     <div class="modal-body">
       <div class="search-and-list-container">
