@@ -161,6 +161,19 @@
             <artifactId>quartz</artifactId>
             <version>2.3.2</version>
         </dependency>
+
+        <!--비밀번호 재설정 링크보내기를 위한 라이브러리 by sjs-->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

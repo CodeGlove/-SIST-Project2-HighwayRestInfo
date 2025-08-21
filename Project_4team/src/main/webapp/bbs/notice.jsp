@@ -277,7 +277,7 @@
 <!-- Header -->
 <header class="header">
     <div class="nav-container">
-        <a href="../Controller" class="logo">
+        <a href="Controller" class="logo">
             <div class="logo-icon">
                 <i class="fas fa-road"></i>
             </div>
@@ -345,7 +345,7 @@
                 <c:otherwise>
     <c:forEach items="${ar}" var="vo" varStatus="vs">
                         <div class="notice-item">
-                            <a href="../Controller?type=view&PostNum=${vo.postNum}&cPage=${p.nowPage}" class="notice-title">
+                            <a href="Controller?type=view&PostNum=${vo.postNum}&cPage=${p.nowPage}" class="notice-title">
               ${vo.subject}
           </a>
                             <div class="notice-meta">

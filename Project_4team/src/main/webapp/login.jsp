@@ -75,7 +75,7 @@
                 <span class="checkmark"></span>
                 자동 로그인
             </label>
-            <a href="#" class="forgot-link">비밀번호를 잊으셨나요?</a>
+            <a href="Controller?type=forgotPw" class="forgot-link">비밀번호를 잊으셨나요?</a>
         </div>
 
         <button type="submit" class="login-btn">
