@@ -304,7 +304,7 @@
                 <li><a href="#">회사 소개</a></li>
                 <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
                 <li><a href="#">고객센터</a></li>
-                <li><a href="#">자주 묻는 질문</a></li>
+                <li><a href="Controller?type=faq">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
             </ul>
         </nav>
@@ -336,7 +336,7 @@
                       ne null and sessionScope.loginUser.authority == 1}">
             <div class="write-btn-container">
                 <button type="button" class="write-btn"
-                        onclick="javascript:location.href='Controller?type=write'">
+                        onclick="javascript:location.href='Controller?type=write&returnTo=notice'">
                     글쓰기
                 </button>
             </div>
@@ -375,6 +375,9 @@
                                         </c:when>
                                         <c:when test="${vo.category eq 'Guide'}">
                                             이용안내
+                                        </c:when>
+                                        <c:when test="${vo.category eq 'Faq'}">
+                                            FAQ
                                         </c:when>
                                         <c:when test="${vo.category eq 'Other'}">
                                             기타

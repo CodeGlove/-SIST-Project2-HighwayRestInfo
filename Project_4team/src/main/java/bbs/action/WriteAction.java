@@ -131,7 +131,12 @@ public class WriteAction implements Action {
                         writeDate, ThumbsUp, ThumbsDown, Delete, Pwd);
 
                 if(result > 0) {
-                    response.sendRedirect("Controller?type=notice");
+                    // **이 부분만 수정되었습니다.**
+                    if ("Faq".equals(category)) {
+                        response.sendRedirect("Controller?type=faq");
+                    } else {
+                        response.sendRedirect("Controller?type=notice");
+                    }
                 } else {
                     response.setContentType("text/html;charset=utf-8");
                     PrintWriter out = response.getWriter();

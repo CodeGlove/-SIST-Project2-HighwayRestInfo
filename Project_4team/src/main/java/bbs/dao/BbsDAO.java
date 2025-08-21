@@ -10,25 +10,50 @@ import java.util.Map;
 
 
 public class BbsDAO {
-    //총 게시물의 수를 반환
-    public static int getTotalCount(String subject) {
+
+    /**
+     * 총 게시물 수를 반환하는 메서드 (기존의 totalCount 쿼리 대신 사용)
+     * @param category 게시판 카테고리 (null이면 모든 게시물, 'Faq'이면 FAQ, 그 외는 공지사항)
+     * @return 총 게시물 수
+     */
+    public static int getTotalCount(String category) {
         SqlSession ss = FactoryService.getFactory().openSession();
-        int cnt = ss.selectOne("Board.totalCount", subject);
+        int cnt = 0;
+        if ("Faq".equals(category)) {
+            cnt = ss.selectOne("Board.totalCountFaqOnly");
+        } else {
+            cnt = ss.selectOne("Board.totalCountExceptFaq");
+        }
         ss.close();
         return cnt;
     }
-    //목록 반환
-    public static BbsVO[] getList(String subject, int begin, int end){
+
+    /**
+     * 게시물 목록을 반환하는 메서드 (기존의 list 쿼리 대신 사용)
+     * @param category 게시판 카테고리 (null이면 모든 게시물, 'Faq'이면 FAQ, 그 외는 공지사항)
+     * @param subject 검색어
+     * @param begin 시작 행
+     * @param end 끝 행
+     * @return 게시물 배열
+     */
+    public static BbsVO[] getList(String category, String subject, int begin, int end){
         BbsVO[] ar = null;
 
-        Map<String, Object> map = new HashMap<>(); //map구조 생성
-        map.put("subject", subject); //bbs.xml의 subject 이름과 같아야한다!
+        Map<String, Object> map = new HashMap<>();
+        map.put("subject", subject);
         map.put("begin", begin);
         map.put("end", end);
 
         SqlSession ss = FactoryService.getFactory().openSession();
-        List<BbsVO> list = ss.selectList("Board.list", map); //bbs.xml의 parameterType 맞춰야함
-        if(list != null && list.size()>0){
+        List<BbsVO> list = null;
+
+        if ("Faq".equals(category)) {
+            list = ss.selectList("Board.listFaqOnly", map);
+        } else {
+            list = ss.selectList("Board.listExceptFaq", map);
+        }
+
+        if(list != null && list.size() > 0){
             ar = new BbsVO[list.size()];
             list.toArray(ar);
         }
@@ -36,6 +61,7 @@ public class BbsDAO {
 
         return ar;
     }
+
 
     //저장
     public static int add(String subject, String writer,
@@ -56,9 +82,8 @@ public class BbsDAO {
         map.put("Delete", Delete);
         map.put("Pwd", Pwd);
 
-        //DAO 호출을 위한 세션 열기
         SqlSession ss = FactoryService.getFactory().openSession();
-        cnt = ss.insert("Board.add", map); //인자는 map으로!
+        cnt = ss.insert("Board.add", map);
         if(cnt > 0)
             ss.commit();
         else
@@ -77,16 +102,15 @@ public class BbsDAO {
     }
 
     //수정
-    // ***** 수정된 부분: category 매개변수 추가 *****
     public static int edit(String PostNum, String subject, String content, String FileName, String category){
 
         Map<String, String> map = new HashMap<>();
         map.put("PostNum", PostNum);
         map.put("subject", subject);
         map.put("content", content);
-        map.put("category", category); // ***** 추가된 부분: map에 category 값 넣기 *****
+        map.put("category", category);
 
-        if(FileName != null){ //UPDATE절에 구동되지 않게 하기 위해 검사
+        if(FileName != null){
             map.put("FileName", FileName);
         }
 
@@ -105,6 +129,32 @@ public class BbsDAO {
     public static int delBbs(String PostNum) {
         SqlSession ss = FactoryService.getFactory().openSession();
         int cnt = ss.update("Board.del", PostNum);
+        if (cnt > 0) {
+            ss.commit();
+        } else {
+            ss.rollback();
+        }
+        ss.close();
+        return cnt;
+    }
+
+    // 좋아요
+    public static int ThumbsUp(String PostNum) {
+        SqlSession ss = FactoryService.getFactory().openSession();
+        int cnt = ss.update("Board.Like", PostNum);
+        if (cnt > 0) {
+            ss.commit();
+        } else {
+            ss.rollback();
+        }
+        ss.close();
+        return cnt;
+    }
+
+    // 싫어요
+    public static int ThumbsDown(String PostNum) {
+        SqlSession ss = FactoryService.getFactory().openSession();
+        int cnt = ss.update("Board.Hate", PostNum);
         if (cnt > 0) {
             ss.commit();
         } else {

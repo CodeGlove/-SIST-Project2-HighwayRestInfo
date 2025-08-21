@@ -5,20 +5,16 @@ import bbs.util.Paging;
 import mybatis.vo.BbsVO;
 import restinfo.action.Action;
 
-import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-public class NoticeAction implements Action {
+public class FaqAction implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
         String subject = null;
 
-        // 공지사항 게시판이므로 FAQ를 제외한 총 게시물 수를 얻어낸다.
-        int totalCount = BbsDAO.getTotalCount(null); // category에 null을 전달하여 FAQ를 제외한 모든 글을 가져온다.
+        // FAQ 게시판이므로 FAQ 카테고리의 총 게시물 수를 얻어낸다.
+        int totalCount = BbsDAO.getTotalCount("Faq"); // category에 "Faq"를 전달하여 FAQ 글만 가져온다.
 
         // 페이징 처리 객체 생성
         Paging page = new Paging(5, 3);
@@ -35,15 +31,15 @@ public class NoticeAction implements Action {
         page.setTotalCount(totalCount);
         page.setNowPage(nowPage);
 
-        // DAO(DB)를 호출하여 원하는 게시물 목록을 받는다.
-        // FAQ를 제외한 목록을 가져오기 위해 category에 null을 전달한다.
-        BbsVO[] ar = BbsDAO.getList(null, subject, page.getBegin(), page.getEnd());
+        // DAO(DB)를 호출하여 FAQ 게시물 목록을 받는다.
+        // FAQ 목록만 가져오기 위해 category에 "Faq"를 전달한다.
+        BbsVO[] ar = BbsDAO.getList("Faq", subject, page.getBegin(), page.getEnd());
 
         // JSP에서 표현하기 위해 request에 저장!
         request.setAttribute("ar", ar);
         request.setAttribute("page", page);
         request.setAttribute("nowPage", page.getNowPage());
 
-        return "bbs/notice.jsp"; // 공지사항 페이지로 forward
+        return "bbs/faq.jsp"; // FAQ 페이지로 forward
     }
 }
