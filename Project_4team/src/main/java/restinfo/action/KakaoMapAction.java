@@ -237,6 +237,7 @@ public class KakaoMapAction implements Action {
 		}
 		
 		// 전체 JSON 응답 (디버깅용)
+		System.out.println(routeData.toString());
 		request.setAttribute("jsonResponse", routeData);
 	}
 	

@@ -116,8 +116,9 @@
                                             <!-- TODO: 실제 별점 데이터를 서버에서 받아와서 표시 -->
                                             <!-- TODO: 사용자 리뷰 기반 별점 계산 로직 추가 -->
                                         </div>
-
                                     </div>
+                                    
+                                   
                                     <!-- 소요시간 표시 -->
                                     <c:if test="${restArea.contains('휴게소')}">
                                         <c:set var="serviceAreaIndex" value="0"/>
@@ -155,6 +156,16 @@
                                                 <c:set var="serviceAreaIndex" value="${serviceAreaIndex + 1}"/>
                                             </c:if>
                                         </c:forEach>
+                                    </c:if>
+
+                                     <!-- 즐겨찾기 하트 버튼 (휴게소만 표시) -->
+                                     <c:if test="${restArea.contains('휴게소')}">
+                                        <div class="favorite-section">
+                                            <button class="favorite-btn" onclick="toggleFavorite('${restArea}', ${status.index}, event)">
+                                                <i class="fas fa-heart favorite-icon"></i>
+                                                <span class="favorite-text">즐겨찾기</span>
+                                            </button>
+                                        </div>
                                     </c:if>
 
                                     <!-- 졸음쉼터 소요시간 표시 -->
