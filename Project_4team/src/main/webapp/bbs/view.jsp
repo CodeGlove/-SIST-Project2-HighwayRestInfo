@@ -1,6 +1,8 @@
 <%@ page import="mybatis.vo.BbsVO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="java.io.InputStream" %>
+<%@ page import="java.util.Properties" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -82,42 +84,6 @@
             transform: scale(1.02);
             transition: transform 0.3s ease;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .attachment-section {
-            padding: 24px 0;
-            border-bottom: 1px solid #f2f4f6;
-        }
-
-        .attachment-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            background: #f8fafc;
-            border-radius: 12px;
-            transition: background-color 0.2s;
-        }
-
-        .attachment-item:hover {
-            background: #f1f5f9;
-        }
-
-        .attachment-icon {
-            width: 24px;
-            height: 24px;
-            color: #4e5968;
-        }
-
-        .attachment-link {
-            color: #3182f6;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .attachment-link:hover {
-            text-decoration: underline;
         }
 
         .reaction-section {
@@ -328,6 +294,18 @@
 </head>
 <body>
 
+<%
+    // application.properties에서 S3 버킷 URL을 읽어옵니다.
+    Properties prop = new Properties();
+    try (InputStream is = application.getClassLoader().getResourceAsStream("application.properties")) {
+        if (is != null) {
+            prop.load(is);
+        }
+    }
+    String s3BaseUrl = prop.getProperty("aws.s3.bucketUrl", "");
+    request.setAttribute("s3BaseUrl", s3BaseUrl);
+%>
+
 <!-- Header -->
 <header class="header">
     <div class="nav-container">
@@ -386,8 +364,9 @@
                 <div class="attachment-section">
                     <div class="attachment-item">
                         <i class="fas fa-paperclip attachment-icon"></i>
-                        <a href="javascript:down('${vo.fileName}')" class="attachment-link">
-                            ${vo.fileName}
+                            <%-- S3 URL로 직접 링크를 변경합니다. --%>
+                        <a href="${s3BaseUrl}${vo.fileName}" class="attachment-link" target="_blank">
+                                ${vo.fileName}
                         </a>
                     </div>
                 </div>
@@ -417,7 +396,7 @@
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <button type="button" class="action-btn primary" onclick="goList()">목록</button>
-                <%--관리자일 경우에만 수정/삭제 버튼 표시--%>
+                    <%--관리자일 경우에만 수정/삭제 버튼 표시--%>
                 <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
                       ne null and sessionScope.loginUser.authority eq '1'}">
                     <button type="button" class="action-btn" onclick="goEdit()">수정</button>
@@ -453,174 +432,77 @@
 
 <%-- 표현할 vo객체가 존재하지 않는다면 원래 있던 목록 페이지로 이동한다.--%>
 <c:if test="${requestScope.vo eq null}"> <%--eq는 '==' 와 같다--%>
-  <c:redirect url="../Controller">
-    <c:param name="type" value="notice"/>
-    <c:param name="cPage" value="${param.cPage}"/>
-  </c:redirect>
+    <c:redirect url="../Controller">
+        <c:param name="type" value="notice"/>
+        <c:param name="cPage" value="${param.cPage}"/>
+    </c:redirect>
 </c:if>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
 
 <script>
-  $(function () {
-    let option = {
-      modal: true,
-      autoOpen: false, //호출되는 즉시 대화상자 표시(기본값: true)
-      resizable: false,
-    };
+    $(function () {
+        let option = {
+            modal: true,
+            autoOpen: false, //호출되는 즉시 대화상자 표시(기본값: true)
+            resizable: false,
+        };
 
-    $("#del_dialog").dialog(option);
-  });
+        $("#del_dialog").dialog(option);
+    });
 
-  function goList() {
-    document.ff.action = "../Controller";
-    document.ff.type.value = "notice";
-    document.ff.submit();
-  }
-  
-  function goDel() {
-    $("#del_dialog").dialog("open");
-  }
-  
-  function del(frm) {
-    frm.submit();
-  }
-  
-  function goEdit() {
-    document.ff.action = "../Controller";
-    document.ff.type.value = "edit";
-    document.ff.submit();
-  }
-  
-  function down(FileName) {
-    document.ff.action = "../download.jsp";
-    document.ff.FileName.value = FileName;
-    document.ff.submit();
-  }
-
-  //리액션 실행 코드
-  function sendReaction(type) {
-    // 1. 함수가 시작되자마자 두 버튼을 '즉시' 비활성화 (가장 중요!)
-    //    - 서버 응답을 기다리지 않고 바로 UI를 잠가서 중복 클릭을 원천 차단합니다.
-    $("#btn-like").prop("disabled", true);
-    $("#btn-hate").prop("disabled", true);
-
-    // 2. 화면의 숫자 업데이트
-    //    - 서버가 성공할 것을 '미리 가정'하고 사용자에게 즉각적인 피드백을 줍니다.
-    if (type === 'like') {
-      const countSpan = $("#likeCount");
-      const currentCount = parseInt(countSpan.text(), 10);
-      countSpan.text(currentCount + 1);
-    } else { // 'hate'일 경우
-      const countSpan = $("#hateCount");
-      const currentCount = parseInt(countSpan.text(), 10);
-      countSpan.text(currentCount + 1);
+    function goList() {
+        location.href = "${pageContext.request.contextPath}/Controller?type=notice&cPage=${param.cPage}";
     }
 
-    // 3. 서버에 조용히 요청 보내기
-    //    - 이제 이 AJAX 호출은 백그라운드에서 DB에 데이터를 기록하는 역할만 합니다.
-    $.ajax({
-      url: '${pageContext.request.contextPath}/Controller',
-      type: 'POST',
-      data: {
-        type: type,
-        PostNum: '${vo.postNum}'
-      }
-    })
-      .fail(function() {
-        // 혹시라도 서버 요청이 실패하면 사용자에게 알리고, 새로고침을 유도합니다.
-        alert("데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
-        location.reload(); // 페이지를 새로고침하여 정확한 상태를 다시 불러옴
-      });
-  }
-
-  /*function sendReaction(type) {
-    console.log("1. sendReaction 함수 시작. 타입:", type);
-
-    // 버튼이 이미 비활성화 상태이면 아무것도 하지 않음 (중복 클릭 방지)
-    if ($("#btn-like").prop("disabled")) {
-      console.log("already btn disabled, close this method.");
-      return;
+    function goDel() {
+        $("#del_dialog").dialog("open");
     }
 
-    $.ajax({
-      url: '${pageContext.request.contextPath}/Controller',
-      type: 'POST',
-      data: {
-        type: type,
-        PostNum: '${vo.postNum}'
-      }
-    })
-      .done(function() {
-        // 서버와 통신이 '성공'했을 때 이 부분이 실행됩니다.
-        console.log("2. AJAX Request Success!!! (.done ). UI will updated.");
+    function del(frm) {
+        frm.submit();
+    }
 
-        // 화면의 숫자 업데이트
-        if (type === 'like') {
-          const countSpan = $("#likeCount");
-          const currentCount = parseInt(countSpan.text(), 10);
-          countSpan.text(currentCount + 1);
-        } else { // 'hate'일 경우
-          const countSpan = $("#hateCount");
-          const currentCount = parseInt(countSpan.text(), 10);
-          countSpan.text(currentCount + 1);
-        }
+    // 수정한 goEdit() 함수
+    function goEdit() {
+        location.href = "${pageContext.request.contextPath}/Controller?type=edit&PostNum=${vo.postNum}&cPage=${param.cPage}";
+    }
 
-        // 두 버튼 모두 즉시 비활성화
+    function sendReaction(type) {
+        // 1. 함수가 시작되자마자 두 버튼을 '즉시' 비활성화 (가장 중요!)
+        //    - 서버 응답을 기다리지 않고 바로 UI를 잠가서 중복 클릭을 원천 차단합니다.
         $("#btn-like").prop("disabled", true);
         $("#btn-hate").prop("disabled", true);
-        console.log("3. btn disabled success!!!.");
-      })
-      .fail(function(jqXHR, textStatus, errorThrown) {
-        // 서버와 통신이 '실패'했을 때 이 부분이 실행됩니다.
-        console.error("AJAX 요청 실패:", textStatus, errorThrown);
-        alert("request ~ing error");
-      });
-  }*/
 
-  //********* 기존 코드 **********
-  /*function sendReaction(type) {
-    //서버에 보낼 데이터 준비
-    $.ajax({
-      url: '${pageContext.request.contextPath}/Controller', // 요청을 보낼 URL
-      type: 'POST', // 데이터 변경을 유발하므로 POST 방식 사용
-      data: {
-        type: type, PostNum: '${vo.postNum}'} // type: 'like' 또는 'hate' PostNum: 현재 게시물 번호
-    }).done(function () {
-      // ajax 요청 완료시 함수 실행
-      if(type === 'like'){
-        // 화면에 좋아요 숫자1 증가
-        const countSpan = $("#likeCount");
-        const currentCount = parseInt(countSpan.text());
-        countSpan.text(currentCount+1);
-      }else{
-        // 화면에 싫어요 숫자1 증가
-        const countSpan = $("#hateCount");
-        const currentCount = parseInt(countSpan.text());
-        countSpan.text(currentCount+1);
-      }
-      // 누르기 중복 안됨(버튼 비활성화)
-      $("#btn-like").prop("disabled", true);
-      $("#btn-hate").prop("disabled", true);
-    }).fail(function(){
-      //요청 실패시
-      alert("오류가 발생했습니다. 다시 시도해주세요");
-    });
-  }*/
+        // 2. 화면의 숫자 업데이트
+        //    - 서버가 성공할 것을 '미리 가정'하고 사용자에게 즉각적인 피드백을 줍니다.
+        if (type === 'like') {
+            const countSpan = $("#likeCount");
+            const currentCount = parseInt(countSpan.text(), 10);
+            countSpan.text(currentCount + 1);
+        } else { // 'hate'일 경우
+            const countSpan = $("#hateCount");
+            const currentCount = parseInt(countSpan.text(), 10);
+            countSpan.text(currentCount + 1);
+        }
+
+        // 3. 서버에 조용히 요청 보내기
+        //    - 이제 이 AJAX 호출은 백그라운드에서 DB에 데이터를 기록하는 역할만 합니다.
+        $.ajax({
+            url: '${pageContext.request.contextPath}/Controller',
+            type: 'POST',
+            data: {
+                type: type,
+                PostNum: '${vo.postNum}'
+            }
+        })
+            .fail(function() {
+                // 혹시라도 서버 요청이 실패하면 사용자에게 알리고, 새로고침을 유도합니다.
+                alert("데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
+                location.reload(); // 페이지를 새로고침하여 정확한 상태를 다시 불러옴
+            });
+    }
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
