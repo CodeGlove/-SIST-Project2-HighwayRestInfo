@@ -145,11 +145,6 @@
             border-style: solid;
             border-color: #ccc transparent transparent transparent;
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
 
         .star-rating {
             display: flex;
@@ -174,6 +169,177 @@
             font-weight: 500;
             color: #333; /* 텍스트 색상 */
         }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .star-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .star-rating i {
+            font-size: 1.2rem;
+        }
+
+        .star-rating .fas {
+            color: #ffc107;
+        }
+
+        .star-rating .far {
+            color: #e9ecef;
+        }
+
+        #starText {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .modal-button-container {
+            margin-top: 20px;
+            text-align: center; /* 버튼을 중앙에 배치 */
+            width: 100%;
+        }
+
+        .modal-btn {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: inline-flex; /* 아이콘과 텍스트 정렬 */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-btn:hover {
+            background-color: #e9ecef;
+            color: #212529;
+            border-color: #ced4da;
+        }
+
+        .modal-btn i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            max-width: 550px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            flex-shrink: 0;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .gas-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+            text-align: center;
+        }
+        .gas-item {
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .gas-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+        .gas-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #007bff;
+        }
+
+        #storeList {
+            background-color: #f8f9fa; /* 연한 회색 배경 */
+            border: 1px solid #e9ecef;   /* 옅은 테두리 */
+            border-radius: 8px;        /* 둥근 모서리 */
+            padding: 1rem;             /* 내부 여백 */
+            min-height: 200px;         /* 최소 높이 설정으로 안정감 부여 */
+            text-align: center;
+            line-height: 2;
+            font-size: 1.1rem;
+        }
+
+        .ai-comment-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .ai-comment-box {
+            width: 100%;
+            margin-top: 0.75rem;
+            padding: 1rem;
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+
+        /* 두 번째 모달 (매장 정보) 관련 스타일 */
+        .store-search-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        #storeSearchInput {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #storeSearchBtn {
+            padding: 8px 12px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -210,6 +376,35 @@
     const restAreaDataStore = new Map();
     let currentInfoWindow = null;
     let currentVideoPlayer = null;
+
+    let currentRestAreaId = null;
+
+    // 매장 정보를 서버에서 불러와서 화면에 표시하는 함수
+    function loadAndRenderStores(saKey, searchText = '') {
+        const $storeList = $('#storeList');
+        $storeList.empty();
+        $storeList.html('<p class="store-empty">매장 정보를 불러오는 중...</p>');
+
+        $.ajax({
+            type: 'POST',
+            url: '${pageContext.request.contextPath}/Controller',
+            data: { type: 'getStores', saKey: saKey, searchText: searchText },
+            dataType: 'json',
+            success: function (response) {
+                $storeList.empty();
+                if (response && response.length > 0) {
+                    response.forEach(store => {
+                        $storeList.append("<b>" + store.ShopName + "</b><br>");
+                    });
+                } else {
+                    $storeList.html('<p class="store-empty">' + (searchText ? '검색 결과가 없습니다.' : '등록된 매장 정보가 없습니다.') + '</p>');
+                }
+            },
+            error: function () {
+                $storeList.html('<p class="store-empty">매장 정보를 불러오는 중 오류가 발생했습니다.</p>');
+            }
+        });
+    }
 
     function showModalForRestArea(restAreaId) {
         const restArea = restAreaDataStore.get(restAreaId.toString());
@@ -560,86 +755,148 @@
         }
     });
 
-    function showRestAreaDetailModal(ra) {
-        if (!ra) return;
-
-        console.log("모달에 표시할 데이터:", ra);
-
-        document.getElementById('modalTitle').textContent = ra.SAName || '정보 없음';
-        document.getElementById('modalLocation').textContent = ra.Address || '정보 없음';
-
-        let formattedPhone = '제공되지 않음';
-        if (ra.Tel) {
-            formattedPhone = ra.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-        }
-        document.getElementById('modalPhone').textContent = formattedPhone;
-
-        document.getElementById('modalCompactParking').textContent = (ra.CompactParking || 0) + "대";
-        document.getElementById('modalLargeParking').textContent = (ra.LargeParking || 0) + "대";
-        document.getElementById('modalDisabledParking').textContent = (ra.DisabledParking || 0) + "대";
-
-        // 편의시설 정보 동적으로 채우기
-        const facilitiesListElement = document.getElementById('modalFacilities');
-        facilitiesListElement.innerHTML = ''; // 기존 내용을 비웁니다.
-
-        if (ra.Convenience) {
-            const facilities = ra.Convenience.split(',');
-            if (facilities.length > 0) {
-                facilities.forEach(facility => {
-                    const tag = document.createElement('span');
-                    tag.className = 'facility-tag';
-                    tag.textContent = facility.trim();
-                    facilitiesListElement.appendChild(tag);
-                });
-            } else {
-                facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+    function showModalForRestArea(restAreaId) {
+        currentRestAreaId = restAreaId; // 현재 휴게소 ID 저장
+        $.ajax({
+            type: 'POST',
+            url: '${pageContext.request.contextPath}/Controller',
+            data: { type: 'getRestAreaDetails', saKey: restAreaId },
+            dataType: 'json',
+            success: function (response) {
+                if (response && response.Idx) {
+                    showRestAreaDetailModal(response);
+                } else {
+                    alert('휴게소의 상세 정보를 불러오는 데 실패했습니다.');
+                }
+            },
+            error: function () {
+                alert('서버와 통신 중 오류가 발생했습니다.');
             }
+        });
+    }
+
+    // 기존 showRestAreaDetailModal 함수를 mypage.jsp 버전 기반의 아래 코드로 교체
+    function showRestAreaDetailModal(data) {
+        if (!data) return;
+
+        $('#modalTitle').text(data.SAName || '정보 없음');
+        $('#modalLocation').text(data.Address || '정보 없음');
+
+        let formattedPhone = '정보 없음';
+        if (data.Tel) {
+            formattedPhone = data.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        }
+        $('#modalPhone').text(formattedPhone);
+
+        $('#modalCompactParking').text((data.CompactParking || 0) + '대');
+        $('#modalLargeParking').text((data.LargeParking || 0) + '대');
+        $('#modalDisabledParking').text((data.DisabledParking || 0) + '대');
+
+        // DB의 컬럼명이 AiComment 또는 AIComment 일 수 있으니 두 경우 모두 처리
+        $('#modalAiComment').text(data.AIComment || data.AiComment || '제공되는 추천 코멘트가 없습니다.');
+
+        const gasInfo = data.gasInfo;
+        if (gasInfo) {
+            $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline + '원' : '주유불가');
+            $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel + '원' : '주유불가');
+            $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG + '원' : '주유불가');
         } else {
-            facilitiesListElement.innerHTML = '<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>';
+            $('#modalGasoline, #modalDiesel, #modalLpg').text('조회 불가');
         }
 
-        const starValue = parseFloat(ra.Star);
-        const starIconContainer = document.getElementById('starIconContainer');
-        const starText = document.getElementById('starText');
+        const facilitiesList = $('#modalFacilities');
+        facilitiesList.empty();
+        if (data.Convenience) {
+            data.Convenience.split(',').forEach(facility => {
+                if(facility.trim()) {
+                    facilitiesList.append($('<span>').addClass('facility-tag').text(facility.trim()));
+                }
+            });
+        } else {
+            facilitiesList.html('<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>');
+        }
 
-        // 별점 컨테이너 초기화
-        starIconContainer.innerHTML = '';
-        starText.textContent = '';
+        const starValue = parseFloat(data.Star);
+        const starIconContainer = $('#starIconContainer');
+        const starText = $('#starText');
+        starIconContainer.empty();
+        starText.empty();
 
-        if (isNaN(starValue) || !ra.Star) { // 데이터가 없거나 유효하지 않을 경우
-            starText.textContent = '평점 없음';
+        if (isNaN(starValue) || !data.Star) {
+            starText.text('평점 없음');
         } else {
             const fullStars = Math.floor(starValue);
-            const halfStar = (starValue % 1) >= 0.25 && (starValue % 1) <= 0.75;
+            const halfStar = (starValue % 1) >= 0.5;
             const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-
             let starsHtml = '';
-            for (let i = 0; i < fullStars; i++) {
-                starsHtml += '<i class="fas fa-star"></i>';
-            }
-            if (halfStar) {
-                starsHtml += '<i class="fas fa-star-half-alt"></i>';
-            }
-            for (let i = 0; i < emptyStars; i++) {
-                starsHtml += '<i class="far fa-star"></i>';
-            }
-
-            starIconContainer.innerHTML = starsHtml;
-            starText.textContent = starValue.toFixed(1);
+            for (let i = 0; i < fullStars; i++) { starsHtml += '<i class="fas fa-star"></i>'; }
+            if (halfStar) { starsHtml += '<i class="fas fa-star-half-alt"></i>'; }
+            for (let i = 0; i < emptyStars; i++) { starsHtml += '<i class="far fa-star"></i>'; }
+            starIconContainer.html(starsHtml);
+            starText.text(starValue.toFixed(1));
         }
 
-        document.getElementById('restAreaModal').style.display = 'block';
+        $('#restAreaModal').css('display', 'flex');
     }
 
-    function closeModal() {
-        document.getElementById('restAreaModal').style.display = 'none';
-    }
+    // 첫 번째 모달(#restAreaModal)의 닫기('X') 버튼 클릭
+    $('#restAreaModal .close').on('click', function() {
+        $('#restAreaModal').hide();
+    });
 
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('restAreaModal')) {
-            closeModal();
+    // 두 번째 모달(#storesModal)의 닫기('X') 버튼 클릭
+    $('#storesModal .close').on('click', function() {
+        $('#storesModal').hide();
+        // [핵심] 첫 번째 모달을 다시 보여줍니다.
+        $('#restAreaModal').css('display', 'flex');
+    });
+
+    // 배경 클릭하여 닫기
+    $('.modal').on('click', function(e) {
+        // 클릭된 대상이 배경 자체일 때만 닫기
+        if (e.target === this) {
+            if ($(this).is('#storesModal')) {
+                // 두 번째 모달의 배경이면, 첫 번째 모달을 다시 보여줌
+                $(this).hide();
+                $('#restAreaModal').css('display', 'flex');
+            } else {
+                // 첫 번째 모달의 배경이면 그냥 닫기
+                $(this).hide();
+            }
         }
-    }
+    });
+
+    // 모달 내용 클릭 시 배경 클릭 이벤트가 실행되지 않도록 함
+    $('.modal-content').on('click', function(e) {
+        e.stopPropagation();
+    });
+
+    // 매장 정보 버튼 클릭
+    $('#showStoresBtn').on('click', function () {
+        $('#restAreaModal').hide(); // 첫 모달 숨김
+        $('#storesModal').css('display', 'flex'); // 두 번째 모달 표시
+        const restAreaName = $('#modalTitle').text();
+        $('#storesModalTitle').text(restAreaName + ' 매장 정보');
+        $('#storeSearchInput').val('');
+        if (currentRestAreaId) {
+            loadAndRenderStores(currentRestAreaId, '');
+        }
+    });
+
+    // 매장 검색 버튼 클릭
+    $('#storeSearchBtn').on('click', function() {
+        const searchText = $('#storeSearchInput').val();
+        if (currentRestAreaId) {
+            loadAndRenderStores(currentRestAreaId, searchText);
+        }
+    });
+
+    // 검색창에서 Enter 키 입력
+    $('#storeSearchInput').on('keypress', function(e) {
+        if (e.which === 13) {
+            $('#storeSearchBtn').click();
+        }
+    });
 </script>
 
 </body>

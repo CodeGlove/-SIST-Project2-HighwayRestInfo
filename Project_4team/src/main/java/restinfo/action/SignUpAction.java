@@ -32,7 +32,12 @@ public class SignUpAction implements Action {
                     System.out.println("완료");
                 } else {
                     System.out.println("안댐 (cnt=0)");
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);;
                 }
+            }else {
+                // 이메일이 중복되는 경우: 409 Conflict 상태 코드 전송
+                System.out.println("이메일 중복: " + email);
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
             }
         } catch (Exception e) {
            e.printStackTrace();

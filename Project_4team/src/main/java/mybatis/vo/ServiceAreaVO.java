@@ -19,14 +19,14 @@ public class ServiceAreaVO {
     private String Convenience ;
     private List<ShopVO> Shoplist;
     private String Star;
+    private GasVO gasInfo;
 	private String AiComment;
-	private gasVO gasInfo;
 
-    public gasVO getGasInfo() {
+    public GasVO getGasInfo() {
         return gasInfo;
     }
 
-    public void setGasInfo(gasVO gasInfo) {
+    public void setGasInfo(GasVO gasInfo) {
         this.gasInfo = gasInfo;
     }
 
@@ -155,7 +155,7 @@ public class ServiceAreaVO {
     public void setShopCode(String shopCode) {
         ShopCode = shopCode;
     }
-	
+
 	// AiComment 필드 getter/setter
     public String getAiComment() {
         return AiComment;
