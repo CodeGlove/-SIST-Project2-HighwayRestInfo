@@ -93,7 +93,7 @@ public class Geocoding {
 
         List<ServiceAreaVO> failList = new ArrayList<>();
 
-        String KAKAO_API_KEY = ConfigLoader.getProperty("KAKAO_CLIENT_ID");
+        String KAKAO_API_KEY = ConfigLoader.getProperty("KAKAO_API_KEY");
         Gson gson = new Gson();
 
         System.out.println("카카오지오코딩을 이용하여 총 " + list.size() + "개의 휴게소 좌표 변환을 시작합니다.");

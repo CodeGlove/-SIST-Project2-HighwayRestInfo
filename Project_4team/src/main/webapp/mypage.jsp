@@ -413,6 +413,45 @@
                 text-align: center;
                 line-height: 1.8;
             }
+            .search-and-list-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .store-search-container {
+                display: flex;
+                gap: 8px;
+            }
+            #storeSearchInput {
+                flex-grow: 1;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 1rem;
+            }
+            #storeSearchBtn {
+                padding: 10px 15px;
+                border: none;
+                background-color: #007bff;
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 1rem;
+                font-weight: 600;
+            }
+            #storeSearchBtn:hover {
+                background-color: #0056b3;
+            }
+            .store-list {
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 1rem;
+                min-height: 200px; /* 최소 높이를 지정하여 보기 좋게 만듭니다. */
+                text-align: center;
+                line-height: 2;
+                font-size: 1.1rem;
+            }
 
             @keyframes fadeIn {
                 from {
@@ -423,6 +462,23 @@
                     opacity: 1;
                     transform: translateY(0);
                 }
+            }
+            .ai-comment-section {
+                flex-direction: column; /* 라벨과 내용을 세로로 배치 */
+                align-items: flex-start;
+            }
+
+            .ai-comment-box {
+                width: 100%;
+                margin-top: 0.75rem; /* 라벨과의 간격 */
+                padding: 1rem;
+                background-color: #f0f7ff; /* 연한 하늘색 배경 */
+                border-radius: 8px;
+                border-left: 4px solid #007bff; /* 왼쪽에 파란색 강조선 */
+                color: #333; /* 텍스트 색상 */
+                font-size: 1rem;
+                line-height: 1.6;
+                box-sizing: border-box;
             }
         </style>
     </head>
@@ -729,15 +785,18 @@
                 $('#modalCompactParking').text((data.CompactParking || 0) + '대');
                 $('#modalLargeParking').text((data.LargeParking || 0) + '대');
                 $('#modalDisabledParking').text((data.DisabledParking || 0) + '대');
+
+                $('#modalAiComment').text(data.AiComment || '제공되는 추천 코멘트가 없습니다.');
+
                 const gasInfo = data.gasInfo;
                 if (gasInfo) {
-                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline : '없음');
-                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel : '없음');
-                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG : '없음');
+                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline : '주유불가');
+                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel : '주유불가');
+                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG : '주유불가');
                 } else {
-                    $('#modalGasoline').text('없음');
-                    $('#modalDiesel').text('없음');
-                    $('#modalLpg').text('없음');
+                    $('#modalGasoline').text('조회불가');
+                    $('#modalDiesel').text('조회불가');
+                    $('#modalLpg').text('조회불가');
                 }
                 const facilitiesList = $('#modalFacilities');
                 facilitiesList.empty();
@@ -772,8 +831,6 @@
                 }
                 $('#restAreaModal').css('display', 'flex');
             }
-
-            // --- [수정] 새롭고 명확한 모달 닫기 로직 ---
 
             // 첫 번째 모달(#restAreaModal)의 닫기('X') 버튼 클릭
             $('#restAreaModal .close').on('click', function() {
