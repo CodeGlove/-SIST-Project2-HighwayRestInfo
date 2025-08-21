@@ -33,6 +33,16 @@
         </div>
       </div>
 
+      <div class="info-section ai-comment-section">
+        <div class="info-label">
+          <i class="fas fa-robot"></i>
+          AI 추천 코멘트
+        </div>
+        <div class="ai-comment-box" id="modalAiComment">
+          AI 코멘트를 불러오는 중...
+        </div>
+      </div>
+
       <div class="info-section">
         <div class="info-label">
           <i class="fas fa-parking"></i>
@@ -110,6 +120,8 @@
             매장 정보 확인
           </button>
         </div>
+
+
       </div>
     </div>
   </div>
