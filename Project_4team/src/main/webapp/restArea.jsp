@@ -290,17 +290,36 @@
                                     <div class="content-section">
                                         <c:choose>
                                             <c:when test="${restArea.contains('휴게소')}">
+                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+                                                
                                                 <div class="section-title-with-date">
                                                     <div class="section-title-left">
                                                         <i class="fas fa-gas-pump"></i>
                                                         주유비
                                                     </div>
-                                                    <div class="section-title-date">2025.08.05</div>
+                                                    <div class="section-title-date">
+                                                        <jsp:useBean id="now" class="java.util.Date" />
+                                                        <fmt:formatDate value="${now}" pattern="yyyy.MM.dd" />
+                                                    </div>
                                                 </div>
                                                 <div class="fuel-info">
-                                                    <div class="fuel-price">휘발유: 1,618원</div>
-                                                    <div class="fuel-price">경유: 1,474원</div>
-                                                    <div class="fuel-price">LPG: 1,074원</div>
+                                                    <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.gasInfo}">
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.gasoline}">
+                                                            <div class="fuel-price">휘발유: ${serviceAreaVO.gasInfo.gasoline}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.disel}">
+                                                            <div class="fuel-price">경유: ${serviceAreaVO.gasInfo.disel}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price">LPG: ${serviceAreaVO.gasInfo.LPG}</div>
+                                                        </c:if>
+                                                        <c:if test="${empty serviceAreaVO.gasInfo.gasoline and empty serviceAreaVO.gasInfo.disel and empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price">주유소 정보 없음</div>
+                                                        </c:if>
+                                                    </c:if>
+                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.gasInfo}">
+                                                        <div class="fuel-price">주유소 정보 없음</div>
+                                                    </c:if>
                                                 </div>
                                             </c:when>
                                         </c:choose>
