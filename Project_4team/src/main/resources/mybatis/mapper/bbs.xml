@@ -1,30 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Board">
 
-    <!--총 게시물 수를 반환하는 기능-->
-    <select id="totalCount" resultType="int">
+    <!-- FAQ를 제외한 공지사항 총 게시물 수를 반환하는 기능 -->
+    <select id="totalCountExceptFaq" resultType="int">
         SELECT COUNT(*) FROM Board
-        WHERE `DELETE` = 0
+        WHERE `DELETE` = 0 AND category &lt;&gt; 'Faq'
     </select>
 
-    <!--원글 목록: 인자 3개(Subject, begin, end)-->
-    <select id="list" parameterType="Map" resultType="mybatis.vo.BbsVO">
+    <!-- FAQ 게시판의 총 게시물 수를 반환하는 기능 -->
+    <select id="totalCountFaqOnly" resultType="int">
+        SELECT COUNT(*) FROM Board
+        WHERE `DELETE` = 0 AND category = 'Faq'
+    </select>
+
+    <!-- 원글 목록: FAQ 제외 (notice.jsp용)-->
+    <select id="listExceptFaq" parameterType="Map" resultType="mybatis.vo.BbsVO">
         SELECT * FROM(
-        SELECT @RN:=@RN+1 AS rnum, a.* FROM( <!--테이블에 있는 모든것을 출력하는데 앞에 숫자를 추가해라-->
+        SELECT @RN:=@RN+1 AS rnum, a.* FROM(
         SELECT * From Board
-        WHERE `DELETE` = 0 <!--0: 삭제되지 않은 글(1: 삭제한 글)-->
+        WHERE `DELETE` = 0
+        AND category &lt;&gt; 'Faq'
         <if test="subject != null and subject != ''">
             AND Subject = #{subject}
         </if>
         ORDER BY PostNum DESC
-        ) a, (SELECT @RN:=0) b <!--b(별칭) sql에서 사용하는 RN이라는 변수 선언-->
-        ) c WHERE c.rnum BETWEEN #{begin} AND #{end} <!--rnum: 행-->
-
+        ) a, (SELECT @RN:=0) b
+        ) c WHERE c.rnum BETWEEN #{begin} AND #{end}
     </select>
+
+    <!-- 원글 목록: FAQ만 포함 (faq.jsp용)-->
+    <select id="listFaqOnly" parameterType="Map" resultType="mybatis.vo.BbsVO">
+        SELECT * FROM(
+        SELECT @RN:=@RN+1 AS rnum, a.* FROM(
+        SELECT * From Board
+        WHERE `DELETE` = 0
+        AND category = 'Faq'
+        <if test="subject != null and subject != ''">
+            AND Subject = #{subject}
+        </if>
+        ORDER BY PostNum DESC
+        ) a, (SELECT @RN:=0) b
+        ) c WHERE c.rnum BETWEEN #{begin} AND #{end}
+    </select>
+
     <!--원글 저장-->
     <insert id="add" parameterType="map">
         INSERT INTO Board(subject, writer, content, FileName, category,
@@ -38,13 +59,14 @@
         SELECT * FROM Board
         WHERE PostNum = #{PostNum}
     </select>
+
     <!--원글 수정-->
     <update id="edit" parameterType="map">
         UPDATE Board
         SET
         Subject = #{subject},
         Content = #{content},
-        Category = #{category}, <!-- 카테고리 업데이트 쿼리 추가 -->
+        Category = #{category},
         ModDate = NOW()
         <if test="FileName != null">
             ,FileName = #{FileName}
@@ -55,7 +77,7 @@
     <!-- 원글 삭제-->
     <update id="del" parameterType="String">
         UPDATE Board
-        SET `Delete` = 1 <!--삭제 여부 확인(0: false, 1: true-->
+        SET `Delete` = 1
         WHERE PostNum = #{PostNum}
     </update>
 

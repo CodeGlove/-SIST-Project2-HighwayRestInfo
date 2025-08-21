@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html>
@@ -73,20 +74,24 @@
                 <th>카테고리:</th>
                 <td>
                     <select id="category" name="category">
-                        <option value="">::: 카테고리를 선택하세요 :::</option>
-                        <option value="HighWay">고속도로</option>
-                        <option value="RestArea">졸음쉼터</option>
-                        <option value="ServiceArea">휴게소</option>
-                        <option value="Shop">매장</option>
-                        <option value="Guide">이용안내</option>
-                        <option value="Other">기타</option>
+                        <c:if test="${param.returnTo == 'faq'}">
+                            <option value="Faq" selected>FAQ</option>
+                        </c:if>
+                        <c:if test="${param.returnTo != 'faq'}">
+                            <option value="">::: 카테고리를 선택하세요 :::</option>
+                            <option value="HighWay">고속도로</option>
+                            <option value="RestArea">졸음쉼터</option>
+                            <option value="ServiceArea">휴게소</option>
+                            <option value="Shop">매장</option>
+                            <option value="Guide">이용안내</option>
+                        </c:if>
                     </select>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <input type="button" value="완료" onclick="sendData()"/>
-                    <input type="button" value="목록" onclick="location.href='Controller?type=notice'"/>
+                    <input type="button" value="목록" onclick="goList()"/>
                 </td>
             </tr>
             </tbody>
@@ -95,7 +100,6 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<!-- CKEditor는 로컬 경로가 아닌 CDN을 사용하는 것이 안정적입니다. -->
 <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
 <script>
     let myEditor;
@@ -116,7 +120,6 @@
         });
 
     function sendData() {
-        // CKEditor의 내용을 <textarea>에 업데이트합니다.
         const contentData = myEditor.getData();
         document.getElementById('content').value = contentData;
 
@@ -149,15 +152,27 @@
             return;
         }
 
-        // 파일 첨부 유효성 검사 (선택 사항)
-        // const fileInput = document.getElementById('file');
-        // if (fileInput.files.length === 0) {
-        //     alert("파일을 첨부하세요.");
-        //     return;
-        // }
+        // 폼 전송 전에 카테고리 값을 확인하여 action URL을 동적으로 변경합니다.
+        // 현재는 Controller?type=write 로 고정되어 있으므로, 서버 측에서 리다이렉트하는 것이 더 효율적입니다.
+        // 여기서는 유효성 검사만 수행하고, 서버 측에서 처리한다고 가정하겠습니다.
 
         // 모든 유효성 검사를 통과하면 폼을 전송합니다.
         document.forms[0].submit();
+    }
+
+    // 수정된 부분: 목록 버튼을 위한 새로운 함수
+    function goList() {
+        // 1. URL에서 returnTo 파라미터 값을 가져옵니다.
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnTo = urlParams.get('returnTo');
+
+        // 2. returnTo 값에 따라 목록 페이지로 이동합니다.
+        if (returnTo === 'faq') {
+            location.href = "Controller?type=faq";
+        } else {
+            // returnTo가 없거나 다른 값이면 기본값으로 notice를 사용
+            location.href = "Controller?type=notice";
+        }
     }
 </script>
 </body>

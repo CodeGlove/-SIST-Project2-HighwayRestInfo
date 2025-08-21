@@ -58,10 +58,14 @@ public class EditAction implements Action {
             String PostNum = request.getParameter("PostNum");
             String cPage = request.getParameter("cPage");
 
+            // ***** 추가된 부분: 게시물의 카테고리 정보도 함께 가져와 JSP로 전달합니다. *****
+            String category = request.getParameter("category");
+
             BbsVO vo = BbsDAO.getPostNum(PostNum);
 
             request.setAttribute("vo", vo);
             request.setAttribute("cPage", cPage);
+            request.setAttribute("category", category); // JSP에서 카테고리 값을 Hidden 필드로 사용하기 위함
             viewPath = "/bbs/edit.jsp";
             return viewPath;
         }
@@ -99,8 +103,6 @@ public class EditAction implements Action {
                 String content = mr.getParameter("content");
                 String cPage = mr.getParameter("cPage");
                 String oldFileName = mr.getParameter("oldFileName"); // 기존 파일명 (edit.jsp 폼에 hidden으로 추가해야 함)
-
-                // ***** 수정된 부분: 카테고리 값 얻기 *****
                 String category = mr.getParameter("category");
 
                 // 파일 첨부 관련 변수
@@ -136,18 +138,15 @@ public class EditAction implements Action {
                     newFile.delete();
 
                 } else {
-                    // 2. 새로운 파일이 첨부되지 않은 경우
-                    // 만약 '파일 삭제' 체크박스를 폼에 추가했다면 해당 로직을 여기에 구현
-                    // 현재는 파일 변경이 없으면 기존 파일을 유지
                     s3FileKey = oldFileName;
                 }
 
                 // 3. 데이터베이스 업데이트
-                // ***** 수정된 부분: edit() 메서드에 category 값 전달 *****
-                BbsDAO.edit(postNum, subject, content, s3FileKey, category); // BbsDAO의 edit 메서드에 파일명과 카테고리 전달
+                BbsDAO.edit(postNum, subject, content, s3FileKey, category);
 
                 // 4. 수정 후 상세 페이지로 리다이렉션
-                response.sendRedirect("Controller?type=view&PostNum=" + postNum + "&cPage=" + cPage);
+                // ***** 수정된 부분: 리다이렉션 URL에 카테고리 정보 추가 *****
+                response.sendRedirect("Controller?type=view&PostNum=" + postNum + "&cPage=" + cPage + "&category=" + category);
 
             } catch (Exception e) {
                 e.printStackTrace();
