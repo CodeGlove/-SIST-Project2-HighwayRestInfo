@@ -732,16 +732,25 @@ body {
 
 .stars {
     display: flex;
-    gap: 0.1rem;
+    align-items: center;
+    gap: 0.3rem;
 }
 
 .star {
-    color: #ffd700;
+    color: #ddd;
     font-size: 0.9rem;
+    line-height: 1;
 }
 
-.star.empty {
-    color: #e5e8eb;
+.star.filled {
+    color: #ffd700;
+}
+
+.rating-score {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+    line-height: 1;
 }
 
 .card-content {
@@ -1121,6 +1130,49 @@ body {
     width: 14px;
     text-align: center;
 }
+
+/* 편의시설 아이콘별 색상 */
+.facility-icon.fa-baby {
+    color: #ff6b9d;
+}
+
+.facility-icon.fa-first-aid {
+    color: #ff4757;
+}
+
+.facility-icon.fa-bus {
+    color: #2ed573;
+}
+
+.facility-icon.fa-credit-card {
+    color: #ffa502;
+}
+
+.facility-icon.fa-gas-pump {
+    color: #ff6348;
+}
+
+.facility-icon.fa-charging-station {
+    color: #00d2d3;
+}
+
+.facility-icon.fa-utensils {
+    color: #ff9ff3;
+}
+
+.facility-icon.fa-store {
+    color: #54a0ff;
+}
+
+.facility-icon.fa-check {
+    color: #10ac84;
+}
+
+.facility-icon.fa-info-circle {
+    color: #8395a7;
+}
+
+
 
 .fuel-info {
     display: flex;

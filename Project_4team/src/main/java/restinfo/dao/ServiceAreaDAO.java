@@ -16,24 +16,25 @@ public class ServiceAreaDAO {
 
         return list;
     }
-    public static ServiceAreaVO getOneArea(String idx){
-        // idx는 클릭한 휴게소의 값임 그걸로 찾아서 휴게소 정보 갖고온 후
-        //pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
-        SqlSession ss =FactoryService.getFactory().openSession();
-        ServiceAreaVO vo = ss.selectOne("SA.getOne",idx);
-        ss.close();
 
+    public static ServiceAreaVO getOneArea(String idx) {
+        // idx는 클릭한 휴게소의 값임 그걸로 찾아서 휴게소 정보 갖고온 후
+        // pjyrestAReaDEtail에 전달해준다음에 Detail jsp(아직만들지 않음)에 표현하자.
+        SqlSession ss = FactoryService.getFactory().openSession();
+        ServiceAreaVO vo = ss.selectOne("SA.getOne", idx);
+        ss.close();
 
         return vo;
     }
+
     public static int updateXY(String idx, double lat, double lng) {
         int cnt = 0;
         SqlSession ss = FactoryService.getFactory().openSession();
         Map<String, Object> m = new HashMap<>();
 
-        m.put("idx", idx);   // String 타입
-        m.put("lat", lat);  // double 타입
-        m.put("lng", lng);  // double 타입
+        m.put("idx", idx); // String 타입
+        m.put("lat", lat); // double 타입
+        m.put("lng", lng); // double 타입
 
         cnt = ss.update("SA.xY", m);
         if (cnt > 0) {
@@ -252,25 +253,310 @@ public class ServiceAreaDAO {
         ss.close();
         return serviceArea;
     }
-    public static List<ServiceAreaVO> bookmarkedArea(String idx){
+
+    public static List<ServiceAreaVO> bookmarkedArea(String idx) {
         SqlSession ss = FactoryService.getFactory().openSession();
-        List<ServiceAreaVO> list = ss.selectList("SA.getbookmark",idx);
+        List<ServiceAreaVO> list = ss.selectList("SA.getbookmark", idx);
         ss.close();
 
         return list;
     }
-    public static int deletebookmark(String idx,String Useridx){
-        SqlSession ss= FactoryService.getFactory().openSession();
-        Map<String,String> m = new HashMap<>();
-        m.put("SAidx",idx);
-        m.put("Useridx",Useridx);
-        int cnt = ss.delete("SA.deletebookmark",m);
-        if(cnt>0)
+
+    public static int deletebookmark(String idx, String Useridx) {
+        SqlSession ss = FactoryService.getFactory().openSession();
+        Map<String, String> m = new HashMap<>();
+        m.put("SAidx", idx);
+        m.put("Useridx", Useridx);
+        int cnt = ss.delete("SA.deletebookmark", m);
+        if (cnt > 0)
             ss.commit();
         else
             ss.rollback();
 
         ss.close();
         return cnt;
+    }
+
+    /**
+     * 휴게소 이름과 방향으로 ServiceAreaVO 리스트를 조회합니다.
+     * 같은 이름의 휴게소가 상행/하행으로 존재하는 경우를 처리합니다.
+     *
+     * @param restAreaNames      휴게소 이름 리스트
+     * @param restAreaDirections 휴게소별 방향 정보 (상행/하행)
+     * @return 휴게소 이름을 키로 하는 Map<휴게소이름, ServiceAreaVO>
+     */
+    public static Map<String, ServiceAreaVO> getServiceAreasByNameAndDirection(
+            List<String> restAreaNames, Map<String, String> restAreaDirections) {
+
+        Map<String, ServiceAreaVO> result = new HashMap<>();
+
+        if (restAreaNames == null || restAreaNames.isEmpty()) {
+            return result;
+        }
+
+        SqlSession ss = FactoryService.getFactory().openSession();
+
+        try {
+            for (String restAreaName : restAreaNames) {
+                String direction = restAreaDirections.get(restAreaName);
+
+                System.out.println("🔍 휴게소 매칭 시도: " + restAreaName + " (방향: " + direction + ")");
+
+                // 🚀 퍼지 매칭으로 휴게소 찾기
+                ServiceAreaVO serviceArea = findServiceAreaByFuzzyMatching(restAreaName, direction, ss);
+
+                if (serviceArea != null) {
+                    result.put(restAreaName, serviceArea);
+                    System.out.println("✅ 휴게소 매칭 성공: " + restAreaName + " -> " + serviceArea.getIdx() + " ("
+                            + serviceArea.getSAName() + ")");
+                } else {
+                    System.out.println("❌ 휴게소 매칭 실패: " + restAreaName);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("휴게소 정보 조회 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            ss.close();
+        }
+
+        System.out.println("총 " + result.size() + "개의 휴게소 정보를 조회했습니다.");
+        return result;
+    }
+
+    /**
+     * 퍼지 매칭을 통해 휴게소를 찾는 메서드
+     * 여러 매칭 전략을 순차적으로 시도합니다.
+     *
+     * @param apiName   카카오 API에서 받은 휴게소 이름
+     * @param direction 방향 정보
+     * @param ss        SqlSession
+     * @return 매칭된 ServiceAreaVO 또는 null
+     */
+    private static ServiceAreaVO findServiceAreaByFuzzyMatching(String apiName, String direction, SqlSession ss) {
+        if (apiName == null || apiName.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalizedApiName = normalizeApiName(apiName);
+        System.out.println("  🔧 정규화된 이름: " + apiName + " → " + normalizedApiName);
+
+        // 1단계: 정확 매칭 시도
+        ServiceAreaVO exactMatch = findExactMatch(normalizedApiName, direction, ss);
+        if (exactMatch != null) {
+            System.out.println("  ✅ 1단계 정확 매칭 성공");
+            return exactMatch;
+        }
+
+        // 2단계: 방향 포함 매칭 시도
+        ServiceAreaVO directionMatch = findDirectionMatch(normalizedApiName, direction, ss);
+        if (directionMatch != null) {
+            System.out.println("  ✅ 2단계 방향 매칭 성공");
+            return directionMatch;
+        }
+
+        // 3단계: 부분 문자열 매칭 시도
+        ServiceAreaVO partialMatch = findPartialMatch(normalizedApiName, ss);
+        if (partialMatch != null) {
+            System.out.println("  ✅ 3단계 부분 매칭 성공");
+            return partialMatch;
+        }
+
+        // 4단계: 키워드 매칭 시도
+        ServiceAreaVO keywordMatch = findKeywordMatch(normalizedApiName, ss);
+        if (keywordMatch != null) {
+            System.out.println("  ✅ 4단계 키워드 매칭 성공");
+            return keywordMatch;
+        }
+
+        // 5단계: 유사도 기반 매칭 시도
+        ServiceAreaVO similarityMatch = findSimilarityMatch(normalizedApiName, ss);
+        if (similarityMatch != null) {
+            System.out.println("  ✅ 5단계 유사도 매칭 성공");
+            return similarityMatch;
+        }
+
+        System.out.println("  ❌ 모든 매칭 전략 실패");
+        return null;
+    }
+
+    /**
+     * API 이름을 정규화하는 메서드
+     */
+    private static String normalizeApiName(String apiName) {
+        String normalized = apiName;
+
+        // 괄호와 내용 제거: (목포방향), (임시) 등
+        normalized = normalized.replaceAll("\\([^)]*\\)", "");
+
+        // 특수문자 제거: 공백, 하이픈, 점 등
+        normalized = normalized.replaceAll("[\\s\\-\\.,]", "");
+
+        // "휴게소" → "휴게소" (일관성 유지)
+        if (normalized.endsWith("휴게소")) {
+            normalized = normalized;
+        }
+
+        return normalized.trim();
+    }
+
+    /**
+     * 1단계: 정확 매칭
+     */
+    private static ServiceAreaVO findExactMatch(String normalizedName, String direction, SqlSession ss) {
+        try {
+            Map<String, String> params = new HashMap<>();
+            params.put("saname", normalizedName);
+            params.put("sadirection", direction);
+
+            return ss.selectOne("SA.getByNameAndDirection", params);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 2단계: 방향 포함 매칭
+     */
+    private static ServiceAreaVO findDirectionMatch(String normalizedName, String direction, SqlSession ss) {
+        try {
+            // 방향 정보가 있는 경우, 방향으로 필터링하여 검색
+            if (direction != null && !direction.equals("방향불명")) {
+                List<ServiceAreaVO> areas = ss.selectList("SA.getByNameOnly", normalizedName);
+
+                for (ServiceAreaVO area : areas) {
+                    String dbDirection = area.getSADirection();
+                    if (dbDirection != null && ((direction.equals("상행") && dbDirection.contains("상행")) ||
+                            (direction.equals("하행") && dbDirection.contains("하행")))) {
+                        return area;
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 3단계: 부분 문자열 매칭
+     */
+    private static ServiceAreaVO findPartialMatch(String normalizedName, SqlSession ss) {
+        try {
+            // 공통 키워드 추출
+            String[] keywords = extractKeywords(normalizedName);
+
+            for (String keyword : keywords) {
+                if (keyword.length() >= 2) { // 2글자 이상인 키워드만 사용
+                    List<ServiceAreaVO> areas = ss.selectList("SA.findByPartialName", keyword);
+                    if (!areas.isEmpty()) {
+                        // 가장 긴 키워드와 매칭되는 것 선택
+                        return areas.get(0);
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 4단계: 키워드 매칭
+     */
+    private static ServiceAreaVO findKeywordMatch(String normalizedName, SqlSession ss) {
+        try {
+            String[] keywords = extractKeywords(normalizedName);
+
+            for (String keyword : keywords) {
+                if (keyword.length() >= 2) {
+                    List<ServiceAreaVO> areas = ss.selectList("SA.findByKeywords", keyword);
+                    if (!areas.isEmpty()) {
+                        return areas.get(0);
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 5단계: 유사도 기반 매칭
+     */
+    private static ServiceAreaVO findSimilarityMatch(String normalizedName, SqlSession ss) {
+        try {
+            // 모든 휴게소를 가져와서 유사도 계산
+            List<ServiceAreaVO> allAreas = ss.selectList("SA.all");
+
+            ServiceAreaVO bestMatch = null;
+            double bestSimilarity = 0.0;
+
+            for (ServiceAreaVO area : allAreas) {
+                double similarity = calculateSimilarity(normalizedName, area.getSAName());
+                if (similarity > bestSimilarity && similarity > 0.6) { // 60% 이상 유사도
+                    bestSimilarity = similarity;
+                    bestMatch = area;
+                }
+            }
+
+            if (bestMatch != null) {
+                System.out.println("    🎯 유사도: " + String.format("%.2f", bestSimilarity) + " (" + normalizedName
+                        + " ↔ " + bestMatch.getSAName() + ")");
+            }
+
+            return bestMatch;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 키워드 추출 메서드
+     */
+    private static String[] extractKeywords(String name) {
+        // "휴게소" 제거
+        String withoutSuffix = name.replace("휴게소", "");
+
+        // 주요 키워드들
+        String[] commonKeywords = {
+                "서울만남", "매송", "예산", "영광", "옥천", "천안", "청주", "대전", "부산", "울산"
+        };
+
+        // 공통 키워드가 포함되어 있는지 확인
+        for (String keyword : commonKeywords) {
+            if (withoutSuffix.contains(keyword)) {
+                return new String[] { keyword, withoutSuffix };
+            }
+        }
+
+        // 공통 키워드가 없으면 원본 이름 반환
+        return new String[] { withoutSuffix, name };
+    }
+
+    /**
+     * 두 문자열의 유사도를 계산하는 메서드 (Jaro-Winkler 유사도)
+     */
+    private static double calculateSimilarity(String s1, String s2) {
+        if (s1 == null || s2 == null)
+            return 0.0;
+
+        // 간단한 유사도 계산 (실제로는 더 정교한 알고리즘 사용 가능)
+        String longer = s1.length() > s2.length() ? s1 : s2;
+        String shorter = s1.length() > s2.length() ? s2 : s1;
+
+        if (longer.length() == 0)
+            return 1.0;
+
+        // 공통 문자 수 계산
+        int commonChars = 0;
+        for (int i = 0; i < shorter.length(); i++) {
+            if (longer.contains(String.valueOf(shorter.charAt(i)))) {
+                commonChars++;
+            }
+        }
+
+        return (2.0 * commonChars) / (longer.length() + shorter.length());
     }
 }

@@ -146,4 +146,49 @@
         DELETE FROM BookMark
         WHERE UserKey = #{Useridx} AND SAKey = #{SAidx}
     </delete>
+
+    <!-- 휴게소 이름과 방향으로 정확히 매칭하는 쿼리 -->
+    <select id="getByNameAndDirection" resultType="mybatis.vo.ServiceAreaVO" parameterType="Map">
+        SELECT * FROM ServiceArea 
+        WHERE SAName = #{saname} 
+        AND SADirection LIKE CONCAT('%', #{sadirection}, '%')
+        LIMIT 1
+    </select>
+
+    <!-- 휴게소 이름만으로 검색하는 쿼리 (방향 정보가 없는 경우 사용) -->
+    <select id="getByNameOnly" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        SELECT * FROM ServiceArea 
+        WHERE SAName = #{saname}
+        LIMIT 1
+    </select>
+
+    <!-- 🚀 퍼지 매칭을 위한 새로운 쿼리들 -->
+    
+    <!-- 부분 이름으로 검색 (LIKE 검색) -->
+    <select id="findByPartialName" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        SELECT * FROM ServiceArea 
+        WHERE SAName LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY LENGTH(SAName) ASC
+        LIMIT 1
+    </select>
+
+    <!-- 키워드로 검색 (휴게소 이름에서 키워드 포함 여부 확인) -->
+    <select id="findByKeywords" resultType="mybatis.vo.ServiceAreaVO" parameterType="String">
+        SELECT * FROM ServiceArea 
+        WHERE SAName LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY 
+            CASE 
+                WHEN SAName LIKE CONCAT(#{keyword}, '%') THEN 1
+                WHEN SAName LIKE CONCAT('%', #{keyword}, '%') THEN 2
+                ELSE 3
+            END,
+            LENGTH(SAName) ASC
+        LIMIT 1
+    </select>
+
+    <!-- 유사도 기반 검색을 위한 전체 휴게소 조회 -->
+    <select id="getAllForSimilarity" resultType="mybatis.vo.ServiceAreaVO">
+        SELECT * FROM ServiceArea 
+        ORDER BY SAName
+    </select>
 </mapper>

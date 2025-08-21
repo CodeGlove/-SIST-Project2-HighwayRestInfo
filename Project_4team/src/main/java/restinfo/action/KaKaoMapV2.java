@@ -1,7 +1,9 @@
 package restinfo.action;
 
+import mybatis.vo.ServiceAreaVO;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import restinfo.dao.ServiceAreaDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -187,10 +189,23 @@ public class KaKaoMapV2 implements Action {
 				List<Integer> restAreaDurations = calculateDurationsToRestAreas(sections, restAreas);
 				List<Integer> restStopDurations = calculateDurationsToRestAreas(sections, restStops);
 				
+				// 🚀 DB에서 휴게소 상세 정보 조회 (졸음쉼터 제외)
+				Map<String, ServiceAreaVO> serviceAreaVOs = new HashMap<>();
+				if (!restAreas.isEmpty()) {
+					
+					// 휴게소만 DB 조회
+					serviceAreaVOs = ServiceAreaDAO.getServiceAreasByNameAndDirection(
+							restAreas, restAreaDirections);
+					
+					System.out.println("DB 조회 완료: " + serviceAreaVOs.size() + "개 휴게소 정보 수집");
+				} else {
+					System.out.println("=== 휴게소가 없어 DB 조회 생략 ===");
+				}
+				
 				// request에 데이터 저장
 				saveRouteDataToRequest(request, route, sections, allRestAreas, restAreas, restStops,
 						allRestAreaDurations, restAreaDurations, restStopDurations,
-						origin, destination, routeData, restAreaToPrevIC, restAreaDirections);
+						origin, destination, routeData, restAreaToPrevIC, restAreaDirections, serviceAreaVOs);
 				
 			}
 		} catch (Exception e) {
@@ -204,7 +219,6 @@ public class KaKaoMapV2 implements Action {
 	                              Map<String, GuideInfo> restAreaToPrevIC,
 	                              Map<String, String> restAreaDirections) {
 		
-		System.out.println("=== 휴게소 방향 계산 시작 ===");
 		
 		List<GuideInfo> allGuides = new ArrayList<>();
 		
@@ -240,45 +254,29 @@ public class KaKaoMapV2 implements Action {
 		}
 		
 		// 2단계: 휴게소를 찾고 이전 IC와 매핑, 방향 계산
-		System.out.println("총 " + allGuides.size() + "개의 guide 정보를 처리합니다.");
-		
 		for (int i = 0; i < allGuides.size(); i++) {
 			GuideInfo current = allGuides.get(i);
-			System.out.println("[" + i + "] " + current.name + " (" + current.type + ") - 좌표: (" + current.x + ", "
-					+ current.y + ")");
 			
 			if ("휴게소".equals(current.type)) {
 				restAreas.add(current.name);
 				allRestAreas.add(current.name);
-				System.out.println("  → 휴게소 발견: " + current.name);
 				
 				// 이전 IC 찾기
 				GuideInfo prevIC = findPreviousIC(allGuides, i);
 				if (prevIC != null) {
 					restAreaToPrevIC.put(current.name, prevIC);
-					System.out.println("  → 이전 IC: " + prevIC.name + " - 좌표: (" + prevIC.x + ", " + prevIC.y + ")");
 					
 					// 방향 계산 및 저장
 					String direction = calculateDirection(prevIC, current);
 					restAreaDirections.put(current.name, direction);
-					System.out.println("  → 방향: " + direction);
-					
-					// 상세한 방향 계산 정보 출력
-					printDirectionCalculationDetails(prevIC, current, direction);
-				} else {
-					System.out.println("  → 경고: 이전 IC를 찾을 수 없습니다.");
 				}
 			} else if ("졸음쉼터".equals(current.type)) {
 				restStops.add(current.name);
 				allRestAreas.add(current.name);
-				System.out.println("  → 졸음쉼터 발견: " + current.name);
 			}
 		}
 		
-		System.out.println("=== 휴게소 방향 계산 완료 ===");
-		System.out.println("휴게소 개수: " + restAreas.size());
-		System.out.println("졸음쉼터 개수: " + restStops.size());
-		System.out.println("방향 정보가 계산된 휴게소: " + restAreaDirections.size());
+		System.out.println("✅ 휴게소 방향 계산 완료 - 휴게소: " + restAreas.size() + "개, 졸음쉼터: " + restStops.size() + "개");
 	}
 	
 	// 이전 IC 찾기
@@ -315,14 +313,6 @@ public class KaKaoMapV2 implements Action {
 			direction = "방향불명"; // 수직인 경우
 		}
 		
-		// 방향 계산 로직 설명
-		System.out.println("    🔍 방향 계산: " + ic.name + " → " + restArea.name);
-		System.out.println(
-				"    📍 IC→휴게소 벡터: (" + String.format("%.6f", vectorX) + ", " + String.format("%.6f", vectorY) + ")");
-		System.out.println("    📍 서울역→IC 벡터: (" + String.format("%.6f", seoulToICX) + ", "
-				+ String.format("%.6f", seoulToICY) + ")");
-		System.out.println("    🧮 내적값: " + String.format("%.6f", dotProduct));
-		System.out.println("    🎯 방향: " + direction);
 		
 		return direction;
 	}
@@ -334,54 +324,13 @@ public class KaKaoMapV2 implements Action {
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 	
-	// 방향 계산 상세 정보 출력
-	private void printDirectionCalculationDetails(GuideInfo ic, GuideInfo restArea, String direction) {
-		System.out.println("    === 방향 계산 상세 정보 ===");
-		System.out.println("    서울역 좌표: (" + SEOUL_STATION_X + ", " + SEOUL_STATION_Y + ")");
-		System.out.println("    IC 좌표: (" + ic.x + ", " + ic.y + ")");
-		System.out.println("    휴게소 좌표: (" + restArea.x + ", " + restArea.y + ")");
-		
-		// IC에서 휴게소로의 벡터
-		double vectorX = restArea.x - ic.x;
-		double vectorY = restArea.y - ic.y;
-		System.out.println(
-				"    IC→휴게소 벡터: (" + String.format("%.6f", vectorX) + ", " + String.format("%.6f", vectorY) + ")");
-		
-		// 서울역에서 IC로의 벡터
-		double seoulToICX = ic.x - SEOUL_STATION_X;
-		double seoulToICY = ic.y - SEOUL_STATION_Y;
-		System.out.println("    서울역→IC 벡터: (" + String.format("%.6f", seoulToICX) + ", "
-				+ String.format("%.6f", seoulToICY) + ")");
-		
-		// 내적 계산
-		double dotProduct = vectorX * seoulToICX + vectorY * seoulToICY;
-		System.out.println("    내적 값: " + String.format("%.6f", dotProduct));
-		
-		// 거리 정보
-		double icDistanceToSeoul = calculateDistanceToSeoul(ic.x, ic.y);
-		double restAreaDistanceToSeoul = calculateDistanceToSeoul(restArea.x, restArea.y);
-		System.out.println("    IC-서울역 거리: " + String.format("%.6f", icDistanceToSeoul));
-		System.out.println("    휴게소-서울역 거리: " + String.format("%.6f", restAreaDistanceToSeoul));
-		
-		// 방향 판단 근거
-		if (dotProduct > 0) {
-			System.out.println("    → 내적 > 0: IC→휴게소 방향이 서울에서 멀어지는 방향 → 하행");
-		} else if (dotProduct < 0) {
-			System.out.println("    → 내적 < 0: IC→휴게소 방향이 서울에 가까워지는 방향 → 상행");
-		} else {
-			System.out.println("    → 내적 = 0: 방향을 결정할 수 없음 → 방향불명");
-		}
-		System.out.println("    최종 방향: " + direction);
-		System.out.println();
-	}
-	
 	// request에 경로 데이터 저장
 	private void saveRouteDataToRequest(HttpServletRequest request, JSONObject route, JSONArray sections,
 	                                    List<String> allRestAreas, List<String> restAreas, List<String> restStops,
 	                                    List<Integer> allRestAreaDurations, List<Integer> restAreaDurations,
 	                                    List<Integer> restStopDurations, String origin, String destination,
 	                                    JSONObject routeData, Map<String, GuideInfo> restAreaToPrevIC,
-	                                    Map<String, String> restAreaDirections) {
+	                                    Map<String, String> restAreaDirections, Map<String, ServiceAreaVO> serviceAreaVOs) {
 		
 		// 기본 정보
 		request.setAttribute("origin", origin);
@@ -411,7 +360,6 @@ public class KaKaoMapV2 implements Action {
 		}
 		
 		// 전체 JSON 응답 (디버깅용)
-		System.out.println(routeData.toString());
 		request.setAttribute("jsonResponse", routeData);
 		
 		// 휴게소별 이전 IC 정보 및 방향 저장
@@ -423,51 +371,27 @@ public class KaKaoMapV2 implements Action {
 				restAreaDirections);
 		request.setAttribute("restAreaNameToDirection", restAreaNameToDirection);
 		
+		// 🚀 DB에서 조회한 휴게소 상세 정보 저장
+		request.setAttribute("serviceAreaVOs", serviceAreaVOs);
+		
 		// API 응답용 데이터 구조 생성
 		List<Map<String, Object>> restAreaApiData = createRestAreaApiData(restAreas, restAreaDirections,
-				restAreaToPrevIC);
+				restAreaToPrevIC, serviceAreaVOs);
 		request.setAttribute("restAreaApiData", restAreaApiData);
 		
-		// 디버깅용: 휴게소별 이전 IC 정보 및 방향 출력
-		System.out.println("=== 휴게소별 이전 IC 정보 및 방향 요약 ===");
-		System.out.println("총 " + restAreaToPrevIC.size() + "개의 휴게소에 대해 방향이 계산되었습니다.");
-		
-		// 방향별 통계
+		// 간략한 방향 통계만 출력
 		int upboundCount = 0, downboundCount = 0, unknownCount = 0;
-		
-		for (Map.Entry<String, GuideInfo> entry : restAreaToPrevIC.entrySet()) {
-			String restAreaName = entry.getKey();
-			GuideInfo prevIC = entry.getValue();
-			String direction = restAreaDirections.get(restAreaName);
-			
-			// 방향별 카운트
+		for (Map.Entry<String, String> entry : restAreaDirections.entrySet()) {
+			String direction = entry.getValue();
 			if ("상행".equals(direction))
 				upboundCount++;
 			else if ("하행".equals(direction))
 				downboundCount++;
 			else
 				unknownCount++;
-			
-			System.out.println("🏪 " + restAreaName);
-			System.out.println("  📍 이전 IC: " + prevIC.name + " (좌표: " + String.format("%.6f", prevIC.x) + ", "
-					+ String.format("%.6f", prevIC.y) + ")");
-			System.out.println("  🚦 방향: " + direction + " (road_index: " + prevIC.roadIndex + ")");
-			
-			// 서울역까지의 거리 계산 (디버깅용)
-			double icDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
-			double restAreaDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
-			System.out.println("  📏 IC-서울역 거리: " + String.format("%.6f", icDistanceToSeoul));
-			System.out.println("  📏 휴게소-서울역 거리: " + String.format("%.6f", restAreaDistanceToSeoul));
-			System.out.println();
 		}
-		
-		// 방향별 통계 출력
-		System.out.println("=== 방향별 통계 ===");
-		System.out.println("상행: " + upboundCount + "개");
-		System.out.println("하행: " + downboundCount + "개");
-		System.out.println("방향불명: " + unknownCount + "개");
-		System.out.println("총 휴게소: " + (upboundCount + downboundCount + unknownCount) + "개");
-		System.out.println();
+		System.out.println(
+				"📊 방향 통계 - 상행: " + upboundCount + "개, 하행: " + downboundCount + "개, 방향불명: " + unknownCount + "개");
 	}
 	
 	/**
@@ -587,32 +511,24 @@ public class KaKaoMapV2 implements Action {
 	                                                                 Map<String, String> restAreaDirections) {
 		Map<String, String> nameToDirection = new HashMap<>();
 		
-		System.out.println("=== 휴게소 이름-방향 매핑 생성 ===");
-		
 		for (String restAreaName : restAreas) {
 			String direction = restAreaDirections.get(restAreaName);
 			if (direction != null) {
 				nameToDirection.put(restAreaName, direction);
-				System.out.println("  📍 " + restAreaName + " → " + direction);
 			} else {
 				// 방향 정보가 없는 경우 기본값 설정
 				nameToDirection.put(restAreaName, "방향불명");
-				System.out.println("  ⚠️ " + restAreaName + " → 방향불명 (이전 IC 정보 없음)");
 			}
 		}
-		
-		System.out.println("총 " + nameToDirection.size() + "개의 휴게소에 대해 방향 매핑이 생성되었습니다.");
-		System.out.println();
 		
 		return nameToDirection;
 	}
 	
 	// API 응답용 데이터 구조 생성 메서드
 	private List<Map<String, Object>> createRestAreaApiData(List<String> restAreas,
-	                                                        Map<String, String> restAreaDirections, Map<String, GuideInfo> restAreaToPrevIC) {
+	                                                        Map<String, String> restAreaDirections, Map<String, GuideInfo> restAreaToPrevIC,
+	                                                        Map<String, ServiceAreaVO> serviceAreaVOs) {
 		List<Map<String, Object>> apiData = new ArrayList<>();
-		
-		System.out.println("=== API 응답용 데이터 구조 생성 ===");
 		
 		for (String restAreaName : restAreas) {
 			Map<String, Object> restAreaInfo = new HashMap<>();
@@ -636,25 +552,46 @@ public class KaKaoMapV2 implements Action {
 				double restAreaDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
 				restAreaInfo.put("icDistanceToSeoul", String.format("%.6f", icDistanceToSeoul));
 				restAreaInfo.put("restAreaDistanceToSeoul", String.format("%.6f", restAreaDistanceToSeoul));
-				
-				System.out.println("  🏪 " + restAreaName);
-				System.out.println("    🚦 방향: " + restAreaInfo.get("direction"));
-				System.out.println("    📍 이전 IC: " + prevIC.name + " (좌표: " + prevIC.x + ", " + prevIC.y + ")");
-				System.out.println("    📏 IC-서울역 거리: " + restAreaInfo.get("icDistanceToSeoul"));
 			} else {
 				restAreaInfo.put("previousIC", null);
 				restAreaInfo.put("icDistanceToSeoul", "0.000000");
 				restAreaInfo.put("restAreaDistanceToSeoul", "0.000000");
+			}
+			
+			// DB에서 휴게소 상세 정보 조회
+			ServiceAreaVO serviceAreaVO = serviceAreaVOs.get(restAreaName);
+			if (serviceAreaVO != null) {
+				Map<String, Object> serviceAreaInfo = new HashMap<>();
+				serviceAreaInfo.put("name", serviceAreaVO.getSAName());
+				serviceAreaInfo.put("address", serviceAreaVO.getAddress());
+				serviceAreaInfo.put("phone", serviceAreaVO.getTel());
+				serviceAreaInfo.put("star", serviceAreaVO.getStar());
+				serviceAreaInfo.put("convenience", serviceAreaVO.getConvenience());
+				serviceAreaInfo.put("aiComment", serviceAreaVO.getAiComment());
+				serviceAreaInfo.put("compactParking", serviceAreaVO.getCompactParking());
+				serviceAreaInfo.put("largeParking", serviceAreaVO.getLargeParking());
+				serviceAreaInfo.put("disabledParking", serviceAreaVO.getDisabledParking());
+				serviceAreaInfo.put("latitude", serviceAreaVO.getLat());
+				serviceAreaInfo.put("longitude", serviceAreaVO.getLng());
+				serviceAreaInfo.put("wayNum", serviceAreaVO.getWayNum());
+				serviceAreaInfo.put("direction", restAreaDirections.getOrDefault(restAreaName, "방향불명"));
+				serviceAreaInfo.put("previousIC", prevIC != null ? prevIC.name : null);
 				
-				System.out.println("  🏪 " + restAreaName);
-				System.out.println("    ⚠️ 이전 IC 정보 없음");
+				// 서울역까지의 거리 계산
+				if (prevIC != null) {
+					double icDistanceToSeoul = calculateDistanceToSeoul(prevIC.x, prevIC.y);
+					double restAreaDistanceToSeoul = calculateDistanceToSeoul(
+							serviceAreaVO.getLat() != null ? Double.parseDouble(serviceAreaVO.getLat()) : 0,
+							serviceAreaVO.getLng() != null ? Double.parseDouble(serviceAreaVO.getLng()) : 0);
+					serviceAreaInfo.put("icDistanceToSeoul", String.format("%.6f", icDistanceToSeoul));
+					serviceAreaInfo.put("restAreaDistanceToSeoul", String.format("%.6f", restAreaDistanceToSeoul));
+				}
+				
+				restAreaInfo.put("serviceArea", serviceAreaInfo);
 			}
 			
 			apiData.add(restAreaInfo);
 		}
-		
-		System.out.println("총 " + apiData.size() + "개의 휴게소 API 데이터가 생성되었습니다.");
-		System.out.println();
 		
 		return apiData;
 	}
