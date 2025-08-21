@@ -365,7 +365,8 @@
                     <div class="attachment-item">
                         <i class="fas fa-paperclip attachment-icon"></i>
                             <%-- S3 URL로 직접 링크를 변경합니다. --%>
-                        <a href="${s3BaseUrl}${vo.fileName}" class="attachment-link" target="_blank">
+                        <a href="${pageContext.request.contextPath}/Controller?type=download&fileName=${vo.fileName}"
+                           class="attachment-link">
                                 ${vo.fileName}
                         </a>
                     </div>
