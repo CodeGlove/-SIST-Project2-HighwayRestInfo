@@ -392,7 +392,7 @@
                 <li><a href="#">회사 소개</a></li>
                 <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
                 <li><a href="#">고객센터</a></li>
-                <li><a href="#">자주 묻는 질문</a></li>
+                <li><a href="Controller?type=faq">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
             </ul>
         </nav>
@@ -437,6 +437,9 @@
                             </c:when>
                             <c:when test="${vo.category eq 'Guide'}">
                                 이용안내
+                            </c:when>
+                            <c:when test="${vo.category eq 'Faq'}">
+                                FAQ
                             </c:when>
                             <c:when test="${vo.category eq 'Other'}">
                                 기타
@@ -509,18 +512,10 @@
                 <input type="hidden" name="FileName"/>
                 <input type="hidden" name="PostNum" value="${vo.postNum}"/>
                 <input type="hidden" name="cPage" value="${param.cPage}"/>
+                    <%-- ***** 추가된 부분: 카테고리 정보 전달을 위한 hidden 필드 추가 ***** --%>
+                <input type="hidden" name="category" value="${vo.category}"/>
             </form>
 
-            <div id="del_dialog" title="삭제 확인">
-                <form action="Controller" method="post">
-                    <p>정말로 이 공지사항을 삭제하시겠습니까?</p>
-                    <p style="color: #f04452; font-size: 14px;">삭제된 내용은 복구할 수 없습니다.</p>
-                    <input type="hidden" name="type" value="del"/>
-                    <input type="hidden" name="PostNum" value="${vo.postNum}"/>
-                    <input type="hidden" name="cPage" value="${param.cPage}"/>
-                    <button type="button" onclick="del(this.form)" class="action-btn danger">삭제</button>
-                </form>
-            </div>
         </div>
     </c:if>
 </main>
@@ -539,29 +534,59 @@
 <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
 
 <script>
-    $(function () {
-        let option = {
-            modal: true,
-            autoOpen: false,
-            resizable: false,
-        };
-        $("#del_dialog").dialog(option);
-    });
+    // jQuery UI 다이얼로그 관련 코드는 이제 필요 없으므로 삭제했습니다.
 
     function goList() {
-        location.href = "Controller?type=notice&cPage=${param.cPage}";
+        const category = document.forms["ff"]["category"].value;
+        const cPage = document.forms["ff"]["cPage"].value;
+
+        // 카테고리에 따라 다른 페이지로 이동
+        if (category === 'Faq') {
+            location.href = "Controller?type=faq&cPage=" + cPage;
+        } else {
+            location.href = "Controller?type=notice&cPage=" + cPage;
+        }
     }
 
+    // 수정된 부분: goDel() 함수
     function goDel() {
-        $("#del_dialog").dialog("open");
+        if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+            const postNum = document.forms["ff"]["PostNum"].value;
+            const cPage = document.forms["ff"]["cPage"].value;
+
+            // 1. 현재 게시글의 카테고리 값을 가져옵니다.
+            const category = document.forms["ff"]["category"].value;
+
+            // 2. 카테고리 값에 따라 리다이렉트할 페이지를 결정합니다.
+            let returnTo;
+            if (category === 'Faq') {
+                returnTo = 'faq'; // FAQ 게시판이면 'faq'로 보냅니다.
+            } else {
+                returnTo = 'notice'; // 그 외(공지사항)면 'notice'로 보냅니다.
+            }
+
+            // 3. 결정된 returnTo 값을 URL에 담아 요청을 보냅니다.
+            location.href = "Controller?type=del&PostNum=" + postNum + "&cPage=" + cPage + "&returnTo=" + returnTo;
+        }
     }
 
-    function del(frm) {
-        frm.submit();
-    }
+    // 기존의 del(frm) 함수는 goDel() 함수에 병합되어 삭제되었습니다.
 
     function goEdit() {
-        location.href = "Controller?type=edit&PostNum=${vo.postNum}&cPage=${param.cPage}";
+        const postNum = document.forms["ff"]["PostNum"].value;
+        const cPage = document.forms["ff"]["cPage"].value;
+        const category = document.forms["ff"]["category"].value;
+
+        // 카테고리 값에 따라 returnTo 값을 결정
+        let returnTo;
+        if (category === 'Faq') {
+            returnTo = 'faq';
+        } else {
+            returnTo = 'notice';
+        }
+
+        // 수정 페이지로 이동할 때 returnTo 파라미터를 함께 전달
+        location.href = "Controller?type=edit&PostNum=" + postNum + "&cPage=" + cPage + "&returnTo=" + returnTo;
     }
 
     function sendReaction(type) {

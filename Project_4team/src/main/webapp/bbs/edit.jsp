@@ -126,13 +126,16 @@
         BbsVO vo = (BbsVO) obj;
 %>
 <div id="bbs">
-    <h2>공지사항 수정</h2>
+    <h2>작성글 수정</h2>
     <form action="Controller?type=edit" method="post" encType="multipart/form-data">
         <input type="hidden" id="hidden_postNum" value="${vo.postNum}"/>
         <input type="hidden" id="hidden_cPage" value="${param.cPage}"/>
         <input type="hidden" name="PostNum" value="${vo.postNum}"/>
         <input type="hidden" name="cPage" value="${param.cPage}"/>
         <input type="hidden" name="oldFileName" value="${vo.fileName}"/>
+
+        <!-- ***** 추가된 부분: 카테고리 정보를 hidden 필드로 추가 ***** -->
+        <input type="hidden" id="hidden_category" value="${vo.category}"/>
 
         <div class="form-group">
             <label for="subject">제목:</label>
@@ -147,21 +150,24 @@
         <div class="form-group">
             <label for="category">카테고리:</label>
             <select id="category" name="category">
-                <option value="">::: 카테고리를 선택하세요 :::</option>
-                <option value="HighWay" <c:if test="${vo.category eq 'HighWay'}">selected</c:if>>고속도로</option>
-                <option value="RestArea" <c:if test="${vo.category eq 'RestArea'}">selected</c:if>>졸음쉼터</option>
-                <option value="ServiceArea" <c:if test="${vo.category eq 'ServiceArea'}">selected</c:if>>휴게소</option>
-                <option value="Shop" <c:if test="${vo.category eq 'Shop'}">selected</c:if>>매장</option>
-                <option value="Guide" <c:if test="${vo.category eq 'Guide'}">selected</c:if>>이용안내</option>
-                <option value="Other" <c:if test="${vo.category eq 'Other'}">selected</c:if>>기타</option>
+                <c:if test="${param.returnTo == 'faq'}">
+                    <!-- faq 게시판에서 온 경우, FAQ만 선택 가능 -->
+                    <option value="Faq" selected>FAQ</option>
+                </c:if>
+                <c:if test="${param.returnTo != 'faq'}">
+                    <!-- 그 외 게시판에서 온 경우, 모든 카테고리 표시 -->
+                    <option value="">::: 카테고리를 선택하세요 :::</option>
+                    <option value="HighWay" <c:if test="${vo.category eq 'HighWay'}">selected</c:if>>고속도로</option>
+                    <option value="RestArea" <c:if test="${vo.category eq 'RestArea'}">selected</c:if>>졸음쉼터</option>
+                    <option value="ServiceArea" <c:if test="${vo.category eq 'ServiceArea'}">selected</c:if>>휴게소</option>
+                    <option value="Shop" <c:if test="${vo.category eq 'Shop'}">selected</c:if>>매장</option>
+                    <option value="Guide" <c:if test="${vo.category eq 'Guide'}">selected</c:if>>이용안내</option>
+                    <option value="Faq" <c:if test="${vo.category eq 'Faq'}">selected</c:if>>FAQ</option>
+                </c:if>
             </select>
         </div>
 
-        <div id="content-container">
-            <label for="content">내용:</label>
-            <textarea name="content" id="content" rows="8"></textarea>
-        </div>
-
+        <!-- 파일 첨부 위치 변경: CKEditor 위로 이동 -->
         <div class="form-group">
             <label for="file" style="cursor: default;">첨부파일:</label>
             <div class="file-display-box">
@@ -175,6 +181,12 @@
                 %>
             </div>
         </div>
+
+        <div id="content-container">
+            <label for="content">내용:</label>
+            <textarea name="content" id="content" rows="8"></textarea>
+        </div>
+
 
         <div class="button-group">
             <input type="button" value="완료" onclick="sendData()"/>
@@ -242,9 +254,16 @@
     }
 
     function goBack() {
-        const postNum = document.getElementById('hidden_postNum').value;
         const cPage = document.getElementById('hidden_cPage').value;
-        location.href = "Controller?type=view&PostNum=" + postNum + "&cPage=" + cPage;
+        const category = document.getElementById('hidden_category').value;
+
+        if (category === 'Faq') {
+            // FAQ 게시판에서 온 경우 FAQ 목록으로 이동
+            location.href = "Controller?type=faq&cPage=" + cPage;
+        } else {
+            // 그 외의 경우 (공지사항) 공지사항 목록으로 이동
+            location.href = "Controller?type=notice&cPage=" + cPage;
+        }
     }
 </script>
 <%
