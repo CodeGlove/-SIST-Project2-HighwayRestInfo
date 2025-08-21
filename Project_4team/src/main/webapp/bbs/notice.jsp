@@ -47,6 +47,7 @@
         }
 
 
+
         .notice-list {
             background: #ffffff;
         }
@@ -116,24 +117,6 @@
 
         .delete-btn:hover {
             background: #f04452;
-            color: #ffffff;
-        }
-
-        .edit-btn {
-            padding: 6px 12px;
-            background: #ffffff;
-            color: #3182f6;
-            border: 1px solid #3182f6;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-right: 8px;
-        }
-
-        .edit-btn:hover {
-            background: #3182f6;
             color: #ffffff;
         }
 
@@ -288,10 +271,45 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid #f2f4f6;
         }
-    </style>
+  </style>
 </head>
 <body>
-<%@ include file="/header.jsp" %>
+<!-- Header -->
+<header class="header">
+    <div class="nav-container">
+        <a href="../Controller" class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-road"></i>
+            </div>
+            HighwayGuide
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#">회사 소개</a></li>
+                <li><a href="../Controller?type=notice" class="btn btn-notice">공지사항</a></li>
+                <li><a href="#">고객센터</a></li>
+                <li><a href="#">자주 묻는 질문</a></li>
+                <li><a href="#">채용</a></li>
+            </ul>
+        </nav>
+        <div class="auth-buttons">
+            <a href="#" class="btn btn-login">KOR</a>
+            <a href="#" class="btn btn-login">ENG</a>
+            <%--***** 로그인 되지 않은 경우 --%>
+            <c:if test="${empty sessionScope.loginUser}">
+                <a href="../Controller?type=login" class="btn btn-login">로그인</a>
+                <a href="../Controller?type=register" class="btn btn-register">회원가입</a>
+            </c:if>
+
+            <%--***** 로그인된 경우 --%>
+            <c:if test="${not empty sessionScope.loginUser}">
+                <a href="../Controller?type=logout" class="btn btn-logout">로그아웃</a>
+                <a href="../Controller?type=#" class="btn btn-register">마이페이지</a>
+            </c:if>
+        </div>
+    </div>
+</header>
+
 <!-- Main Content -->
 <main>
     <div class="notice-container">
@@ -302,10 +320,10 @@
 
         <!-- Write Button (관리자만) -->
         <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
-                      ne null and sessionScope.loginUser.authority eq '1'}">
+                      ne null and sessionScope.loginUser.authority == 1}">
             <div class="write-btn-container">
                 <button type="button" class="write-btn"
-                        onclick="location.href='../Controller?type=write'">
+                        onclick="javascript:location.href='../Controller?type=write'">
                     글쓰기
                 </button>
             </div>
@@ -313,9 +331,9 @@
 
         <!-- Notice List -->
         <div class="notice-list">
-            <c:set var="ar" value="${requestScope.ar}"/>
+    <c:set var="ar" value="${requestScope.ar}"/>
             <c:set var="p" value="${requestScope.page}" scope="page"/>
-
+            
             <c:choose>
                 <c:when test="${empty ar}">
                     <div class="empty-state">
@@ -325,18 +343,17 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <c:forEach items="${ar}" var="vo" varStatus="vs">
+    <c:forEach items="${ar}" var="vo" varStatus="vs">
                         <div class="notice-item">
-                            <a href="../Controller?type=view&PostNum=${vo.postNum}&cPage=${p.nowPage}"
-                               class="notice-title">
-                                    ${vo.subject}
-                            </a>
+                            <a href="../Controller?type=view&PostNum=${vo.postNum}&cPage=${p.nowPage}" class="notice-title">
+              ${vo.subject}
+          </a>
                             <div class="notice-meta">
                                 <span class="notice-date">${vo.writeDate}</span>
                                 <span class="notice-author">${vo.writer}</span>
-                                    <%--관리자일 경우 수정/삭제 버튼 추가--%>
-                                <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
-                        ne null and sessionScope.loginUser.authority eq '1'}">
+          <%--관리자일 경우 삭제 버튼 추가--%>
+          <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
+                        ne null and sessionScope.loginUser.authority == 1}">
                                     <div class="admin-actions">
                                         <button type="button" class="delete-btn"
                                                 onclick="delPost('${vo.postNum}', '${p.nowPage}')">
@@ -360,15 +377,15 @@
                 <c:if test="${p.startPage >= p.pagePerBlock}">
                     <li><a href="../Controller?type=notice&cPage=${p.nowPage-p.pagePerBlock}">&lt;</a></li>
                 </c:if>
-
+                
                 <c:forEach begin="${p.startPage}" end="${p.endPage}" var="pageNum">
                     <c:if test="${p.nowPage == pageNum}">
                         <li><span class="now">${pageNum}</span></li>
                     </c:if>
                     <c:if test="${p.nowPage != pageNum}">
                         <li><a href="../Controller?type=notice&cPage=${pageNum}">${pageNum}</a></li>
-                    </c:if>
-                </c:forEach>
+          </c:if>
+    </c:forEach>
 
                 <c:if test="${p.endPage < p.totalPage}">
                     <li><a href="../Controller?type=notice&cPage=${p.nowPage+p.pagePerBlock}">&gt;</a></li>
@@ -378,35 +395,31 @@
                 </c:if>
             </ol>
         </div>
-    </div>
+</div>
 </main>
 <!-- Footer Include -->
 <jsp:include page="../footer.jsp"/>
 
 <script>
-    function delPost(postNum, cPage) {
+  function delPost(postNum, cPage) {
         if (confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
             // 삭제 버튼 비활성화
             const deleteBtn = event.target;
             deleteBtn.textContent = '삭제 중...';
             deleteBtn.disabled = true;
-
+            
             // 삭제 요청
             location.href = "../Controller?type=del&PostNum=" + postNum + "&cPage=" + cPage;
         }
     }
 
-    function editPost(postNum, cPage) {
-        location.href = "../Controller?type=edit&PostNum=" + postNum + "&cPage=" + cPage;
-    }
-
     // 페이지 로드 시 부드러운 등장 효과
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const noticeItems = document.querySelectorAll('.notice-item');
         noticeItems.forEach((item, index) => {
             item.style.opacity = '0';
             item.style.transform = 'translateY(10px)';
-
+            
             setTimeout(() => {
                 item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 item.style.opacity = '1';
