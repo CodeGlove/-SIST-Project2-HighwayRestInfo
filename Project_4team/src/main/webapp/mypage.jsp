@@ -790,13 +790,13 @@
 
                 const gasInfo = data.gasInfo;
                 if (gasInfo) {
-                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline : '없음');
-                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel : '없음');
-                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG : '없음');
+                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline : '주유불가');
+                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel : '주유불가');
+                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG : '주유불가');
                 } else {
-                    $('#modalGasoline').text('없음');
-                    $('#modalDiesel').text('없음');
-                    $('#modalLpg').text('없음');
+                    $('#modalGasoline').text('조회불가');
+                    $('#modalDiesel').text('조회불가');
+                    $('#modalLpg').text('조회불가');
                 }
                 const facilitiesList = $('#modalFacilities');
                 facilitiesList.empty();
