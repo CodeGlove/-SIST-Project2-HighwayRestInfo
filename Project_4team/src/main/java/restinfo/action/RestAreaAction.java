@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RestAreaAction implements Action {
 
@@ -24,6 +25,11 @@ public class RestAreaAction implements Action {
 		List<Integer> restAreaDurations = (List<Integer>) request.getAttribute("restAreaDurations");
 		@SuppressWarnings("unchecked")
 		List<Integer> restStopDurations = (List<Integer>) request.getAttribute("restStopDurations");
+
+		// 🚀 DB에서 조회한 휴게소 상세 정보 가져오기
+		@SuppressWarnings("unchecked")
+		Map<String, mybatis.vo.ServiceAreaVO> serviceAreaVOs = (Map<String, mybatis.vo.ServiceAreaVO>) request
+				.getAttribute("serviceAreaVOs");
 
 		// 문자열 데이터 가져오기
 		String origin = (String) request.getAttribute("origin");
@@ -66,7 +72,7 @@ public class RestAreaAction implements Action {
 		setRequestAttributes(request, allRestAreas, restAreas, restStops,
 				allRestAreaDurations, restAreaDurations, restStopDurations,
 				serviceAreaOnlyDurations, origin, destination, distance,
-				duration, taxiFare, tollFare);
+				duration, taxiFare, tollFare, serviceAreaVOs);
 
 		return "restArea.jsp";
 	}
@@ -87,7 +93,8 @@ public class RestAreaAction implements Action {
 			Integer distance,
 			Integer duration,
 			Integer taxiFare,
-			Integer tollFare) {
+			Integer tollFare,
+			Map<String, mybatis.vo.ServiceAreaVO> serviceAreaVOs) {
 		request.setAttribute("allRestAreas", allRestAreas);
 		request.setAttribute("restAreas", restAreas);
 		request.setAttribute("restStops", restStops);
@@ -101,5 +108,6 @@ public class RestAreaAction implements Action {
 		request.setAttribute("duration", duration);
 		request.setAttribute("taxiFare", taxiFare);
 		request.setAttribute("tollFare", tollFare);
+		request.setAttribute("serviceAreaVOs", serviceAreaVOs);
 	}
 }
