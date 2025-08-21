@@ -1,11 +1,12 @@
 <%@ page import="mybatis.vo.BbsVO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Insert title here</title>
+    <title>공지사항 수정</title>
     <style type="text/css">
         #bbs table {
             width:580px;
@@ -13,7 +14,6 @@
             border:1px solid black;
             border-collapse:collapse;
             font-size:14px;
-
         }
 
         #bbs table caption {
@@ -33,7 +33,10 @@
             border:1px solid black;
             padding:4px 10px;
         }
-
+        /*CK에디터 크기 지정*/
+        .ck-editor {
+            width: 100%;
+        }
 
         .no {width:15%}
         .subject {width:30%}
@@ -44,59 +47,20 @@
 
         .odd {background:silver}
         .t_bold{ font-weight: bold; color: #007bff; }
-
-
     </style>
-    <script type="text/javascript">
-        function sendData(){
-            // ******** 에디터의 최신 내용을 <textarea>에 적용한다.
-            myEditor.updateSourceElement();
-
-            //유효성 검사
-            let subject = $("#subject").val();
-            if(subject.trim().length < 1){
-                alert("제목을 입력하세요");
-                $("#subject").val("");
-                $("#subject").focus();
-                return;
-            }
-
-            let writer = $("#writer").val();
-            if(writer.trim().length < 1){
-                alert("이름을 입력하세요:");
-                $("#writer").val("");
-                $("#writer").focus();
-                return;
-            }
-
-            let content = $("#content").val();
-            if(content.trim().length < 1){
-                alert("내용을 입력하세요:");
-                $("#content").val("");
-                $("#content").focus();
-                return;
-            }
-
-            document.forms[0].submit(); //submit이 발생하면 editAction이 실행됨.
-        }
-    </script>
 </head>
 <body>
 <%
-    Object obj = request.getAttribute("vo"); //여기서 vo값 받기
+    Object obj = request.getAttribute("vo");
     if(obj != null) {
         BbsVO vo = (BbsVO) obj;
 %>
 <div id="bbs">
-    <form action="Controller?type=edit" method="post"
-          encType="multipart/form-data">
-        <%--<input type="hidden" name="bname" value="BBS"/>--%>
-        <%-- (중요) '취소'와 '완료' 모두에 필요한 정보들을 hidden input으로 저장 --%>
+    <form action="Controller?type=edit" method="post" encType="multipart/form-data">
         <input type="hidden" id="hidden_postNum" value="${vo.postNum}"/>
         <input type="hidden" id="hidden_cPage" value="${param.cPage}"/>
 
-        <%-- '완료' 버튼(폼 전송)을 위한 name 속성을 가진 input --%>
-        <input type="hidden" name="PostNum" value="${vo.postNum}"/> <%--b_idx는 보이지 않게 처리!!!--%>
+        <input type="hidden" name="PostNum" value="${vo.postNum}"/>
         <input type="hidden" name="cPage" value="${param.cPage}"/>
         <table summary="공지사항 수정">
             <caption>공지사항 수정</caption>
@@ -107,13 +71,11 @@
             </tr>
             <tr>
                 <th>이름:</th>
-                <td><input type="text" name="writer" id="writer" size="12" value="${vo.writer}">
-                    readonly/></td>
+                <td><input type="text" name="writer" id="writer" size="12" value="${vo.writer}" readonly/></td>
             </tr>
             <tr>
                 <th>내용:</th>
-                <td><textarea name="content" cols="50"
-                              id="content" rows="8"><%=vo.getContent()%></textarea></td>
+                <td><textarea name="content" cols="50" id="content" rows="8"></textarea></td>
             </tr>
             <tr>
                 <th>첨부파일:</th>
@@ -121,18 +83,12 @@
                     <%
                         if(vo.getFileName() != null){
                     %>
-                    <p class="t_bold">(<%=vo.getFileName()%></p> <%--//첨부된 파일 명시!--%>
+                    <p class="t_bold">(<%=vo.getFileName()%>)</p>
                     <%
                         }
                     %>
-                </td> <%--여기에는 보안문제로 value를 사용하지 못함!!--%>
+                </td>
             </tr>
-            <!--
-                            <tr>
-                                <th>비밀번호:</th>
-                                <td><input type="password" name="pwd" size="12"/></td>
-                            </tr>
-            -->
             <tr>
                 <td colspan="2">
                     <input type="button" value="완료" onclick="sendData()"/>
@@ -145,18 +101,31 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script> <%--ckEditor 파일 추가--%>
-<!-- 실제로 textarea에 에디터를 적용시키는 코드 -->
+<script src="${pageContext.request.contextPath}/ckeditor/ckeditor.js"></script>
 <script>
-    let myEditor = CKEDITOR.replace('content', {
-        filebrowserUploadUrl: 'http://localhost:8080/image/upload'
-    });
+    let myEditor;
 
-    function sendData(){
-        // 에디터의 최신 내용을 <textarea>에 적용하는 코드 추가
-        myEditor.updateElement();
+    ClassicEditor
+        .create(document.querySelector('#content'), {
+            ckfinder: {
+                uploadUrl: '${pageContext.request.contextPath}/Controller?type=saveImg'
+            }
+        })
+        .then(editor => {
+            console.log('CKEditor가 성공적으로 로드되었습니다.', editor);
+            myEditor = editor;
+            // CKEditor에 데이터베이스의 내용을 로드
+            const contentFromDB = '<c:out value="${vo.content}" escapeXml="false"/>';
+            editor.setData(contentFromDB);
+        })
+        .catch(error => {
+            console.error('CKEditor 로드 중 에러 발생:', error);
+        });
 
-        //유효성 검사
+    function sendData() {
+        const contentData = myEditor.getData();
+        document.getElementById('content').value = contentData;
+
         let subject = $("#subject").val();
         if(subject.trim().length < 1){
             alert("제목을 입력하세요");
@@ -173,11 +142,8 @@
             return;
         }
 
-        let content = $("#content").val();
-        if(content.trim().length < 1){
+        if(contentData.trim().length < 1){
             alert("내용을 입력하세요:");
-            $("#content").val("");
-            $("#content").focus();
             return;
         }
 
@@ -187,12 +153,11 @@
     function goBack() {
         const postNum = document.getElementById('hidden_postNum').value;
         const cPage = document.getElementById('hidden_cPage').value;
-        //location.href = `Controller?type=view&PostNum=${postNum}&cPage=${cPage}`; 템플릿리터럴 인식 불가
         location.href = "Controller?type=view&PostNum=" + postNum + "&cPage=" + cPage;
     }
 </script>
 <%
-    } //if문의 끝
+    }
 %>
 </body>
 </html>
