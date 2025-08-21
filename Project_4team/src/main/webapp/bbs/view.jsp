@@ -1,6 +1,7 @@
 <%@ page import="mybatis.vo.BbsVO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page import="java.io.InputStream" %>
 <%@ page import="java.util.Properties" %>
 <!DOCTYPE html>
@@ -34,8 +35,6 @@
             padding: 0 20px;
         }
 
-
-
         .article-header {
             padding: 40px 0 32px 0;
             border-bottom: 1px solid #f2f4f6;
@@ -46,9 +45,28 @@
             font-weight: 700;
             color: #191f28;
             line-height: 1.3;
-            margin: 0 0 20px 0;
+            margin: 0; /* 이 부분을 0으로 수정 */
             letter-spacing: -0.6px;
         }
+
+        /* notice.jsp와 동일한 카테고리 디자인 */
+        .notice-category {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #3182f6;
+            background-color: #eaf1ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .notice-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* 카테고리와 제목 사이 간격 추가 */
+            margin-bottom: 20px; /* 제목과 메타 정보 사이 간격 유지 */
+        }
+
 
         .article-meta {
             display: flex;
@@ -57,6 +75,13 @@
             font-size: 14px;
             color: #8b95a1;
         }
+
+        .article-meta span:not(:last-child)::after {
+            content: "·";
+            margin-left: 8px;
+            color: #d0d5dd;
+        }
+
 
         .article-content {
             padding: 40px 0;
@@ -84,6 +109,54 @@
             transform: scale(1.02);
             transition: transform 0.3s ease;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .attachment-section {
+            padding: 24px 0;
+            border-bottom: 1px solid #f2f4f6;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .attachment-item:hover {
+            background: #f2f4f6;
+            border-color: #d0d5dd;
+        }
+
+        .attachment-icon {
+            color: #3182f6;
+            font-size: 18px;
+        }
+
+        .attachment-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .attachment-link {
+            font-size: 15px;
+            font-weight: 500;
+            color: #191f28;
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .attachment-size {
+            font-size: 12px;
+            color: #8b95a1;
+            margin-top: 2px;
         }
 
         .reaction-section {
@@ -306,10 +379,9 @@
     request.setAttribute("s3BaseUrl", s3BaseUrl);
 %>
 
-<!-- Header -->
 <header class="header">
     <div class="nav-container">
-        <a href="../Controller" class="logo">
+        <a href="Controller" class="logo">
             <div class="logo-icon">
                 <i class="fas fa-road"></i>
             </div>
@@ -318,7 +390,7 @@
         <nav>
             <ul class="nav-links">
                 <li><a href="#">회사 소개</a></li>
-                <li><a href="../Controller?type=notice" class="btn btn-notice">공지사항</a></li>
+                <li><a href="Controller?type=notice" class="btn btn-notice">공지사항</a></li>
                 <li><a href="#">고객센터</a></li>
                 <li><a href="#">자주 묻는 질문</a></li>
                 <li><a href="#">채용</a></li>
@@ -329,56 +401,84 @@
             <a href="#" class="btn btn-login">ENG</a>
             <%--***** 로그인 되지 않은 경우 --%>
             <c:if test="${empty sessionScope.loginUser}">
-                <a href="../Controller?type=login" class="btn btn-login">로그인</a>
-                <a href="../Controller?type=register" class="btn btn-register">회원가입</a>
+                <a href="Controller?type=login" class="btn btn-login">로그인</a>
+                <a href="Controller?type=register" class="btn btn-register">회원가입</a>
             </c:if>
 
             <%--***** 로그인된 경우 --%>
             <c:if test="${not empty sessionScope.loginUser}">
-                <a href="../Controller?type=logout" class="btn btn-logout">로그아웃</a>
-                <a href="../Controller?type=#" class="btn btn-register">마이페이지</a>
+                <a href="Controller?type=logout" class="btn btn-logout">로그아웃</a>
+                <a href="Controller?type=#" class="btn btn-register">마이페이지</a>
             </c:if>
         </div>
     </div>
 </header>
 
-<!-- Main Content -->
 <main>
     <c:if test="${requestScope.vo ne null}">
         <c:set var="vo" value="${requestScope.vo}"/>
         <div class="view-container">
-            <!-- Article Header -->
             <div class="article-header">
-                <h1 class="article-title">${vo.subject}</h1>
+                    <%-- notice.jsp와 동일한 카테고리/제목 디자인 --%>
+                <div class="notice-title-wrap">
+                     <span class="notice-category">
+                        <c:choose>
+                            <c:when test="${vo.category eq 'HighWay'}">
+                                고속도로
+                            </c:when>
+                            <c:when test="${vo.category eq 'RestArea'}">
+                                졸음쉼터
+                            </c:when>
+                            <c:when test="${vo.category eq 'ServiceArea'}">
+                                휴게소
+                            </c:when>
+                            <c:when test="${vo.category eq 'Shop'}">
+                                매장
+                            </c:when>
+                            <c:when test="${vo.category eq 'Guide'}">
+                                이용안내
+                            </c:when>
+                            <c:when test="${vo.category eq 'Other'}">
+                                기타
+                            </c:when>
+                            <c:otherwise>
+                                기타
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                    <h1 class="article-title">${vo.subject}</h1>
+                </div>
+
                 <div class="article-meta">
                     <span>작성자: ${vo.writer}</span>
                     <span>작성일: ${vo.writeDate}</span>
-                    <c:if test="${vo.modDate ne vo.writeDate}">
-                        <span>수정일: ${vo.modDate}</span>
+                    <c:if test="${not empty vo.modDate && fn:trim(vo.modDate) ne ''}">
+                        <span>수정일: ${fn:trim(vo.modDate)}</span>
                     </c:if>
                 </div>
             </div>
 
-            <!-- Attachment Section -->
-            <c:if test="${vo.fileName ne null and vo.fileName.length() > 4}">
+            <c:if test="${vo.fileName ne null && fn:length(vo.fileName) > 4}">
                 <div class="attachment-section">
                     <div class="attachment-item">
                         <i class="fas fa-paperclip attachment-icon"></i>
-                            <%-- S3 URL로 직접 링크를 변경합니다. --%>
-                        <a href="${pageContext.request.contextPath}/Controller?type=download&fileName=${vo.fileName}"
-                           class="attachment-link">
-                                ${vo.fileName}
-                        </a>
+                        <div class="attachment-info">
+                                <%-- S3 URL로 직접 링크를 변경합니다. --%>
+                            <a href="Controller?type=download&fileName=${vo.fileName}"
+                               class="attachment-link">
+                                    ${vo.fileName}
+                            </a>
+                                <%-- BbsDAO에 getFileSize(fileName) 메서드가 있다고 가정 --%>
+                                <%--<span class="attachment-size">(${BbsDAO.getFileSize(vo.fileName)})</span>--%>
+                        </div>
                     </div>
                 </div>
             </c:if>
 
-            <!-- Article Content -->
             <div class="article-content">
                 <div class="content-text">${vo.content}</div>
             </div>
 
-            <!-- Reaction Section -->
             <div class="reaction-section">
                 <div class="reaction-buttons">
                     <button type="button" id="btn-like" class="reaction-btn like" onclick="sendReaction('like')"
@@ -394,7 +494,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="action-buttons">
                 <button type="button" class="action-btn primary" onclick="goList()">목록</button>
                     <%--관리자일 경우에만 수정/삭제 버튼 표시--%>
@@ -405,7 +504,6 @@
                 </c:if>
             </div>
 
-            <!-- Hidden Forms -->
             <form name="ff" method="post">
                 <input type="hidden" name="type"/>
                 <input type="hidden" name="FileName"/>
@@ -413,9 +511,8 @@
                 <input type="hidden" name="cPage" value="${param.cPage}"/>
             </form>
 
-            <!-- Delete Dialog -->
             <div id="del_dialog" title="삭제 확인">
-                <form action="../Controller" method="post">
+                <form action="Controller" method="post">
                     <p>정말로 이 공지사항을 삭제하시겠습니까?</p>
                     <p style="color: #f04452; font-size: 14px;">삭제된 내용은 복구할 수 없습니다.</p>
                     <input type="hidden" name="type" value="del"/>
@@ -428,12 +525,11 @@
     </c:if>
 </main>
 
-<!-- Footer Include -->
 <jsp:include page="../footer.jsp"/>
 
 <%-- 표현할 vo객체가 존재하지 않는다면 원래 있던 목록 페이지로 이동한다.--%>
 <c:if test="${requestScope.vo eq null}"> <%--eq는 '==' 와 같다--%>
-    <c:redirect url="../Controller">
+    <c:redirect url="Controller">
         <c:param name="type" value="notice"/>
         <c:param name="cPage" value="${param.cPage}"/>
     </c:redirect>
@@ -446,15 +542,14 @@
     $(function () {
         let option = {
             modal: true,
-            autoOpen: false, //호출되는 즉시 대화상자 표시(기본값: true)
+            autoOpen: false,
             resizable: false,
         };
-
         $("#del_dialog").dialog(option);
     });
 
     function goList() {
-        location.href = "${pageContext.request.contextPath}/Controller?type=notice&cPage=${param.cPage}";
+        location.href = "Controller?type=notice&cPage=${param.cPage}";
     }
 
     function goDel() {
@@ -465,33 +560,26 @@
         frm.submit();
     }
 
-    // 수정한 goEdit() 함수
     function goEdit() {
-        location.href = "${pageContext.request.contextPath}/Controller?type=edit&PostNum=${vo.postNum}&cPage=${param.cPage}";
+        location.href = "Controller?type=edit&PostNum=${vo.postNum}&cPage=${param.cPage}";
     }
 
     function sendReaction(type) {
-        // 1. 함수가 시작되자마자 두 버튼을 '즉시' 비활성화 (가장 중요!)
-        //    - 서버 응답을 기다리지 않고 바로 UI를 잠가서 중복 클릭을 원천 차단합니다.
         $("#btn-like").prop("disabled", true);
         $("#btn-hate").prop("disabled", true);
 
-        // 2. 화면의 숫자 업데이트
-        //    - 서버가 성공할 것을 '미리 가정'하고 사용자에게 즉각적인 피드백을 줍니다.
         if (type === 'like') {
             const countSpan = $("#likeCount");
             const currentCount = parseInt(countSpan.text(), 10);
             countSpan.text(currentCount + 1);
-        } else { // 'hate'일 경우
+        } else {
             const countSpan = $("#hateCount");
             const currentCount = parseInt(countSpan.text(), 10);
             countSpan.text(currentCount + 1);
         }
 
-        // 3. 서버에 조용히 요청 보내기
-        //    - 이제 이 AJAX 호출은 백그라운드에서 DB에 데이터를 기록하는 역할만 합니다.
         $.ajax({
-            url: '${pageContext.request.contextPath}/Controller',
+            url: 'Controller',
             type: 'POST',
             data: {
                 type: type,
@@ -499,9 +587,8 @@
             }
         })
             .fail(function() {
-                // 혹시라도 서버 요청이 실패하면 사용자에게 알리고, 새로고침을 유도합니다.
                 alert("데이터 저장 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
-                location.reload(); // 페이지를 새로고침하여 정확한 상태를 다시 불러옴
+                location.reload();
             });
     }
 </script>

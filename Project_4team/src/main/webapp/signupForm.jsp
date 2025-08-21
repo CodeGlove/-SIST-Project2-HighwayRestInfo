@@ -498,7 +498,7 @@
                     window.location.href = 'login.jsp'; // 성공 시 로그인 페이지로 이동
                 } else {
                     // 서버 측에서 문제가 발생했을 경우 (예: 중복된 이메일)
-                    alert('회원가입에 실패했습니다. 입력 정보를 확인해주세요.');
+                    alert('회원가입에 실패했습니다. 입력 정보를 확인해주세요. or 가입한 이메일 입니다. 비밀번호를 찾아주세요');
                     submitBtn.disabled = false;
                     submitBtn.textContent = '가입완료';
                 }
