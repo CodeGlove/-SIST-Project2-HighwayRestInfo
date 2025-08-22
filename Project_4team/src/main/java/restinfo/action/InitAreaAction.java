@@ -184,7 +184,7 @@ public class InitAreaAction implements Action {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "manage.jsp";
+        return "/WEB-INF/views/manage.jsp";
     }
 
     private String cutString(String str) {

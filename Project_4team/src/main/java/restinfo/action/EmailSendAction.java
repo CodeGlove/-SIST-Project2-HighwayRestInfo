@@ -46,13 +46,27 @@ public class EmailSendAction implements Action{
             MimeMessage msg = new MimeMessage(mailSession);
             msg.setFrom(new InternetAddress(fromEmail, "HighwayGuide 관리자"));
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
-            msg.setSubject("[HighwayGuide] 회원가입 이메일 인증번호입니다.");
-            String htmlContent = "<h2>안녕하세요, HighwayGuide 입니다.</h2>"
-                    + "<p>회원가입을 위한 인증번호는 다음과 같습니다.</p>"
-                    + "<div style='font-size: 100px; font-weight: bold; border: 1px solid #ddd; padding: 10px; display: inline-block;'>"
-                    + Code
-                    + "</div>"
-                    + "<p>인증번호를 회원가입 창에 입력해주세요.</p>";
+
+            String htmlContent = null;
+
+            if (request.getParameter("purpose").equals("forgotPassword")) {
+                msg.setSubject("[HighwayGuide] 비밀번호 재설정 인증번호입니다.");
+                htmlContent = "<h2>안녕하세요, HighwayGuide 입니다.</h2>"
+                        + "<p>비밀번호 재설정을 위한 인증번호는 다음과 같습니다.</p>"
+                        + "<div style='font-size: 100px; font-weight: bold; border: 1px solid #ddd; padding: 10px; display: inline-block;'>"
+                        + Code
+                        + "</div>"
+                        + "<p>인증번호를 비밀번호 찾기 창에 입력해주세요.</p>";
+            } else {
+                msg.setSubject("[HighwayGuide] 회원가입 이메일 인증번호입니다.");
+                htmlContent = "<h2>안녕하세요, HighwayGuide 입니다.</h2>"
+                        + "<p>회원가입을 위한 인증번호는 다음과 같습니다.</p>"
+                        + "<div style='font-size: 100px; font-weight: bold; border: 1px solid #ddd; padding: 10px; display: inline-block;'>"
+                        + Code
+                        + "</div>"
+                        + "<p>인증번호를 회원가입 창에 입력해주세요.</p>";
+            }
+
 
             // msg.setText(...) 대신 아래 코드로 HTML 내용을 설정합니다.
             msg.setContent(htmlContent, "text/html; charset=utf-8");
