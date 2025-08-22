@@ -19,134 +19,140 @@
     <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
 
 
-<style>
- html, body { height: 100%; margin: 0; }
-#map { width: 100%; height: 100%; }
-.search-container {
-    position: absolute; top: 10px; left: 50px; z-index: 1000; background-color: white;
-    padding: 8px; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    display: flex; gap: 8px; align-items: center;
-}
-.select-wrapper { position: relative; display: inline-block; }
-.select-wrapper::after {
-    content: '▼'; font-size: 14px; color: #555; position: absolute;
-    top: 50%; right: 12px; transform: translateY(-50%); pointer-events: none;
-}
-.search-container select {
-    -webkit-appearance: none; -moz-appearance: none; appearance: none;
-    padding: 10px 35px 10px 15px; border: 1px solid #ccc; border-radius: 3px;
-    font-size: 16px; background-color: white; cursor: pointer;
-}
-.search-container input, .search-container button {
-    padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 16px;
-}
-.search-container input { width: 200px; }
-.search-container button {
-    background-color: #007bff; color: white; cursor: pointer; border-color: #007bff;
-}
-#cctv-toggle-button {
-    background-color: #6c757d;
-    border-color: #6c757d;
-}
+    <style>
+        html, body { height: 100%; margin: 0; }
+        #map { width: 100%; height: 100%; }
+        .search-container {
+            position: absolute; top: 10px; left: 50px; z-index: 1000; background-color: white;
+            padding: 8px; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            display: flex; gap: 8px; align-items: center;
+        }
+        .select-wrapper { position: relative; display: inline-block; }
+        .select-wrapper::after {
+            content: '▼'; font-size: 14px; color: #555; position: absolute;
+            top: 50%; right: 12px; transform: translateY(-50%); pointer-events: none;
+        }
+        .search-container select {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            padding: 10px 35px 10px 15px; border: 1px solid #ccc; border-radius: 3px;
+            font-size: 16px; background-color: white; cursor: pointer;
+        }
+        .search-container input, .search-container button {
+            padding: 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 16px;
+        }
+        .search-container input { width: 200px; }
+        .search-container button {
+            background-color: #007bff; color: white; cursor: pointer; border-color: #007bff;
+        }
+        #cctv-toggle-button {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
 
-@media (max-width: 768px) {
-    .search-container {
-        flex-direction: column;
-        align-items: stretch;
-        width: 90%;
-        left: 5%;
-        gap: 5px;
-    }
-    .search-container input, .search-container select, .search-container button {
-        width: 100%;
-        box-sizing: border-box;
-    }
-}
+        /* 새로 추가된 버튼 스타일 */
+        #nearby-cctv-toggle-button {
+            background-color: #009688;
+            border-color: #009688;
+        }
 
-/* 카카오 지도 InfoWindow 스타일 */
-.kakao_infowindow {
-    position: relative;
-    z-index: 9999;
-    border-bottom: 2px solid #ccc;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    border-radius: 5px;
-    overflow: hidden;
-}
-.kakao_infowindow .title {
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px;
-    text-align: center;
-    background-color: #f8f9fa;
-}
-.kakao_infowindow .body {
-    padding: 5px;
-}
-.kakao_infowindow .body video {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-.kakao_infowindow .cctv-close {
-    position: absolute;
-    top: 5px;
-    right: 10px;
-    cursor: pointer;
-    color: #888;
-    font-size: 18px;
-    font-weight: bold;
-}
-.kakao_infowindow .cctv-close:hover {
-    color: #333;
-}
-.kakao_infowindow:after {
-    content: '';
-    position: absolute;
-    margin-left: -12px;
-    left: 50%;
-    bottom: -12px;
-    width: 22px;
-    height: 12px;
-    background: url('https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/round_triangle.png') no-repeat;
-}
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+                width: 90%;
+                left: 5%;
+                gap: 5px;
+            }
+            .search-container input, .search-container select, .search-container button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
 
-/* 💡 마우스오버 시 표시될 커스텀 오버레이 스타일 */
-.custom-overlay {
-    position: relative;
-    background: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 8px 12px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    white-space: nowrap;
-    text-align: center;
-}
-.custom-overlay .overlay-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 3px;
-}
-.custom-overlay .overlay-address {
-    font-size: 12px;
-    font-weight: normal;
-    color: #666;
-}
-.custom-overlay::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: #ccc transparent transparent transparent;
-}
-</style>
+        /* 카카오 지도 InfoWindow 스타일 */
+        .kakao_infowindow {
+            position: relative;
+            z-index: 9999;
+            border-bottom: 2px solid #ccc;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .kakao_infowindow .title {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        .kakao_infowindow .body {
+            padding: 5px;
+        }
+        .kakao_infowindow .body video {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .kakao_infowindow .cctv-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            color: #888;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .kakao_infowindow .cctv-close:hover {
+            color: #333;
+        }
+        .kakao_infowindow:after {
+            content: '';
+            position: absolute;
+            margin-left: -12px;
+            left: 50%;
+            bottom: -12px;
+            width: 22px;
+            height: 12px;
+            background: url('https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/round_triangle.png') no-repeat;
+        }
+
+        /* 💡 마우스오버 시 표시될 커스텀 오버레이 스타일 */
+        .custom-overlay {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .custom-overlay .overlay-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        .custom-overlay .overlay-address {
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+        }
+        .custom-overlay::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #ccc transparent transparent transparent;
+        }
+    </style>
 </head>
 <body>
 <%-- 모달창을 restAreaModal.jsp에서 인클루드합니다. --%>
@@ -167,6 +173,7 @@
     <input type="text" id="search-input" placeholder="휴게소 이름 검색">
     <button id="search-button">검색</button>
     <button id="cctv-toggle-button">CCTV 켜기</button>
+    <button id="nearby-cctv-toggle-button">휴게소 주변 CCTV 켜기</button>
 </div>
 
 <div id="map"></div>
@@ -184,6 +191,9 @@
     let currentVideoPlayer = null;
 
     let currentRestAreaId = null;
+
+    let isCctvVisible = false;
+    let isNearbyCctvVisible = false;
 
     // 매장 정보를 서버에서 불러와서 화면에 표시하는 함수
     function loadAndRenderStores(saKey, searchText = '') {
@@ -233,7 +243,6 @@
     let provinceData = null;
     let currentBoundaryLayer = null;
     let isMarkerClickZoom = false;
-    let isCctvVisible = false;
 
     $.getJSON('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json', function(data) {
         provinceData = data;
@@ -319,7 +328,8 @@
         { offset: new kakao.maps.Point(10, 20) }
     );
 
-    function addCctvMarkersToMap(data) {
+    // 💡 변경된 함수: CCTV 마커를 추가할 때 필터링 로직 추가
+    function addCctvMarkersToMap(data, filterByNearby = false) {
         cctvMarkers.clear();
 
         if (!data || !data.response || !data.response.data) {
@@ -330,10 +340,33 @@
         const cctvList = Array.isArray(data.response.data) ? data.response.data : [data.response.data];
         const newCctvMarkers = [];
 
+        // 필터링이 필요한 경우, 현재 보이는 휴게소 목록을 가져옴
+        const visibleRestAreas = filterByNearby ? restAreaMarkers.getMarkers() : [];
+
         cctvList.forEach(cctv => {
             const lat = parseFloat(cctv.coordy);
             const lng = parseFloat(cctv.coordx);
             if (isNaN(lat) || isNaN(lng)) return;
+
+            // 필터링이 필요하면, 휴게소와 1km 이내인지 확인
+            if (filterByNearby) {
+                let isNearby = false;
+                for (let i = 0; i < visibleRestAreas.length; i++) {
+                    const restAreaPos = visibleRestAreas[i].getPosition();
+                    const cctvPos = new kakao.maps.LatLng(lat, lng);
+                    const distance = Math.sqrt(
+                        Math.pow( (cctvPos.getLat() - restAreaPos.getLat()) * 111.0, 2) +
+                        Math.pow( (cctvPos.getLng() - restAreaPos.getLng()) * 111.0 * Math.cos(restAreaPos.getLat() * Math.PI / 180), 2)
+                    );
+                    if (distance <= 1) { // 거리가 1km 이내이면
+                        isNearby = true;
+                        break;
+                    }
+                }
+                if (!isNearby) {
+                    return; // 1km 이내에 없으면 다음 CCTV로 넘어감
+                }
+            }
 
             const name = cctv.cctvname.replace(/;/g, '');
             const sanitizedName = name.replace(/[^a-zA-Z0-9-]/g, '-');
@@ -349,11 +382,10 @@
                 if (currentVideoPlayer) {
                     currentVideoPlayer.dispose();
                     currentVideoPlayer = null;
-                    console.log('이전 Video.js 플레이어 파기 완료');
                 }
                 if (currentInfoWindow) {
                     currentInfoWindow.close();
-                    console.log('이전 infowindow 닫기 완료');
+                    currentInfoWindow = null;
                 }
 
                 const popupContent =
@@ -372,17 +404,23 @@
                 infowindow.open(map, marker);
                 currentInfoWindow = infowindow;
 
+                // 💡 추가된 부분: X 버튼 클릭 시 인포윈도우 닫기
                 $(document).on('click', '.cctv-close', function() {
-                    console.log('cctv-close 버튼이 클릭되었습니다.');
                     if (currentVideoPlayer) {
                         currentVideoPlayer.dispose();
                         currentVideoPlayer = null;
-                        console.log('Video.js player disposed on cctv-close.');
                     }
                     if (currentInfoWindow) {
                         currentInfoWindow.close();
                         currentInfoWindow = null;
-                        console.log('인포윈도우가 닫혔습니다.');
+                    }
+                });
+
+                // 인포윈도우가 닫힐 때 플레이어 정리
+                kakao.maps.event.addListener(infowindow, 'close', function() {
+                    if (currentVideoPlayer) {
+                        currentVideoPlayer.dispose();
+                        currentVideoPlayer = null;
                     }
                 });
 
@@ -393,6 +431,7 @@
         });
         cctvMarkers.addMarkers(newCctvMarkers);
     }
+
 
     function loadVideoJsPlayer(videoId, temporaryUrl) {
         const videoElement = document.getElementById(videoId);
@@ -449,6 +488,30 @@
         });
     }
 
+    // 💡 변경된 함수: 전체 CCTV 데이터를 로드한 후, 필터링을 거쳐 표시
+    function loadCctvData(filterByNearby = false) {
+        const bounds = map.getBounds();
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        $.ajax({
+            url: 'Controller?type=Cctv',
+            type: 'GET',
+            data: {
+                minX: sw.getLng(),
+                minY: sw.getLat(),
+                maxX: ne.getLng(),
+                maxY: ne.getLat()
+            },
+            dataType: 'json'
+        }).done(function(data) {
+            console.log("CCTV 데이터 로드 성공:", data);
+            addCctvMarkersToMap(data, filterByNearby);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("CCTV 데이터 로딩 실패:", textStatus, errorThrown);
+            console.log("서버 응답:", jqXHR.responseText);
+        });
+    }
+
     function loadRestAreas() {
         if (isMarkerClickZoom) {
             isMarkerClickZoom = false;
@@ -467,50 +530,71 @@
         });
     }
 
-    function loadCctvData() {
-        const bounds = map.getBounds();
-        const sw = bounds.getSouthWest();
-        const ne = bounds.getNorthEast();
-        $.ajax({
-            url: 'Controller?type=Cctv',
-            type: 'GET',
-            data: {
-                minX: sw.getLng(),
-                minY: sw.getLat(),
-                maxX: ne.getLng(),
-                maxY: ne.getLat()
-            },
-            dataType: 'json'
-        }).done(function(data) {
-            console.log("CCTV 데이터 로드 성공:", data);
-            addCctvMarkersToMap(data);
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            console.error("CCTV 데이터 로딩 실패:", textStatus, errorThrown);
-            console.log("서버 응답:", jqXHR.responseText);
-        });
-    }
-
+    // 💡 수정된 부분: CCTV 전체 켜기/끄기
     $('#cctv-toggle-button').on('click', function() {
         if (isCctvVisible) {
-            cctvMarkers.setMap(null);
             isCctvVisible = false;
+            cctvMarkers.setMap(null);
             $(this).text('CCTV 켜기').css('background-color', '#6c757d').css('border-color', '#6c757d');
-
-            if(currentInfoWindow) {
-                currentInfoWindow.close();
-            }
-            if(currentVideoPlayer) {
-                currentVideoPlayer.dispose();
-                currentVideoPlayer = null;
-            }
         } else {
-            cctvMarkers.setMap(map);
             isCctvVisible = true;
+            isNearbyCctvVisible = false;
+            $('#nearby-cctv-toggle-button').text('휴게소 주변 CCTV 켜기').css('background-color', '#009688').css('border-color', '#009688');
             $(this).text('CCTV 끄기').css('background-color', '#007bff').css('border-color', '#007bff');
+            cctvMarkers.setMap(map);
             loadCctvData();
+        }
+        if(currentInfoWindow) {
+            currentInfoWindow.close();
+            currentInfoWindow.close();
         }
     });
 
+    // 💡 수정된 부분: 휴게소 주변 CCTV 켜기/끄기
+    $('#nearby-cctv-toggle-button').on('click', function() {
+        if (isNearbyCctvVisible) {
+            isNearbyCctvVisible = false;
+            cctvMarkers.setMap(null);
+            $(this).text('휴게소 주변 CCTV 켜기').css('background-color', '#009688').css('border-color', '#009688');
+        } else {
+            const visibleRestAreaMarkers = restAreaMarkers.getMarkers();
+            if (visibleRestAreaMarkers.length === 0) {
+                alert("먼저 지도에서 휴게소를 찾거나 검색하여 위치를 지정해주세요.");
+                return;
+            }
+
+            isNearbyCctvVisible = true;
+            isCctvVisible = false;
+            $('#cctv-toggle-button').text('CCTV 켜기').css('background-color', '#6c757d').css('border-color', '#6c757d');
+            $(this).text('주변 CCTV 끄기').css('background-color', '#007bff').css('border-color', '#007bff');
+            cctvMarkers.setMap(map);
+            // 모든 CCTV 데이터를 불러온 후, 1km 반경으로 필터링
+            loadCctvData(true);
+        }
+        if(currentInfoWindow) {
+            currentInfoWindow.close();
+        }
+    });
+
+    // 💡 추가된 부분: 지도 이동/확대 시 CCTV 데이터 자동 업데이트
+    kakao.maps.event.addListener(map, 'dragend', function() {
+        loadRestAreas();
+        if (isCctvVisible) {
+            loadCctvData();
+        } else if (isNearbyCctvVisible) {
+            loadCctvData(true);
+        }
+    });
+    kakao.maps.event.addListener(map, 'zoom_changed', function() {
+        loadRestAreas();
+        if (isCctvVisible) {
+            loadCctvData();
+        } else if (isNearbyCctvVisible) {
+            loadCctvData(true);
+        }
+    });
+
+    // 검색 버튼 클릭 시
     $('#search-button').on('click', function() {
         const searchText = $('#search-input').val();
         if (!searchText) {
@@ -528,6 +612,7 @@
                     addRestAreaMarkersToMap(data);
                     const firstResult = data[0];
                     const position = new kakao.maps.LatLng(firstResult.Lat, firstResult.Lng);
+
                     const currentLevel = map.getLevel();
                     const targetLevel = 3;
                     const newLevel = Math.max(currentLevel, targetLevel);
@@ -541,21 +626,9 @@
             });
     });
 
-    kakao.maps.event.addListener(map, 'dragend', function() {
-        loadRestAreas();
-        if (isCctvVisible) {
-            loadCctvData();
-        }
-    });
-    kakao.maps.event.addListener(map, 'zoom_changed', function() {
-        loadRestAreas();
-        if (isCctvVisible) {
-            loadCctvData();
-        }
-    });
-
     function showModalForRestArea(restAreaId) {
         currentRestAreaId = restAreaId; // 현재 휴게소 ID 저장
+
         $.ajax({
             type: 'POST',
             url: '${pageContext.request.contextPath}/Controller',
