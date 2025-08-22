@@ -19,6 +19,9 @@
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
+    
+    <!-- jQuery 추가 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 <%@ include file="header.jsp" %>
@@ -215,9 +218,9 @@
                                                 <i class="fas fa-list"></i>
                                                 편의시설
                                             </div>
-                                            <div class="facilities-grid">
-                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
-                                                <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.convenience}">
+                                                                                        <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
+                                            <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.convenience}">
+                                                <div class="facilities-grid">
                                                     <c:forEach var="facility"
                                                                items="${serviceAreaVO.convenience.split(',')}"
                                                                varStatus="facilityStatus">
@@ -278,14 +281,14 @@
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </c:forEach>
-                                                </c:if>
-                                                <c:if test="${empty serviceAreaVO or empty serviceAreaVO.convenience}">
-                                                    <div class="facility-item">
-                                                        <i class="fas fa-info-circle facility-icon"></i>
-                                                        <span>편의시설 정보 없음</span>
-                                                    </div>
-                                                </c:if>
-                                            </div>
+                                                </div>
+                                            </c:if>
+                                            <c:if test="${empty serviceAreaVO or empty serviceAreaVO.convenience}">
+                                                <div class="no-facilities-message">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <span>해당 휴게소는 편의시설 정보를 제공하지 않습니다</span>
+                                                </div>
+                                            </c:if>
                                         </div>
 
                                         <!-- 주유비/운영시간 섹션 -->
@@ -316,13 +319,13 @@
                                                         <div class="fuel-price">
                                                             LPG: ${serviceAreaVO.gasInfo.LPG}</div>
                                                     </c:if>
-                                                    <c:if test="${empty serviceAreaVO.gasInfo.gasoline and empty serviceAreaVO.gasInfo.disel and empty serviceAreaVO.gasInfo.LPG}">
-                                                        <div class="fuel-price">주유소 정보 없음</div>
+                                                                                                            <c:if test="${empty serviceAreaVO.gasInfo.gasoline and empty serviceAreaVO.gasInfo.disel and empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price no-info">해당 휴게소는 정보를 제공하지 않습니다</div>
+                                                        </c:if>
+                                                </c:if>
+                                                                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.gasInfo}">
+                                                        <div class="fuel-price no-info">해당 휴게소는 정보를 제공하지 않습니다</div>
                                                     </c:if>
-                                                </c:if>
-                                                <c:if test="${empty serviceAreaVO or empty serviceAreaVO.gasInfo}">
-                                                    <div class="fuel-price">주유소 정보 없음</div>
-                                                </c:if>
                                             </div>
                                         </div>
 
@@ -504,16 +507,79 @@
 
     // 휴게소 정보 모달 표시
     function showRestAreaInfo(name, index) {
+        // 휴게소인 경우에만 상세 정보를 가져옴
+        if (name.includes('휴게소')) {
+            // AJAX로 휴게소 상세 정보 가져오기
+            fetch('${pageContext.request.contextPath}/Controller', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `type=getRestAreaDetails&saKey=${index + 1}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.Idx) {
+                    showRestAreaDetailModal(data);
+                } else {
+                    // 기본 정보로 모달 표시
+                    showBasicModal(name, index);
+                }
+            })
+            .catch(error => {
+                console.error('휴게소 정보 가져오기 실패:', error);
+                // 기본 정보로 모달 표시
+                showBasicModal(name, index);
+            });
+        } else {
+            // 졸음쉼터인 경우 기본 정보만 표시
+            showBasicModal(name, index);
+        }
+    }
+
+    // 기본 모달 표시 (졸음쉼터용)
+    function showBasicModal(name, index) {
         const modal = document.getElementById('restAreaModal');
         const title = document.getElementById('modalTitle');
         const location = document.getElementById('modalLocation');
         const phone = document.getElementById('modalPhone');
 
         title.textContent = name;
-        location.textContent = `휴게소 #${index + 1} - ${name}`;
-        phone.textContent = '031-XXX-XXXX';
+        location.textContent = `${name} #${index + 1}`;
+        phone.textContent = '정보 없음';
 
         modal.style.display = 'block';
+    }
+
+    // 휴게소 상세 정보 모달 표시
+    function showRestAreaDetailModal(data) {
+        if (!data) return;
+
+        $('#modalTitle').text(data.SAName || '정보 없음');
+        $('#modalLocation').text(data.Address || '정보 없음');
+
+        // 전화번호 포맷팅
+        let formattedPhone = '정보 없음';
+        if (data.Tel) {
+            formattedPhone = data.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        }
+        $('#modalPhone').text(formattedPhone);
+
+        // 편의시설 표시
+        const facilitiesList = $('#modalFacilities');
+        facilitiesList.empty();
+        if (data.Convenience) {
+            data.Convenience.split(',').forEach(facility => {
+                if(facility.trim()) {
+                    facilitiesList.append($('<span>').addClass('facility-tag').text(facility.trim()));
+                }
+            });
+        } else {
+            facilitiesList.html('<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>');
+        }
+
+        // 모달 표시
+        $('#restAreaModal').css('display', 'block');
     }
 
     // 졸음쉼터 정보 모달 표시
@@ -725,10 +791,7 @@
 
     // 모달 닫기
     function closeModal() {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            modal.style.display = 'none';
-        });
+        $('#restAreaModal').hide();
     }
 
     // 모달 외부 클릭 시 닫기

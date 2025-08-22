@@ -1186,8 +1186,46 @@ body {
     color: #10ac84;
 }
 
-.facility-icon.fa-info-circle {
-    color: #8395a7;
+.facility-icon.fa-minus {
+    color: #ccc;
+}
+
+/* 정보 제공하지 않는 휴게소 스타일 */
+.no-info {
+    opacity: 0.7;
+    font-style: normal;
+    color: #888 !important;
+}
+
+.no-info .facility-icon {
+    color: #bbb !important;
+}
+
+.fuel-price.no-info {
+    color: #888 !important;
+    font-style: normal;
+    opacity: 0.8;
+}
+
+/* 편의시설 정보 없음 메시지 스타일 */
+.no-facilities-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(102, 126, 234, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+    min-height: 60px;
+}
+
+.no-facilities-message i {
+    color: #667eea;
+    font-size: 1rem;
 }
 
 
