@@ -291,6 +291,7 @@
     </style>
 </head>
 <body>
+<!-- Header -->
 <header class="header">
     <div class="nav-container">
         <a href="Controller" class="logo">
@@ -326,12 +327,15 @@
     </div>
 </header>
 
+<!-- Main Content -->
 <main>
     <div class="notice-container">
+        <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">공지사항</h1>
         </div>
 
+        <!-- Write Button (관리자만) -->
         <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
                       ne null and sessionScope.loginUser.authority == 1}">
             <div class="write-btn-container">
@@ -342,6 +346,7 @@
             </div>
         </c:if>
 
+        <!-- Notice List -->
         <div class="notice-list">
             <c:set var="ar" value="${requestScope.ar}"/>
             <c:set var="p" value="${requestScope.page}" scope="page"/>
@@ -411,6 +416,7 @@
             </c:choose>
         </div>
 
+        <!-- Pagination -->
         <div class="pagination-container">
             <ol class="pagination">
                 <c:if test="${p.startPage < p.pagePerBlock}">

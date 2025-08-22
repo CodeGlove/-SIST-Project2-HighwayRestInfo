@@ -1,6 +1,7 @@
 package restinfo.control;
 
 import restinfo.action.Action;
+import restinfo.action.ForwardAction;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
@@ -27,6 +28,8 @@ public class Controller extends HttpServlet {
         actionMap = new HashMap<>();
     }
 
+    private Properties prop;
+
     @Override
     public void init() throws ServletException {
         // 생성자 다음으로 딱! 한번 수행하는 함수
@@ -44,7 +47,7 @@ public class Controller extends HttpServlet {
         // 절대경로화 시킨 이유는
         // 해당 파일의 내용(클래스 경로)을 스트림을 이용하여
         // 읽어와서 Properties객체에 담기 위함이다.
-        Properties prop = new Properties();
+        prop = new Properties();
         // prop.setProperty("index", "emp.action.IndexAction");
         // 위처럼 저장을 해야하지만 이렇게 하면 기능이 하나 생길때마다
         // 소스를 수정해야 하는 번거로움이 있다.
@@ -78,7 +81,17 @@ public class Controller extends HttpServlet {
             String value = prop.getProperty(key);// "emp.action.IndexAction"
 
             try {
-                Object obj = Class.forName(value).newInstance();
+                Object obj = null;
+                //action.ForwardAction:/WEB-INF/views/forgotPw.jsp처럼 action뒤에 파일 경로명이 있을 때
+                //':'기점으로 뒤에 있는 문자열(경로)을 앞의 액션에 저장시켜놓고 맵에 등록
+                // 만약 properties에 ':'뒤에 다른 경로를 가진 FowardAction이 여러개 저장되어있더라도
+                // it의 각 바퀴마다 다른 키값을 가진 property를 불러와 다른 목표 경로를
+                // 각 객체의 생성자의 인자로 ':'뒤의 목표 경로를 던져주고 객체 단위로 맵에 저장하기 때운에
+                // 같은 ForwardAction이어도 목표경로가 각자 다르기 떄문에 다른 경로로 간다
+                if (value.contains(":"))
+                    obj = new ForwardAction(value.split(":")[1]);
+                else
+                    obj = Class.forName(value).newInstance();
                 actionMap.put(key, (Action) obj);
             } catch (Exception e) {
                 System.err.println("Action 생성 실패: " + key + " -> " + value);
