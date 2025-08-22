@@ -776,20 +776,32 @@ body {
 }
 
 /* 졸음쉼터 카드는 높이를 줄임 */
-#rest-stops .rest-area-card {
-    padding: 0.8rem;
-    margin-bottom: 0.8rem;
+.rest-area-card.rest-stop {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: auto;
 }
 
-#rest-stops .rest-area-info-row {
-    min-height: 50px;
-    gap: 1rem;
+.rest-area-card.rest-stop .rest-area-info-row {
+    min-height: 40px;
+    gap: 1.2rem;
+    align-items: center;
 }
 
-#rest-stops .rest-area-name-section {
-    flex: 1;
-    padding-right: 0;
-    border-right: none;
+.rest-area-card.rest-stop .rest-area-name-section {
+    flex: 0 0 220px;
+    padding-right: 1rem;
+    border-right: 1px solid #e5e8eb;
+    min-height: auto;
+}
+
+/* 졸음쉼터 카드에서 불필요한 여백 제거 */
+.rest-area-card.rest-stop .duration-info {
+    margin-top: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+    /* 소요시간 아래 여백 늘리기 */
 }
 
 /* 휴게소만 표시 버튼 스타일 */
@@ -864,9 +876,6 @@ body {
 }
 
 
-
-
-
 /* 휴게시설 카드 애니메이션 */
 .rest-area-card {
     transition: all 0.3s ease;
@@ -934,6 +943,15 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rest-area-name i {
+    color: #667eea;
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
 .rest-area-rating {
@@ -1168,10 +1186,47 @@ body {
     color: #10ac84;
 }
 
-.facility-icon.fa-info-circle {
-    color: #8395a7;
+.facility-icon.fa-minus {
+    color: #ccc;
 }
 
+/* 정보 제공하지 않는 휴게소 스타일 */
+.no-info {
+    opacity: 0.7;
+    font-style: normal;
+    color: #888 !important;
+}
+
+.no-info .facility-icon {
+    color: #bbb !important;
+}
+
+.fuel-price.no-info {
+    color: #888 !important;
+    font-style: normal;
+    opacity: 0.8;
+}
+
+/* 편의시설 정보 없음 메시지 스타일 */
+.no-facilities-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(102, 126, 234, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+    min-height: 60px;
+}
+
+.no-facilities-message i {
+    color: #667eea;
+    font-size: 1rem;
+}
 
 
 .fuel-info {

@@ -47,11 +47,10 @@ public class LoginAction implements Action {
 			} else {
 				System.out.println("오류: 세션에 객체가 저장되지 않았습니다.");
 			}
-			if (vo.getAuthority() != null && Integer.valueOf(vo.getAuthority()) == 1) {
-				redirectURL = "manage.jsp"; //관리자 페이지
-			} else {
+//			if (vo.getAuthority() != null && Integer.valueOf(vo.getAuthority()) == 1)
+//				redirectURL = "/WEB-INF/views/manage.jsp"; //관리자 페이지
+//			else
 				redirectURL = "index.jsp"; //일반 사용자 페이지
-			}
 		} else {
 			//로그인 실패
 			loginSuccess = false;

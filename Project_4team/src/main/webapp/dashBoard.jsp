@@ -533,24 +533,15 @@
         const chartHeight = canvasHeight - (padding * 2);
 
         // ========================================
-        // 7-2. 데이터 그룹화 (같은 즐겨찾기 수끼리 묶기)
+        // 7-2. 데이터는 이미 그룹화되어 전달됨
         // ========================================
-        const groupedData = [];
-        const uniqueCounts = [...new Set(data.map(item => item.count))].sort((a, b) => b - a).slice(0, 5);
-
-        uniqueCounts.forEach(count => {
-            const itemsWithSameCount = data.filter(item => item.count === count);
-            groupedData.push({
-                count: count,
-                items: itemsWithSameCount
-            });
-        });
+        // data는 이미 그룹화된 형태: [{count: 15, names: ['휴게소A', '휴게소B'], itemCount: 2}, ...]
 
         // ========================================
         // 7-3. 막대그래프 크기 계산
         // ========================================
-        const maxValue = Math.max(...uniqueCounts);  // 최대값
-        const barWidth = chartWidth / groupedData.length;  // 막대 너비
+        const maxValue = Math.max(...data.map(item => item.count));  // 최대값
+        const barWidth = chartWidth / data.length;  // 막대 너비
         const barSpacing = 10;  // 막대 간격
 
         // ========================================
@@ -559,60 +550,20 @@
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
         // 각 막대 그리기
-        groupedData.forEach((group, groupIndex) => {
+        data.forEach((group, index) => {
             const barHeight = (group.count / maxValue) * chartHeight;
-            const x = padding + (groupIndex * barWidth) + (barSpacing / 2);
+            const x = padding + (index * barWidth) + (barSpacing / 2);
             const y = canvasHeight - padding - barHeight;
 
-            // 같은 즐겨찾기 수를 가진 휴게소들을 사선으로 분할
-            if (group.items.length > 1) {
-                // 여러 휴게소가 있는 경우 사선으로 분할
-                group.items.forEach((item, itemIndex) => {
-                    const colorIndex = data.findIndex(d => d.name === item.name) % colors.length;
+            // 각 막대마다 고유한 색상 적용
+            ctx.fillStyle = colors[index];
+            ctx.fillRect(x, y, barWidth - barSpacing, barHeight);
 
-                    // 사선 패턴으로 분할된 막대 그리기
-                    ctx.save(); // 현재 상태 저장
-                    ctx.beginPath();
-
-                    // 사선 패턴 생성
-                    const segmentWidth = (barWidth - barSpacing) / group.items.length;
-                    const segmentX = x + (itemIndex * segmentWidth);
-
-                    // 사선 경로 그리기
-                    ctx.moveTo(segmentX, y);
-                    ctx.lineTo(segmentX + segmentWidth, y);
-                    ctx.lineTo(segmentX + segmentWidth, y + barHeight);
-                    ctx.lineTo(segmentX, y + barHeight);
-                    ctx.closePath();
-
-                    // 색상 적용
-                    ctx.fillStyle = colors[colorIndex];
-                    ctx.fill();
-
-                    // 사선 구분선 그리기 (선택사항)
-                    if (itemIndex > 0) {
-                        ctx.strokeStyle = '#fff';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(segmentX, y);
-                        ctx.lineTo(segmentX, y + barHeight);
-                        ctx.stroke();
-                    }
-
-                    ctx.restore(); // 상태 복원
-                });
-            } else {
-                // 단일 휴게소인 경우 일반 막대
-                const colorIndex = data.findIndex(d => d.name === group.items[0].name) % colors.length;
-                ctx.fillStyle = colors[colorIndex];
-                ctx.fillRect(x, y, barWidth - barSpacing, barHeight);
-            }
-
-            // 막대 위에 수치 표시
+            // 막대 위에 수치만 표시
             ctx.fillStyle = '#333';
             ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(group.count.toString(), x + (barWidth - barSpacing) / 2, y - 5);
+            ctx.fillText(group.count.toString(), x + (barWidth - barSpacing) / 2, y - 10);
         });
 
         // Y축 눈금 그리기
@@ -635,30 +586,32 @@
     }
 
     // ========================================
-    // 8. 동적 색상 생성 함수
+    // 8. 막대별 고유 색상 생성 함수
     // ========================================
-    // HSL 색상 공간에서 황금비율로 분산된 고유한 색상들을 자동 생성
+    // 막대그래프의 각 막대마다 고유한 색상을 생성
     // 매개변수:
     // - count: 필요한 색상 개수
-    // - saturation: 채도 (0-100, 기본값 70)
-    // - lightness: 명도 (0-100, 기본값 60)
-    function generateColors(count, saturation = 70, lightness = 60) {
+    function generateColors(count) {
+        // 5개 막대를 위한 고유한 색상 배열
+        const baseColors = [
+            '#667eea',  // 파란색
+            '#8B5CF6',  // 보라색
+            '#F59E0B',  // 주황색
+            '#10B981',  // 초록색
+            '#EF4444'   // 빨간색
+        ];
+        
         const colors = [];
-        const goldenRatio = 137.508; // 황금비율 (360도에서 균등하게 분산)
-
         for (let i = 0; i < count; i++) {
-            // 황금비율을 사용하여 색조를 균등하게 분산
-            const hue = (i * goldenRatio) % 360;
-            const color = 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
-            colors.push(color);
+            colors.push(baseColors[i % baseColors.length]);
         }
 
-        console.log(count + '개의 동적 색상 생성:', colors);
+        console.log(count + '개의 고유 색상 생성:', colors);
         return colors;
     }
 
     // ========================================
-    // 9. 범례 생성 함수
+    // 9. 범례 생성 함수 (색상별 그룹화)
     // ========================================
     function createBarChartLegend(data, colors) {
         const legendContainer = document.getElementById('barChartLegend');
@@ -668,19 +621,43 @@
         console.log('범례 생성 데이터:', data);
         console.log('범례 생성 색상:', colors);
 
-        data.forEach((item, index) => {
-            // 각 휴게소의 실제 색상 인덱스 계산
-            const colorIndex = index % colors.length;
-            const actualColor = colors[colorIndex];
+        // 색상별로 데이터 그룹화
+        const colorGroups = {};
+        data.forEach((group, index) => {
+            const color = colors[index];
+            if (!colorGroups[color]) {
+                colorGroups[color] = [];
+            }
+            // group.names 배열의 모든 이름을 추가
+            colorGroups[color].push(...group.names);
+        });
 
-            console.log(`범례 아이템 ${index}:`, item, '색상 인덱스:', colorIndex, '실제 색상:', actualColor);
+        // 각 색상 그룹별로 범례 생성
+        Object.keys(colorGroups).forEach(color => {
+            const legendGroup = document.createElement('div');
+            legendGroup.className = 'legend-group';
+            legendGroup.style.marginBottom = '1rem';
+            legendGroup.style.textAlign = 'center';
 
-            const legendItem = document.createElement('div');
-            legendItem.className = 'legend-item';
-            legendItem.innerHTML =
-                '<span class="legend-color" style="background-color: ' + actualColor + '"></span>' +
-                '<span class="legend-text">' + item.name + '</span>';
-            legendContainer.appendChild(legendItem);
+            // 색상 표시
+            const colorIndicator = document.createElement('div');
+            colorIndicator.className = 'legend-color';
+            colorIndicator.style.background = color;
+            colorIndicator.style.margin = '0 auto 0.5rem auto';
+            legendGroup.appendChild(colorIndicator);
+
+            // 해당 색상에 속하는 모든 레이블 표시
+            colorGroups[color].forEach(name => {
+                const label = document.createElement('div');
+                label.className = 'legend-label';
+                label.textContent = name;
+                label.style.fontSize = '0.8rem';
+                label.style.color = '#666';
+                label.style.marginBottom = '0.25rem';
+                legendGroup.appendChild(label);
+            });
+
+            legendContainer.appendChild(legendGroup);
         });
     }
 
@@ -733,13 +710,25 @@
         const favoriteData = await fetchBookMarkData();
 
         // ========================================
-        // 9-5. 막대그래프용 동적 색상 생성
+        // 9-5. 막대그래프용 고유 색상 생성
         // ========================================
-        // 데이터 개수만큼 고유한 색상을 자동으로 생성
-        // 채도 70%, 명도 60%로 설정하여 적당히 선명하면서도 부드러운 색상
-        const barChartColors = generateColors(favoriteData.length, 70, 60);
+        // favoriteData로부터 그룹화된 데이터 생성
+        const sortedData = [];
+        const uniqueCounts = [...new Set(favoriteData.map(item => item.count))].sort((a, b) => b - a).slice(0, 5);
+        
+        uniqueCounts.forEach(count => {
+            const itemsWithSameCount = favoriteData.filter(item => item.count === count);
+            sortedData.push({
+                count: count,
+                names: itemsWithSameCount.map(item => item.name),
+                itemCount: itemsWithSameCount.length
+            });
+        });
 
-        drawBarChart('barChart', favoriteData, barChartColors);
-        createBarChartLegend(favoriteData, barChartColors);
+        // 그룹화된 데이터 개수만큼 고유한 색상을 생성
+        const barChartColors = generateColors(sortedData.length);
+
+        drawBarChart('barChart', sortedData, barChartColors);
+        createBarChartLegend(sortedData, barChartColors);
     });
 </script>

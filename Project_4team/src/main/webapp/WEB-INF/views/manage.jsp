@@ -62,9 +62,9 @@
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="Controller?type=mainpage&goto=manage&content=dashBoard">대시보드&업데이트</a></li>
+                    <li><a href="Controller?type=manage&content=dashBoard">대시보드&업데이트</a></li>
                     <li><a href="Controller?type=notice">공지사항 수정</a></li>
-                    <li><a href="Controller?type=mainpage&goto=manage&content=member">회원조회</a></li>
+                    <li><a href="Controller?type=manage&content=member">회원조회</a></li>
                     <li><a href="Controller?type=faq">자주 묻는 질문 수정</a></li>
                 </ul>
             </nav>
@@ -87,17 +87,17 @@
 
 <c:if test="${content eq null or content eq 'dashBoard'}">
     <div style="margin-top: 0">
-        <jsp:include page="dashBoard.jsp"/>
+        <jsp:include page="../../dashBoard.jsp"/>
     </div>
 </c:if>
 
 <c:if test="${content eq 'member'}">
     <div style="margin-top: 0;">
-        <jsp:include page="member.jsp"/>
+        <jsp:include page="../../member.jsp"/>
     </div>
 </c:if>
 
     <!-- Footer Include -->
-    <jsp:include page="footer.jsp" />
+    <jsp:include page="../../footer.jsp" />
 </body>
 </html>
