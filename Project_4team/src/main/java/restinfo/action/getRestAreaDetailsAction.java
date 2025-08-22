@@ -45,6 +45,7 @@ public class getRestAreaDetailsAction implements Action {
             }
 
             String jsonResponse = new Gson().toJson(vo);
+
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(vo != null ? jsonResponse : "{}");

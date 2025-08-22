@@ -591,9 +591,9 @@
 
                 const gasInfo = data.gasInfo;
                 if (gasInfo) {
-                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline + '원' : '주유불가');
-                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel + '원' : '주유불가');
-                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG + '원' : '주유불가');
+                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline  : '주유불가');
+                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel : '주유불가');
+                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG : '주유불가');
                 } else {
                     $('#modalGasoline, #modalDiesel, #modalLpg').text('조회 불가');
                 }

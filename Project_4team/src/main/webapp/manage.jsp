@@ -62,9 +62,9 @@
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="Controller?type=mainpage&goto=manage&content=dashBoard">대시보드&업데이트</a></li>
+                    <li><a href="Controller?type=manage&content=dashBoard">대시보드&업데이트</a></li>
                     <li><a href="Controller?type=notice">공지사항 수정</a></li>
-                    <li><a href="Controller?type=mainpage&goto=manage&content=member">회원조회</a></li>
+                    <li><a href="Controller?type=manage&content=member">회원조회</a></li>
                     <li><a href="Controller?type=faq">자주 묻는 질문 수정</a></li>
                 </ul>
             </nav>
