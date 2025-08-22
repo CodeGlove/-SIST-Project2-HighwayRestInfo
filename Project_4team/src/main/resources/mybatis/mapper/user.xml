@@ -40,4 +40,8 @@
         Cancel = 1 WHERE
         NickName = #{str}
     </update>
+
+    <select id="checkAccountByEmail" resultType="int" parameterType="String">
+        select count(*) from User where ID = #{email} and Platform = 'ORIGIN'
+    </select>
 </mapper>
