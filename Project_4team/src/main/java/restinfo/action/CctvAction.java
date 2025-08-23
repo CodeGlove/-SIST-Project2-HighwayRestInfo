@@ -51,6 +51,9 @@ public class CctvAction implements Action {
             urlBuilder.append("&" + URLEncoder.encode("maxY", "UTF-8") + "=" + URLEncoder.encode(maxY, "UTF-8"));
             urlBuilder.append("&" + URLEncoder.encode("getType", "UTF-8") + "=" + URLEncoder.encode("json", "UTF-8"));
 
+            // 디버깅을 위해 호출 URL을 서버 로그에 출력합니다.
+            System.out.println("CCTV API 호출 URL: " + urlBuilder.toString());
+
             URL url = new URL(urlBuilder.toString());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -70,6 +73,9 @@ public class CctvAction implements Action {
             }
             rd.close();
             conn.disconnect();
+
+            // 디버깅을 위해 API 응답을 서버 로그에 출력합니다.
+            System.out.println("CCTV API 응답: " + sb.toString());
 
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(sb.toString());
