@@ -948,7 +948,7 @@
 <!-- Footer Include -->
 <jsp:include page="footer.jsp"/>
 
-
+<!-- cctv 모달 -->
 <div id="cctvModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cctvModal')">&times;</span>
