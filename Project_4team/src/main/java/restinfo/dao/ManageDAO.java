@@ -130,21 +130,4 @@ public class ManageDAO {
         return cnt;
     }
 
-    public static int checkAccount(String email) {
-        // 자사계정에 인자로 받아온 이메일 값이 있는지 확인하는 메서드
-        SqlSession ss = FactoryService.getFactory().openSession();
-        int cnt = 0;
-        try {
-            cnt = ss.selectOne("User.checkAccountByEmail", email);
-
-            System.out.println("dao's cnt: " + cnt);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            ss.close();
-        }
-
-        return cnt;
-    }
-
 }

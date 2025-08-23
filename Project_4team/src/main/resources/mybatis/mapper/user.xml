@@ -42,6 +42,12 @@
     </update>
 
     <select id="checkAccountByEmail" resultType="int" parameterType="String">
-        select count(*) from User where ID = #{email} and Platform = 'ORIGIN'
+        select Idx from User where ID = #{email} and Platform = 'ORIGIN'
     </select>
+
+    <update id="changePwd" parameterType="map">
+        UPDATE User SET
+        Pwd = #{password} WHERE
+        Idx = #{Idx}
+    </update>
 </mapper>

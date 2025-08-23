@@ -49,4 +49,41 @@ public class updateUserDAO {
         ss.close();
         return cnt;
     }
+
+    public static int checkAccount(String email) {
+        // 자사계정에 인자로 받아온 이메일 값이 있는지 확인하는 메서드
+        SqlSession ss = FactoryService.getFactory().openSession();
+        int idx = 0;
+        try {
+            idx = ss.selectOne("User.checkAccountByEmail", email);
+
+            System.out.println("dao's idx: " + idx);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            ss.close();
+        }
+
+        return idx;
+    }
+
+    public static int changeAccount(String Idx, String password) {
+        int cnt = 0;
+        SqlSession ss = FactoryService.getFactory().openSession();
+        Map<String, String> map = new HashMap<>();
+        map.put("Idx", Idx);
+        map.put("password", password);
+        try {
+            cnt = ss.update("User.changePwd", map);
+            if (cnt > 0)
+                ss.commit();
+            else
+                ss.rollback();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }  finally {
+            ss.close();
+        }
+        return cnt;
+    }
 }
