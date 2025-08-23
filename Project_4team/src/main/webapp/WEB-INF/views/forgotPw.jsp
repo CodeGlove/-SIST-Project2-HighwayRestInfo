@@ -466,8 +466,43 @@
                 alert('인증번호를 입력해주세요.');
                 return;
             }
-            // TODO: 인증번호 확인 로직 구현
-            alert('인증번호 확인 기능은 추후 구현 예정입니다.');
+            // 인증번호 비교하는 비동기 함수 호출
+            fetch('Controller', {
+                method: 'POST', // POST 방식으로 요청
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded', // 폼 데이터 형식 지정
+                },
+                body: new URLSearchParams({ // 요청 파라미터 설정
+                    type: 'emailConfirm', // 요청 타입: 인증번호 발송,
+                    code: code             // 사용자 입력 이메일 주소
+                })
+            })
+                .then(response => {
+                    // ========================================
+                    // 성공 응답 처리
+                    // ========================================
+                    if (response.ok) {
+                        // 인증번호 발송이 완료됐으면 화면 전환
+                        alert('인증되었습니다');
+
+                        // 폼을 생성하여 POST로 페이지 이동
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'Controller';
+
+                        const typeInput = document.createElement('input');
+                        typeInput.type = 'hidden';
+                        typeInput.name = 'type';
+                        typeInput.value = 'resetPw';
+
+                        form.appendChild(typeInput);
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        alert('인증번호가 일치하지 않습니다.');
+                        document.getElementById('verificationCode').value = '';
+                    }
+                })
 
         });
         
