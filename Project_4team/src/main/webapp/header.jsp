@@ -14,8 +14,8 @@
                 <li><a href="Controller?type=notice" class="nav-link">공지사항</a></li>
                 <li><a href="#" class="nav-link">휴게소 정보</a></li>
                 <li><a href="#" class="nav-link">교통정보</a></li>
-                <li><a href="#" class="nav-link">고객센터</a></li>
-                <li><a href="#" class="nav-link">도움말</a></li>
+                <li><a href="Controller?type=customerService" class="nav-link">고객센터</a></li>
+                <li><a href="Controller?type=faq">자주 묻는 질문</a></li>
             </ul>
         </nav>
         <div class="auth-buttons">
