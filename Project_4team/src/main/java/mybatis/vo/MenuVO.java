@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class MenuVO {
     private int Idx, SAKey;
-    private String FoodName, Price, Season, //계절메뉴 - "4" : 비계절 "S" : 여름, "W" : 겨울
+    private String FoodName, Price, Season, //계절메뉴 - "4" : 비계절, "S" : 여름, "W" : 겨울
             Recommend, Best, Premium; //음식구분("N", "Y" 플래그로 구분함)
 
     public int getIdx() {

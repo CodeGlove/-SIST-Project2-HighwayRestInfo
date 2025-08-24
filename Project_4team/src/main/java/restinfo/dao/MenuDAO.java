@@ -14,34 +14,70 @@ public class MenuDAO {
         }
     }
 
-    // List에 담긴 여러 메뉴들을 한번에 INSERT (Batch작업)
+    // 테스트코드
     public static void batchInsert(List<MenuVO> insertList) {
-        // 리스트가 비어있으면 작업안하고 종료
-        if(insertList == null || insertList.isEmpty())
-            return;
-        // *** (핵심!) BATCH 모드로 SqlSession 열기 ***
-        // 이 모드는 DB에 명령을 바로 보내지 않고 창고에 모아두는 역할
-        try (SqlSession ss = FactoryService.getFactory().openSession(ExecutorType.BATCH)) {
-            //ExecutorType.BATCH: mybatis에서 DB작업을 모아서 한번에 처리하도록 지정하는 실행모드!!
-            for (MenuVO mvo : insertList) {
-                ss.insert("menu.insertMenu", mvo); //insert 쿼리 호출 (아직 실행은 안됨)
+        if (insertList == null || insertList.isEmpty()) return;
+
+        System.out.println(">>> DAO: STARTING SINGLE INSERT TEST for " + insertList.size() + " records...");
+        int successCount = 0;
+
+        // Auto-commit을 true로 설정하여 한 줄씩 즉시 저장
+        try (SqlSession ss = FactoryService.getFactory().openSession(true)) {
+            for (MenuVO vo : insertList) {
+                try {
+                    ss.insert("menu.insertMenu", vo);
+                    successCount++;
+                } catch (Exception e) {
+                    // ✨ 에러 발생 시, 문제가 된 데이터와 에러 내용을 상세히 출력
+                    System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    System.err.println(">>> BATCH INSERT FAILED AT RECORD: " + (successCount + 1));
+                    System.err.println(">>> PROBLEMATIC DATA (VO): " + vo.getSAKey() + " - " + vo.getFoodName());
+                    System.err.println(">>> ERROR MESSAGE:");
+                    e.printStackTrace();
+                    System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+                    // 에러가 발생하면 테스트 중단
+                    return;
+                }
             }
-            ss.flushStatements(); //모아둔 INSERT 쿼리들을 DB에 한번에 보내기
-            ss.commit(); //모든 작업 성공하면 최종 저장한다.
         }
+        System.out.println(">>> DAO: SINGLE INSERT TEST FINISHED. Success Count: " + successCount);
     }
+
+    // List에 담긴 여러 메뉴들을 한번에 INSERT (Batch작업)
+    /*public static void batchInsert(List<MenuVO> insertList) {
+        if (insertList == null || insertList.isEmpty()) return;
+        // Auto-commit false로 하나의 트랜잭션으로 관리
+        try (SqlSession ss = FactoryService.getFactory().openSession(ExecutorType.BATCH, false)) {
+            try {
+                for (MenuVO vo : insertList) {
+                    ss.insert("menu.insertMenu", vo);
+                }
+                ss.flushStatements();
+                ss.commit();
+                System.out.println(">>> DAO: Processed " + insertList.size() + " records for INSERT.");
+            } catch (Exception e) {
+                e.printStackTrace();
+                ss.rollback();
+            }
+        }
+    }*/
 
     // List에 담긴 여러 메뉴들을 한번에 UPDATE (Batch작업)
     public static void batchUpdate(List<MenuVO> updateList) {
-        // 리스트가 비어있으면 작업안하고 종료
         if (updateList == null || updateList.isEmpty()) return;
-
-        try (SqlSession ss = FactoryService.getFactory().openSession(ExecutorType.BATCH)) {
-            for (MenuVO mvo : updateList) {
-                ss.update("menu.updateMenu", mvo);
+        try (SqlSession ss = FactoryService.getFactory().openSession(ExecutorType.BATCH, false)) {
+            try {
+                for (MenuVO vo : updateList) {
+                    ss.update("menu.updateMenu", vo);
+                }
+                ss.flushStatements();
+                ss.commit();
+                System.out.println(">>> DAO: Processed " + updateList.size() + " records for UPDATE.");
+            } catch (Exception e) {
+                e.printStackTrace();
+                ss.rollback();
             }
-            ss.flushStatements(); //모아둔 UPDATE 쿼리들을 DB에 한번에 보내기
-            ss.commit();
         }
     }
 }
