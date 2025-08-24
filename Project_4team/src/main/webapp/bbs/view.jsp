@@ -160,7 +160,7 @@
         }
 
         .reaction-section {
-            padding: 32px 0;
+            padding: 24px 0;
             text-align: center;
             border-bottom: 1px solid #f2f4f6;
         }
@@ -168,45 +168,28 @@
         .reaction-buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 16px;
         }
 
         .reaction-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 16px 24px;
+            gap: 6px;
+            padding: 8px 16px;
             background: #ffffff;
-            border: 2px solid #e5e8eb;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 120px;
+            transition: all 0.2s ease;
+            min-width: 80px;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .reaction-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .reaction-btn:hover::before {
-            left: 100%;
         }
 
         .reaction-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: #f8f9fa;
+            border-color: #d0d5dd;
         }
 
         .reaction-btn:disabled {
@@ -214,8 +197,6 @@
             color: #8b95a1;
             cursor: not-allowed;
             border-color: #e5e8eb;
-            transform: none;
-            box-shadow: none;
         }
 
         .reaction-btn.like {
@@ -224,8 +205,7 @@
         }
 
         .reaction-btn.like:hover:not(:disabled) {
-            background: #3182f6;
-            color: #ffffff;
+            background: #eaf1ff;
             border-color: #3182f6;
         }
 
@@ -235,23 +215,17 @@
         }
 
         .reaction-btn.hate:hover:not(:disabled) {
-            background: #f04452;
-            color: #ffffff;
+            background: #fef2f2;
             border-color: #f04452;
         }
 
         .reaction-btn i {
-            font-size: 18px;
-            transition: transform 0.3s ease;
-        }
-
-        .reaction-btn:hover:not(:disabled) i {
-            transform: scale(1.2);
+            font-size: 14px;
         }
 
         .reaction-btn span {
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 14px;
         }
 
         .action-buttons {
