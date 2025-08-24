@@ -14,12 +14,103 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 모달 창을 위한 CSS */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 1170px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .cctv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        @media (min-width: 1170px) {
+            .cctv-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .video-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #000;
+            position: relative;
+            height: 300px;
+        }
+        .video-container video, .video-container .video-error {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-container span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 0.8em;
+            word-break: break-all;
+        }
+        .video-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background-color: #333;
+            text-align: center;
+        }
+        .no-rest-areas {
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+    </style>
 
     <!-- CSS 파일 링크 -->
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
-    
+
+    <!-- cctv 비디오 재생기능 -->
+    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+    <script src="https://unpkg.com/@videojs/http-streaming@3.5.0/dist/videojs-http-streaming.min.js"></script>
     <!-- jQuery 추가 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -30,6 +121,7 @@
         <h1><i class="fas fa-map-marked-alt"></i> 경로상 휴게시설 정보</h1>
         <p>휴게소와 졸음쉼터 정보를 확인하세요</p>
     </div>
+
 
 
     <!-- 경로 정보 표시 -->
@@ -104,38 +196,39 @@
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
-                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}"
-                             onclick="showRestAreaInfo('${restArea}', ${status.index})">
+                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}">
                             <div class="rest-area-info-row">
                                 <!-- 휴게시설명 섹션 -->
                                 <div class="rest-area-name-section">
-                                    <div class="rest-area-name">
+                                    <div class="rest-area-name" onclick="showRestAreaInfo('${restArea}', ${status.index})">
                                         <i class="fas fa-map-marker-alt"></i>
                                         <span class="facility-name"><c:out value="${restArea}"/></span>
                                     </div>
-                                    <!-- 휴게소일 때만 별점 표시 -->
                                     <c:if test="${restArea.contains('휴게소')}">
-                                        <div class="rest-area-rating">
-                                            <span class="rating-label">별점</span>
-                                            <div class="stars">
-                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
-                                                <c:choose>
-                                                    <c:when test="${not empty serviceAreaVO and not empty serviceAreaVO.star and serviceAreaVO.star != '0' and serviceAreaVO.star != '0.0'}">
-                                                        <!-- 노란별 하나만 표시 -->
-                                                        <i class="fas fa-star star filled"></i>
-                                                        <!-- 소수점 2자리까지 점수 표시 -->
-                                                        <span class="rating-score"><fmt:formatNumber
-                                                                value="${serviceAreaVO.star}" pattern="#.##"/></span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <!-- 평가 없을 때는 회색 별 -->
-                                                        <i class="fas fa-star star"></i>
-                                                        <span class="rating-score">평가 없음</span>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
+                                        <div class="icon-item cctv-icon" onclick="openCctvModal('${serviceAreaVOs[restArea].lat}', '${serviceAreaVOs[restArea].lng}')" title="CCTV">
+                                            <i class="fas fa-video"></i>
+                                            <span>CCTV</span>
                                         </div>
                                     </c:if>
+                                    <div class="rest-area-rating">
+                                        <span class="rating-label">별점</span>
+                                        <div class="stars">
+                                            <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+                                            <c:choose>
+                                                <c:when test="${not empty serviceAreaVO and not empty serviceAreaVO.star and serviceAreaVO.star != '0' and serviceAreaVO.star != '0.0'}">
+                                                    <!-- 노란별 하나만 표시 -->
+                                                    <i class="fas fa-star star filled"></i>
+                                                    <!-- 소수점 2자리까지 점수 표시 -->
+                                                    <span class="rating-score"><fmt:formatNumber value="${serviceAreaVO.star}" pattern="#.##" /></span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- 평가 없을 때는 회색 별 -->
+                                                    <i class="fas fa-star star"></i>
+                                                    <span class="rating-score">평가 없음</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </div>
 
 
                                     <!-- 소요시간 표시 -->
@@ -209,138 +302,143 @@
                                     </c:if>
                                 </div>
 
-                                <!-- 정보 섹션들 - 휴게소일 때만 표시 -->
-                                <c:if test="${restArea.contains('휴게소')}">
-                                    <div class="info-sections-row">
-                                        <!-- 편의시설 섹션 -->
-                                        <div class="content-section">
-                                            <div class="section-title">
-                                                <i class="fas fa-list"></i>
-                                                편의시설
-                                            </div>
-                                                                                        <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
-                                            <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.convenience}">
+                                <!-- 정보 섹션들 -->
+                                <div class="info-sections-row">
+                                    <!-- 편의시설 섹션 -->
+                                    <div class="content-section">
+                                        <c:choose>
+                                            <c:when test="${restArea.contains('휴게소')}">
+                                                <div class="section-title">
+                                                    <i class="fas fa-list"></i>
+                                                    편의시설
+                                                </div>
                                                 <div class="facilities-grid">
-                                                    <c:forEach var="facility"
-                                                               items="${serviceAreaVO.convenience.split(',')}"
-                                                               varStatus="facilityStatus">
-                                                        <c:choose>
-                                                            <c:when test="${facility.contains('수유실')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-baby facility-icon"></i>
-                                                                    <span>수유실</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('약국')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-first-aid facility-icon"></i>
-                                                                    <span>약국</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('버스')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-bus facility-icon"></i>
-                                                                    <span>버스환승</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('ATM')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-credit-card facility-icon"></i>
-                                                                    <span>ATM</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('주유소')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-gas-pump facility-icon"></i>
-                                                                    <span>주유소</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('충전소')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-charging-station facility-icon"></i>
-                                                                    <span>충전소</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('음식점')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-utensils facility-icon"></i>
-                                                                    <span>음식점</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:when test="${facility.contains('편의점')}">
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-store facility-icon"></i>
-                                                                    <span>편의점</span>
-                                                                </div>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <div class="facility-item">
-                                                                    <i class="fas fa-check facility-icon"></i>
-                                                                    <span>${facility.trim()}</span>
-                                                                </div>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </c:forEach>
-                                                </div>
-                                            </c:if>
-                                            <c:if test="${empty serviceAreaVO or empty serviceAreaVO.convenience}">
-                                                <div class="no-facilities-message">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    <span>해당 휴게소는 편의시설 정보를 제공하지 않습니다</span>
-                                                </div>
-                                            </c:if>
-                                        </div>
-
-                                        <!-- 주유비/운영시간 섹션 -->
-                                        <div class="content-section">
-                                            <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
-
-                                            <div class="section-title-with-date">
-                                                <div class="section-title-left">
-                                                    <i class="fas fa-gas-pump"></i>
-                                                    주유비
-                                                </div>
-                                                <div class="section-title-date">
-                                                    <jsp:useBean id="now" class="java.util.Date"/>
-                                                    <fmt:formatDate value="${now}" pattern="yyyy.MM.dd"/>
-                                                </div>
-                                            </div>
-                                            <div class="fuel-info">
-                                                <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.gasInfo}">
-                                                    <c:if test="${not empty serviceAreaVO.gasInfo.gasoline}">
-                                                        <div class="fuel-price">
-                                                            휘발유: ${serviceAreaVO.gasInfo.gasoline}</div>
+                                                    <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+                                                    <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.convenience}">
+                                                        <c:forEach var="facility" items="${serviceAreaVO.convenience.split(',')}" varStatus="facilityStatus">
+                                                            <c:choose>
+                                                                <c:when test="${facility.contains('수유실')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-baby facility-icon"></i>
+                                                                        <span>수유실</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('약국')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-first-aid facility-icon"></i>
+                                                                        <span>약국</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('버스')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-bus facility-icon"></i>
+                                                                        <span>버스환승</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('ATM')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-credit-card facility-icon"></i>
+                                                                        <span>ATM</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('주유소')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-gas-pump facility-icon"></i>
+                                                                        <span>주유소</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('충전소')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-charging-station facility-icon"></i>
+                                                                        <span>충전소</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('음식점')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-utensils facility-icon"></i>
+                                                                        <span>음식점</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:when test="${facility.contains('편의점')}">
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-store facility-icon"></i>
+                                                                        <span>편의점</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="facility-item">
+                                                                        <i class="fas fa-check facility-icon"></i>
+                                                                        <span>${facility.trim()}</span>
+                                                                    </div>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </c:forEach>
                                                     </c:if>
-                                                    <c:if test="${not empty serviceAreaVO.gasInfo.disel}">
-                                                        <div class="fuel-price">
-                                                            경유: ${serviceAreaVO.gasInfo.disel}</div>
+                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.convenience}">
+                                                        <div class="facility-item">
+                                                            <i class="fas fa-info-circle facility-icon"></i>
+                                                            <span>편의시설 정보 없음</span>
+                                                        </div>
                                                     </c:if>
-                                                    <c:if test="${not empty serviceAreaVO.gasInfo.LPG}">
-                                                        <div class="fuel-price">
-                                                            LPG: ${serviceAreaVO.gasInfo.LPG}</div>
-                                                    </c:if>
-                                                                                                            <c:if test="${empty serviceAreaVO.gasInfo.gasoline and empty serviceAreaVO.gasInfo.disel and empty serviceAreaVO.gasInfo.LPG}">
-                                                            <div class="fuel-price no-info">해당 휴게소는 정보를 제공하지 않습니다</div>
-                                                        </c:if>
-                                                </c:if>
-                                                                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.gasInfo}">
-                                                        <div class="fuel-price no-info">해당 휴게소는 정보를 제공하지 않습니다</div>
-                                                    </c:if>
-                                            </div>
-                                        </div>
-
-                                        <!-- 대표메뉴/안전수칙 섹션 -->
-                                        <div class="content-section">
-                                            <div class="section-title">
-                                                <i class="fas fa-utensils"></i>
-                                                대표메뉴
-                                            </div>
-                                            <div class="menu-item">
-                                                참치김치찌개
-                                            </div>
-                                        </div>
+                                                </div>
+                                            </c:when>
+                                        </c:choose>
                                     </div>
-                                </c:if>
+
+                                    <!-- 주유비/운영시간 섹션 -->
+                                    <div class="content-section">
+                                        <c:choose>
+                                            <c:when test="${restArea.contains('휴게소')}">
+                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
+
+                                                <div class="section-title-with-date">
+                                                    <div class="section-title-left">
+                                                        <i class="fas fa-gas-pump"></i>
+                                                        주유비
+                                                    </div>
+                                                    <div class="section-title-date">
+                                                        <jsp:useBean id="now" class="java.util.Date" />
+                                                        <fmt:formatDate value="${now}" pattern="yyyy.MM.dd" />
+                                                    </div>
+                                                </div>
+                                                <div class="fuel-info">
+                                                    <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.gasInfo}">
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.gasoline}">
+                                                            <div class="fuel-price">휘발유: ${serviceAreaVO.gasInfo.gasoline}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.disel}">
+                                                            <div class="fuel-price">경유: ${serviceAreaVO.gasInfo.disel}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price">LPG: ${serviceAreaVO.gasInfo.LPG}</div>
+                                                        </c:if>
+                                                        <c:if test="${empty serviceAreaVO.gasInfo.gasoline and empty serviceAreaVO.gasInfo.disel and empty serviceAreaVO.gasInfo.LPG}">
+                                                            <div class="fuel-price">주유소 정보 없음</div>
+                                                        </c:if>
+                                                    </c:if>
+                                                    <c:if test="${empty serviceAreaVO or empty serviceAreaVO.gasInfo}">
+                                                        <div class="fuel-price">주유소 정보 없음</div>
+                                                    </c:if>
+                                                </div>
+                                            </c:when>
+                                        </c:choose>
+                                    </div>
+
+                                    <!-- 대표메뉴/안전수칙 섹션 -->
+                                    <div class="content-section">
+                                        <c:choose>
+                                            <c:when test="${restArea.contains('휴게소')}">
+                                                <div class="section-title">
+                                                    <i class="fas fa-utensils"></i>
+                                                    대표메뉴
+                                                </div>
+                                                <div class="menu-item">
+                                                    참치김치찌개
+                                                </div>
+                                            </c:when>
+                                        </c:choose>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </c:forEach>
@@ -507,81 +605,118 @@
 
     // 휴게소 정보 모달 표시
     function showRestAreaInfo(name, index) {
-        // 휴게소인 경우에만 상세 정보를 가져옴
-        if (name.includes('휴게소')) {
-            // AJAX로 휴게소 상세 정보 가져오기
-            fetch('${pageContext.request.contextPath}/Controller', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `type=getRestAreaDetails&saKey=${index + 1}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.Idx) {
-                    showRestAreaDetailModal(data);
-                } else {
-                    // 기본 정보로 모달 표시
-                    showBasicModal(name, index);
-                }
-            })
-            .catch(error => {
-                console.error('휴게소 정보 가져오기 실패:', error);
-                // 기본 정보로 모달 표시
-                showBasicModal(name, index);
-            });
-        } else {
-            // 졸음쉼터인 경우 기본 정보만 표시
-            showBasicModal(name, index);
-        }
-    }
-
-    // 기본 모달 표시 (졸음쉼터용)
-    function showBasicModal(name, index) {
         const modal = document.getElementById('restAreaModal');
         const title = document.getElementById('modalTitle');
         const location = document.getElementById('modalLocation');
         const phone = document.getElementById('modalPhone');
 
         title.textContent = name;
-        location.textContent = `${name} #${index + 1}`;
-        phone.textContent = '정보 없음';
+        location.textContent = `휴게소 #${index + 1} - ${name}`;
+        phone.textContent = '031-XXX-XXXX';
 
         modal.style.display = 'block';
     }
-
-    // 휴게소 상세 정보 모달 표시
-    function showRestAreaDetailModal(data) {
-        if (!data) return;
-
-        $('#modalTitle').text(data.SAName || '정보 없음');
-        $('#modalLocation').text(data.Address || '정보 없음');
-
-        // 전화번호 포맷팅
-        let formattedPhone = '정보 없음';
-        if (data.Tel) {
-            formattedPhone = data.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-        }
-        $('#modalPhone').text(formattedPhone);
-
-        // 편의시설 표시
-        const facilitiesList = $('#modalFacilities');
-        facilitiesList.empty();
-        if (data.Convenience) {
-            data.Convenience.split(',').forEach(facility => {
-                if(facility.trim()) {
-                    facilitiesList.append($('<span>').addClass('facility-tag').text(facility.trim()));
-                }
-            });
-        } else {
-            facilitiesList.html('<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>');
-        }
-
-        // 모달 표시
-        $('#restAreaModal').css('display', 'block');
+    // CCTV 모달 열기 및 데이터 가져오기
+    function openCctvModal(lat, lng) {
+        document.getElementById('cctvModal').style.display = 'block';
+        fetchCctvData(lat, lng);
     }
 
+    // 모달 닫기
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'none';
+
+        // CCTV 모달 닫을 때 영상 중지
+        if (modalId === 'cctvModal') {
+            videojs.getPlayers().forEach(player => {
+                if (player) {
+                    player.dispose();
+                }
+            });
+            document.getElementById('cctv-grid').innerHTML = '';
+        }
+    }
+
+    // 주어진 위/경도 주변의 CCTV 데이터를 서버에서 가져옵니다.
+    function fetchCctvData(lat, lng) {
+        const loading = document.getElementById('cctv-loading');
+        const errorMsg = document.getElementById('cctv-error');
+        const cctvGrid = document.getElementById('cctv-grid');
+        loading.style.display = 'block';
+        errorMsg.style.display = 'none';
+        cctvGrid.innerHTML = '';
+
+        const minX = parseFloat(lng) - 0.005;
+        const minY = parseFloat(lat) - 0.005;
+        const maxX = parseFloat(lng) + 0.005;
+        const maxY = parseFloat(lat) + 0.005;
+
+        fetch('${pageContext.request.contextPath}/Controller?type=Cctv&minX=' + minX + '&minY=' + minY + '&maxX=' + maxX + '&maxY=' + maxY)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('서버 오류: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                loading.style.display = 'none';
+                let cctvList = [];
+                if (data.response && data.response.data) {
+                    if (!Array.isArray(data.response.data)) {
+                        cctvList.push(data.response.data);
+                    } else {
+                        cctvList = data.response.data;
+                    }
+                }
+
+                if (cctvList.length > 0) {
+                    cctvList.forEach((cctv, index) => {
+                        const videoContainer = document.createElement('div');
+                        videoContainer.className = 'video-container';
+                        cctvGrid.appendChild(videoContainer);
+
+                        const videoId = cctv.cctvid || 'fallback-cctv-' + index;
+
+                        fetch('${pageContext.request.contextPath}/Controller?type=getVideoUrl&temporaryUrl=' + encodeURIComponent(cctv.cctvurl))
+                            .then(res => res.text())
+                            .then(finalUrl => {
+                                if (finalUrl) {
+                                    const videoElement = document.createElement('video');
+                                    videoElement.id = videoId;
+                                    videoElement.className = 'video-js vjs-default-skin';
+                                    videoElement.controls = true;
+                                    videoElement.autoplay = true;
+                                    videoElement.muted = true;
+                                    videoElement.playsinline = true;
+                                    const titleSpan = document.createElement('span');
+                                    titleSpan.textContent = cctv.cctvname || '이름 없음';
+
+                                    videoContainer.appendChild(videoElement);
+                                    videoContainer.appendChild(titleSpan);
+
+                                    videojs(videoId, { autoplay: true, controls: true, muted: true }).src({ src: finalUrl, type: 'application/x-mpegURL' });
+                                } else {
+                                    videoContainer.innerHTML = `<div class="video-error">영상 로드 실패</div><span>${cctv.cctvname || '이름 없음'}</span>`;
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Video URL fetch error:', err);
+                                videoContainer.innerHTML = `<div class="video-error">영상 로드 오류</div><span>${cctv.cctvname || '이름 없음'}</span>`;
+                            });
+                    });
+                } else {
+                    errorMsg.textContent = '주변 CCTV 영상이 없습니다.';
+                    errorMsg.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('CCTV 데이터 로드 실패:', error);
+                loading.style.display = 'none';
+                errorMsg.textContent = 'CCTV 정보를 불러오는 중 오류가 발생했습니다.';
+                errorMsg.style.display = 'block';
+            });
+    }
     // 졸음쉼터 정보 모달 표시
     function showRestStopInfo(name, index) {
         const modal = document.getElementById('restStopModal');
@@ -791,7 +926,10 @@
 
     // 모달 닫기
     function closeModal() {
-        $('#restAreaModal').hide();
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.style.display = 'none';
+        });
     }
 
     // 모달 외부 클릭 시 닫기
@@ -810,5 +948,15 @@
 <!-- Footer Include -->
 <jsp:include page="footer.jsp"/>
 
+<!-- cctv 모달 -->
+<div id="cctvModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('cctvModal')">&times;</span>
+        <h2>주변 CCTV 영상</h2>
+        <p id="cctv-loading">CCTV 정보를 불러오는 중...</p>
+        <p id="cctv-error" style="display: none;"></p>
+        <div id="cctv-grid" class="cctv-grid"></div>
+    </div>
+</div>
 </body>
 </html>
