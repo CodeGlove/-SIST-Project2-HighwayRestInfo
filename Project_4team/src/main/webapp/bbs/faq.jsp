@@ -139,8 +139,28 @@
         }
 
         .faq-answer.active {
-            max-height: 500px;
+            max-height: 300px;
             padding: 20px 24px 20px 48px;
+            overflow-y: auto;
+        }
+
+        /* 스크롤바 스타일링 */
+        .faq-answer.active::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .faq-answer.active::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .faq-answer.active::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .faq-answer.active::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
 
         .faq-answer-content {
@@ -209,6 +229,24 @@
 
         .delete-btn:hover {
             background: #dc3545;
+            color: #ffffff;
+        }
+
+        .edit-btn {
+            padding: 6px 12px;
+            background: #ffffff;
+            color: #667eea;
+            border: 1px solid #667eea;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-right: 8px;
+        }
+
+        .edit-btn:hover {
+            background: #667eea;
             color: #ffffff;
         }
 
@@ -288,6 +326,8 @@
 
             .faq-answer.active {
                 padding: 16px 20px 16px 36px;
+                max-height: 250px;
+                overflow-y: auto;
             }
 
             .faq-title {
@@ -379,10 +419,14 @@
                                 <div class="faq-meta">
                                     <span class="faq-date">${vo.writeDate}</span>
                                     <span class="faq-author">${vo.writer}</span>
-                                    <%--관리자일 경우 삭제 버튼 추가--%>
+                                    <%--관리자일 경우 수정/삭제 버튼 추가--%>
                                     <c:if test="${not empty sessionScope.loginUser and sessionScope.loginUser.authority
                             ne null and sessionScope.loginUser.authority == 1}">
                                         <div class="admin-actions">
+                                            <button type="button" class="edit-btn"
+                                                    onclick="editPost('${vo.postNum}', '${p.nowPage}')">
+                                                수정
+                                            </button>
                                             <button type="button" class="delete-btn"
                                                     onclick="delPost('${vo.postNum}', '${p.nowPage}')">
                                                 삭제
@@ -401,6 +445,10 @@
 <jsp:include page="../footer.jsp"/>
 
 <script>
+    function editPost(postNum, cPage) {
+        location.href = "Controller?type=edit&PostNum=" + postNum + "&cPage=" + cPage + "&returnTo=faq";
+    }
+
     function delPost(postNum, cPage) {
         if (confirm("정말로 이 FAQ를 삭제하시겠습니까?")) {
             // 삭제 버튼 비활성화

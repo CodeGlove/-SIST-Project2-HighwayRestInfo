@@ -3,6 +3,7 @@ package restinfo.action;
 import mybatis.vo.UserVO;
 import org.json.JSONObject;
 import restinfo.dao.BookmarkDAO;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,7 +11,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class HeartBookmarkAction implements Action{
+public class HeartBookmarkAction implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
@@ -27,7 +28,7 @@ public class HeartBookmarkAction implements Action{
             json.put("message", "로그인이 필요합니다.");
             out.print(json.toString());
             out.flush();
-            return null;  //여기 컨트롤로에 로그인.jsp를 전달해도 되지 않을까>?
+            return null; // 여기 컨트롤로에 로그인.jsp를 전달해도 되지 않을까>?
         }
 
         String saKey = request.getParameter("saKey");
@@ -41,16 +42,25 @@ public class HeartBookmarkAction implements Action{
             } else if ("delete".equals(action)) {
                 success = BookmarkDAO.deleteBookmark(userKey, saKey) > 0;
             }
+
+            // 북마크 처리 성공 시 세션의 북마크 리스트 업데이트
+            if (success) {
+                try {
+                    List<String> updatedBookmarks = BookmarkDAO.getBookmarkedSaKeys(userKey);
+                    session.setAttribute("bookmarkedSaKeys", updatedBookmarks);
+                    System.out.println("세션 북마크 리스트 업데이트 완료: " + updatedBookmarks.size() + "개");
+                } catch (Exception e) {
+                    System.out.println("세션 북마크 리스트 업데이트 실패: " + e.getMessage());
+                }
+            }
+
             json.put("success", success);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500: 서버 오류
             json.put("success", false);
             json.put("message", "처리 중 오류가 발생했습니다.");
         }
-
-
-
 
         out.print(json.toString());
         out.flush();

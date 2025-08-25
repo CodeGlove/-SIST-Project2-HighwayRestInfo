@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modal.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/restareaStyle.css">
 
-    <jsp:include page="restAreaModal.jsp" />
+    <jsp:include page="restAreaModal.jsp"/>
 
 
     <style>
@@ -30,15 +30,17 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
         }
+
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
+
         .close:hover,
         .close:focus {
             color: black;
@@ -78,11 +80,13 @@
             gap: 15px;
             margin-top: 20px;
         }
+
         @media (min-width: 1170px) {
             .cctv-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
+
         .video-container {
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -91,11 +95,13 @@
             position: relative;
             height: 390px;
         }
+
         .video-container video, .video-container .video-error {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .video-container span {
             position: absolute;
             bottom: 0;
@@ -108,6 +114,7 @@
             font-size: 0.8em;
             word-break: break-all;
         }
+
         .video-error {
             display: flex;
             align-items: center;
@@ -116,6 +123,7 @@
             background-color: #333;
             text-align: center;
         }
+
         .no-rest-areas {
             text-align: center;
             margin-top: 50px;
@@ -148,11 +156,21 @@
         }
 
         @keyframes heartBeat {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.05); }
-            50% { transform: scale(0.95); }
-            75% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.05);
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            75% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* 편의시설 아이콘과 글자 간격 조정 */
@@ -163,7 +181,6 @@
 
 
     \
-
     <!-- CSS 파일 링크 -->
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
@@ -257,8 +274,7 @@
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
-                        <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
-                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}" data-sakey="${currentSaKey}">
+                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}">
                             <div class="rest-area-info-row">
                                 <!-- 휴게시설명 섹션 -->
                                 <div class="rest-area-name-section">
@@ -271,13 +287,14 @@
                                                     <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
                                                     <c:set var="isBookmarked" value="false"/>
                                                     <c:if test="${not empty sessionScope.bookmarkedSaKeys}">
-                                                        <c:forEach var="bookmarkedSaKey" items="${sessionScope.bookmarkedSaKeys}">
+                                                        <c:forEach var="bookmarkedSaKey"
+                                                                   items="${sessionScope.bookmarkedSaKeys}">
                                                             <c:if test="${bookmarkedSaKey eq currentSaKey}">
                                                                 <c:set var="isBookmarked" value="true"/>
                                                             </c:if>
                                                         </c:forEach>
                                                     </c:if>
-                                                    
+
                                                     <i class="fas fa-heart bookmark-heart ${isBookmarked ? 'bookmarked' : ''}"
                                                        onclick="toggleBookmark('${currentSaKey}', this)"
                                                        title="즐겨찾기 추가/제거"></i>
@@ -621,12 +638,19 @@
     let currentCctvVideoPlayer = null;
 
     // JSP 변수를 JavaScript 변수로 선언
+    // JSP 변수를 JavaScript 변수로 선언
     var allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
     var serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
-    
+
     // 전역 변수로 설정
     window.allRestAreaDurations = allRestAreaDurations;
     window.serviceAreaOnlyDurations = serviceAreaOnlyDurations;
+
+    // 세션의 북마크 리스트를 JavaScript 변수로 받기
+    var sessionBookmarkedSaKeys = [];
+    <c:if test="${not empty sessionScope.bookmarkedSaKeys}">
+    sessionBookmarkedSaKeys = ${sessionScope.bookmarkedSaKeys};
+    </c:if>
 
 
     // DOM이 완전히 로드된 후에 스크립트 실행
@@ -650,7 +674,7 @@
                 $.ajax({
                     type: 'POST',
                     url: '${pageContext.request.contextPath}/Controller',
-                    data: { type: 'getRestAreaDetails', saKey: saKey },
+                    data: {type: 'getRestAreaDetails', saKey: saKey},
                     dataType: 'json',
                     success: function (response) {
                         // 서버로부터 받은 데이터로 모달 내용을 채우고 보여줌
@@ -705,7 +729,7 @@
                 facilitiesList.empty();
                 if (data.Convenience) {
                     data.Convenience.split(',').forEach(facility => {
-                        if(facility.trim()) {
+                        if (facility.trim()) {
                             facilitiesList.append($('<span>').addClass('facility-tag').text(facility.trim()));
                         }
                     });
@@ -748,13 +772,15 @@
             // ======================================================================
             // 3. 모달 닫기 및 기타 이벤트 핸들러
             // ======================================================================
-            $('#restAreaModal .close').on('click', function() { $('#restAreaModal').hide(); });
-            $('#storesModal .close').on('click', function() {
+            $('#restAreaModal .close').on('click', function () {
+                $('#restAreaModal').hide();
+            });
+            $('#storesModal .close').on('click', function () {
                 $('#storesModal').hide();
                 $('#restAreaModal').css('display', 'flex');
             });
 
-            $('.modal').on('click', function(e) {
+            $('.modal').on('click', function (e) {
                 if (e.target === this) {
                     if ($(this).is('#storesModal')) {
                         $(this).hide();
@@ -782,7 +808,7 @@
             });
 
             // 매장 검색 버튼
-            $('#storeSearchBtn').on('click', function() {
+            $('#storeSearchBtn').on('click', function () {
                 const searchText = $('#storeSearchInput').val();
                 if (currentRestAreaId) {
                     loadAndRenderStores(currentRestAreaId, searchText);
@@ -790,14 +816,14 @@
             });
 
             // 검색창 엔터키 이벤트
-            $('#storeSearchInput').on('keypress', function(e) {
+            $('#storeSearchInput').on('keypress', function (e) {
                 if (e.which === 13) {
                     $('#storeSearchBtn').click();
                 }
             });
 
             // 모달 내 즐겨찾기 아이콘 클릭 이벤트
-            $(document).on('click', '#bookmarkIcon', function() {
+            $(document).on('click', '#bookmarkIcon', function () {
                 if (${empty sessionScope.loginUser}) {
                     alert('로그인이 필요합니다.');
                     window.location.href = '${pageContext.request.contextPath}/login.jsp';
@@ -817,7 +843,7 @@
 
                 // 목록에 있는 하트 아이콘도 찾아서 동기화
                 const listIcon = $(`.rest-area-card[data-sakey='${saKey}']`).find('.bookmark-heart');
-                if(listIcon) {
+                if (listIcon) {
                     listIcon.toggleClass('bookmarked', !isBookmarked);
                 }
 
@@ -825,25 +851,25 @@
                 $.ajax({
                     type: 'POST',
                     url: '${pageContext.request.contextPath}/Controller',
-                    data: { type: 'Heartbookmark', saKey: saKey, action: action },
+                    data: {type: 'Heartbookmark', saKey: saKey, action: action},
                     dataType: 'json',
-                    success: function(response) {
+                    success: function (response) {
                         if (!response.success) {
                             // 실패 시 화면 원상 복구
                             alert(response.message || '즐겨찾기 처리에 실패했습니다.');
                             icon.toggleClass('fas far');
                             $(this).toggleClass('bookmarked');
-                            if(listIcon) {
+                            if (listIcon) {
                                 listIcon.toggleClass('bookmarked', isBookmarked);
                             }
                         }
                     },
-                    error: function() {
+                    error: function () {
                         alert('즐겨찾기 처리 중 오류가 발생했습니다.');
                         // 실패 시 화면 원상 복구
                         icon.toggleClass('fas far');
                         $(this).toggleClass('bookmarked');
-                        if(listIcon) {
+                        if (listIcon) {
                             listIcon.toggleClass('bookmarked', isBookmarked);
                         }
                     }
@@ -858,7 +884,7 @@
                 $.ajax({
                     type: 'POST',
                     url: '${pageContext.request.contextPath}/Controller',
-                    data: { type: 'getStores', saKey: saKey, searchText: searchText },
+                    data: {type: 'getStores', saKey: saKey, searchText: searchText},
                     dataType: 'json',
                     success: function (response) {
                         $storeList.empty();
@@ -877,10 +903,6 @@
             }
 
         }); // End of $(document).ready
-
-
-
-
 
 
         // 기존 탭 기능 구현
@@ -934,8 +956,6 @@
     });// document
 
 
-
-
     // 🚩 openCctvModal 함수를 수정하여 모달을 열기 전에 기존 플레이어를 제거합니다.
     function openCctvModal(lat, lng) {
         if (currentCctvVideoPlayer) {
@@ -951,7 +971,7 @@
         const modal = document.getElementById(modalId);
         modal.style.display = 'none';
 
-        // 🚩 CCTV 모달 닫을 때 영상 중지 및 초기화 로직을 추가합니다.
+        // CCTV 모달 닫을 때 영상 중지
         if (modalId === 'cctvModal') {
             videojs.getPlayers().forEach(player => {
                 if (player) {
@@ -981,6 +1001,7 @@
         const minY = parseFloat(lat) - 0.005;
         const maxX = parseFloat(lng) + 0.005;
         const maxY = parseFloat(lat) + 0.005;
+
         fetch('${pageContext.request.contextPath}/Controller?type=Cctv&minX=' + minX + '&minY=' + minY + '&maxX=' + maxX + '&maxY=' + maxY)
             .then(response => {
                 if (!response.ok) {
@@ -1004,6 +1025,7 @@
                         const videoContainer = document.createElement('div');
                         videoContainer.className = 'video-container';
                         cctvGrid.appendChild(videoContainer);
+
                         const videoId = cctv.cctvid || 'fallback-cctv-' + index;
 
                         fetch('${pageContext.request.contextPath}/Controller?type=getVideoUrl&temporaryUrl=' + encodeURIComponent(cctv.cctvurl))
@@ -1024,8 +1046,8 @@
                                     videoContainer.appendChild(titleSpan);
 
                                     // 💡 Video.js를 사용해 동적으로 플레이어를 초기화합니다.
-                                    const player = videojs(videoId, { autoplay: true, controls: true, muted: true });
-                                    player.src({ src: finalUrl, type: 'application/x-mpegURL' });
+                                    const player = videojs(videoId, {autoplay: true, controls: true, muted: true});
+                                    player.src({src: finalUrl, type: 'application/x-mpegURL'});
                                     // 💡 새롭게 생성된 플레이어 인스턴스를 전역 변수에 저장합니다.
                                     currentCctvVideoPlayer = player;
                                 } else {
@@ -1050,10 +1072,6 @@
             });
     }
 
-
-
-
-
     // 졸음쉼터 정보 모달 표시
     function showRestStopInfo(name, index) {
         const modal = document.getElementById('restStopModal');
@@ -1073,7 +1091,7 @@
         const buttonText = button.querySelector('.button-text');
         const buttonIcon = button.querySelector('.button-icon');
         const isActive = button.classList.contains('active');
-        
+
         if (isActive) {
             // 졸음쉼터 숨기기 - 소요시간 먼저 변경, 그 다음 리스트 변경
             buttonText.textContent = '졸음쉼터 표시';
@@ -1298,12 +1316,15 @@
             });
     }
 
+
     // 로그인 페이지로 이동하는 함수
     function redirectToLogin() {
+        // 현재 페이지 URL을 세션스토리지에 저장
+        sessionStorage.setItem('returnUrl', window.location.href);
         alert('즐겨찾기 기능을 사용하려면 로그인이 필요합니다.');
-        window.location.href = '${pageContext.request.contextPath}/login.jsp';
-
+        window.location.href = 'Controller?type=login';
     }
+
 </script>
 
 <!-- Footer Include -->
