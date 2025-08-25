@@ -14,6 +14,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modal.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/restareaStyle.css">
+
+    <jsp:include page="restAreaModal.jsp" />
+
 
     <style>
         /* 모달 창을 위한 CSS */
@@ -25,7 +30,6 @@
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
             background-color: rgb(0,0,0);
             background-color: rgba(0,0,0,0.4);
         }
@@ -253,7 +257,8 @@
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
-                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}">
+                        <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
+                        <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}" data-sakey="${currentSaKey}">
                             <div class="rest-area-info-row">
                                 <!-- 휴게시설명 섹션 -->
                                 <div class="rest-area-name-section">
@@ -626,6 +631,258 @@
 
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
+        $(document).ready(function () {
+            let currentRestAreaId = null; // 현재 열려있는 휴게소 모달의 ID
+
+            // ======================================================================
+            // 1. 휴게소 카드 클릭 이벤트
+            // ======================================================================
+            $('.rest-area-card.service-area').on('click', function (e) {
+                // 카드 안의 아이콘(즐겨찾기, CCTV) 클릭 시에는 모달 열지 않음
+                if ($(e.target).closest('.bookmark-heart, .cctv-icon').length > 0) {
+                    return;
+                }
+
+                const saKey = $(this).data('sakey'); // 1단계에서 추가한 data-sakey 값 가져오기
+                currentRestAreaId = saKey;
+
+                // 서버에 휴게소 상세 정보 요청 (AJAX)
+                $.ajax({
+                    type: 'POST',
+                    url: '${pageContext.request.contextPath}/Controller',
+                    data: { type: 'getRestAreaDetails', saKey: saKey },
+                    dataType: 'json',
+                    success: function (response) {
+                        // 서버로부터 받은 데이터로 모달 내용을 채우고 보여줌
+                        if (response && (response.idx || response.Idx)) {
+                            populateAndShowModal(response);
+                        } else {
+                            alert('휴게소 정보를 찾을 수 없습니다.');
+                        }
+                    },
+                    error: function () {
+                        alert('상세 정보를 불러오는 중 오류가 발생했습니다.');
+                    }
+                });
+            });
+
+            // ======================================================================
+            // 2. 서버 데이터로 모달 내용을 채우고 보여주는 함수
+            // (mypage.jsp의 함수를 기반으로 일부 수정)
+            // ======================================================================
+            function populateAndShowModal(data) {
+                if (!data) return;
+
+                // 기본 정보
+                $('#modalTitle').text(data.SAName || '정보 없음');
+                $('#modalLocation').text(data.Address || '정보 없음');
+                let formattedPhone = '정보 없음';
+                if (data.Tel) {
+                    formattedPhone = data.Tel.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+                }
+                $('#modalPhone').text(formattedPhone);
+
+                // AI 코멘트 (필드 이름이 두 가지 경우 모두 처리)
+                $('#modalAiComment').text(data.AIComment || data.AiComment || '제공되는 추천 코멘트가 없습니다.');
+
+                // 주차 정보
+                $('#modalCompactParking').text((data.CompactParking || 0) + '대');
+                $('#modalLargeParking').text((data.LargeParking || 0) + '대');
+                $('#modalDisabledParking').text((data.DisabledParking || 0) + '대');
+
+                // 주유 가격 정보
+                const gasInfo = data.gasInfo;
+                if (gasInfo) {
+                    $('#modalGasoline').text((gasInfo.Gasoline && gasInfo.Gasoline !== 'X') ? gasInfo.Gasoline : '주유불가');
+                    $('#modalDiesel').text((gasInfo.Disel && gasInfo.Disel !== 'X') ? gasInfo.Disel : '주유불가');
+                    $('#modalLpg').text((gasInfo.LPG && gasInfo.LPG !== 'X') ? gasInfo.LPG : '주유불가');
+                } else {
+                    $('#modalGasoline, #modalDiesel, #modalLpg').text('조회 불가');
+                }
+
+                // 편의시설 정보
+                const facilitiesList = $('#modalFacilities');
+                facilitiesList.empty();
+                if (data.Convenience) {
+                    data.Convenience.split(',').forEach(facility => {
+                        if(facility.trim()) {
+                            facilitiesList.append($('<span>').addClass('facility-tag').text(facility.trim()));
+                        }
+                    });
+                } else {
+                    facilitiesList.html('<span class="info-value">제공되는 편의시설 정보가 없습니다.</span>');
+                }
+
+                // 별점 정보
+                const starValue = parseFloat(data.Star);
+                const starIconContainer = $('#starIconContainer');
+                const starText = $('#starText');
+                starIconContainer.empty();
+                starText.empty();
+                if (isNaN(starValue) || !data.Star || data.Star === '0' || data.Star === '0.0') {
+                    starIconContainer.html('<i class="far fa-star"></i>');
+                    starText.text('평점 없음');
+                } else {
+                    starIconContainer.html('<i class="fas fa-star" style="color: #ffc107;"></i>');
+                    starText.text(starValue.toFixed(1));
+                }
+
+                // 모달 내 즐겨찾기 아이콘 상태 업데이트
+                // 서버 응답에 isBookmarked: true/false 같은 필드가 있다고 가정합니다.
+                const bookmarkIcon = $('#bookmarkIcon');
+                const iconElement = bookmarkIcon.find('i');
+                bookmarkIcon.data('sakey', data.idx || data.Idx); // 모달 아이콘에도 ID 저장
+
+                if (data.isBookmarked) {
+                    iconElement.removeClass('far').addClass('fas'); // 채워진 하트
+                    bookmarkIcon.addClass('bookmarked');
+                } else {
+                    iconElement.removeClass('fas').addClass('far'); // 빈 하트
+                    bookmarkIcon.removeClass('bookmarked');
+                }
+
+                // 모달창 표시
+                $('#restAreaModal').css('display', 'flex');
+            }
+
+            // ======================================================================
+            // 3. 모달 닫기 및 기타 이벤트 핸들러
+            // ======================================================================
+            $('#restAreaModal .close').on('click', function() { $('#restAreaModal').hide(); });
+            $('#storesModal .close').on('click', function() {
+                $('#storesModal').hide();
+                $('#restAreaModal').css('display', 'flex');
+            });
+
+            $('.modal').on('click', function(e) {
+                if (e.target === this) {
+                    if ($(this).is('#storesModal')) {
+                        $(this).hide();
+                        $('#restAreaModal').css('display', 'flex');
+                    } else {
+                        $(this).hide();
+                    }
+                }
+            });
+
+            // ======================================================================
+            // 4. 모달 내 매장 정보, 즐겨찾기 버튼 이벤트 핸들러
+            // ======================================================================
+
+            // '매장 정보 확인' 버튼 클릭
+            $('#showStoresBtn').on('click', function () {
+                $('#restAreaModal').hide();
+                $('#storesModal').css('display', 'flex');
+                const restAreaName = $('#modalTitle').text();
+                $('#storesModalTitle').text(restAreaName + ' 매장 정보');
+                $('#storeSearchInput').val('');
+                if (currentRestAreaId) {
+                    loadAndRenderStores(currentRestAreaId, '');
+                }
+            });
+
+            // 매장 검색 버튼
+            $('#storeSearchBtn').on('click', function() {
+                const searchText = $('#storeSearchInput').val();
+                if (currentRestAreaId) {
+                    loadAndRenderStores(currentRestAreaId, searchText);
+                }
+            });
+
+            // 검색창 엔터키 이벤트
+            $('#storeSearchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    $('#storeSearchBtn').click();
+                }
+            });
+
+            // 모달 내 즐겨찾기 아이콘 클릭 이벤트
+            $(document).on('click', '#bookmarkIcon', function() {
+                if (${empty sessionScope.loginUser}) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '${pageContext.request.contextPath}/login.jsp';
+                    return;
+                }
+
+                const saKey = $(this).data('sakey');
+                const icon = $(this).find('i');
+                const isBookmarked = icon.hasClass('fas');
+
+                // 서버에 보낼 action 결정
+                const action = isBookmarked ? 'delete' : 'add';
+
+                // 화면 먼저 optimistic하게 변경
+                icon.toggleClass('fas far');
+                $(this).toggleClass('bookmarked');
+
+                // 목록에 있는 하트 아이콘도 찾아서 동기화
+                const listIcon = $(`.rest-area-card[data-sakey='${saKey}']`).find('.bookmark-heart');
+                if(listIcon) {
+                    listIcon.toggleClass('bookmarked', !isBookmarked);
+                }
+
+                // 서버에 즐겨찾기 변경 요청
+                $.ajax({
+                    type: 'POST',
+                    url: '${pageContext.request.contextPath}/Controller',
+                    data: { type: 'Heartbookmark', saKey: saKey, action: action },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.success) {
+                            // 실패 시 화면 원상 복구
+                            alert(response.message || '즐겨찾기 처리에 실패했습니다.');
+                            icon.toggleClass('fas far');
+                            $(this).toggleClass('bookmarked');
+                            if(listIcon) {
+                                listIcon.toggleClass('bookmarked', isBookmarked);
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert('즐겨찾기 처리 중 오류가 발생했습니다.');
+                        // 실패 시 화면 원상 복구
+                        icon.toggleClass('fas far');
+                        $(this).toggleClass('bookmarked');
+                        if(listIcon) {
+                            listIcon.toggleClass('bookmarked', isBookmarked);
+                        }
+                    }
+                });
+            });
+
+            // 매장 정보 로드 함수 (mypage.jsp와 동일)
+            function loadAndRenderStores(saKey, searchText = '') {
+                const $storeList = $('#storeList');
+                $storeList.empty().html('<p class="store-empty">매장 정보를 불러오는 중...</p>');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${pageContext.request.contextPath}/Controller',
+                    data: { type: 'getStores', saKey: saKey, searchText: searchText },
+                    dataType: 'json',
+                    success: function (response) {
+                        $storeList.empty();
+                        if (response && response.length > 0) {
+                            response.forEach(store => {
+                                $storeList.append($("<div>").addClass("store-item").text(store.ShopName));
+                            });
+                        } else {
+                            $storeList.html('<p class="store-empty">' + (searchText ? '검색 결과가 없습니다.' : '등록된 매장 정보가 없습니다.') + '</p>');
+                        }
+                    },
+                    error: function () {
+                        $storeList.html('<p class="store-empty">매장 정보를 불러오는 중 오류가 발생했습니다.</p>');
+                    }
+                });
+            }
+
+        }); // End of $(document).ready
+
+
+
+
+
+
         // 기존 탭 기능 구현
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
@@ -674,7 +931,11 @@
         restStopCards.forEach(card => {
             card.style.display = 'none';
         });
-    });
+    });// document
+
+
+
+
     // 🚩 openCctvModal 함수를 수정하여 모달을 열기 전에 기존 플레이어를 제거합니다.
     function openCctvModal(lat, lng) {
         if (currentCctvVideoPlayer) {
