@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%--한글 인코딩 삭제했는데 이상이 다음 버전까지 이상없으면 삭제한 상태 유지--%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9,13 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>휴게소 정보</title>
 
-    <!-- 폰트 및 아이콘 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 모달 창을 위한 CSS */
+        /* 모달 창을 위한 CSS - 공통 스타일 */
         .modal {
             display: none;
             position: fixed;
@@ -27,16 +25,6 @@
             overflow: auto;
             background-color: rgb(0,0,0);
             background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 1170px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .close {
             color: #aaa;
@@ -50,15 +38,42 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        /* 휴게소 상세 정보 모달 스타일 */
+        #restAreaModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80% !important;
+            max-width: 500px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        /* CCTV 영상 모달 스타일 */
+        #cctvModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80% !important;
+            max-width: 1800px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
         .cctv-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
         @media (min-width: 1170px) {
             .cctv-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
         }
         .video-container {
@@ -67,7 +82,7 @@
             overflow: hidden;
             background-color: #000;
             position: relative;
-            height: 300px;
+            height: 390px;
         }
         .video-container video, .video-container .video-error {
             width: 100%;
@@ -101,17 +116,13 @@
             font-size: 1.2em;
         }
     </style>
-
-    <!-- CSS 파일 링크 -->
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
 
-    <!-- cctv 비디오 재생기능 -->
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming@3.5.0/dist/videojs-http-streaming.min.js"></script>
-    <!-- jQuery 추가 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
@@ -122,9 +133,6 @@
         <p>휴게소와 졸음쉼터 정보를 확인하세요</p>
     </div>
 
-
-
-    <!-- 경로 정보 표시 -->
     <c:if test="${not empty origin and not empty destination}">
         <div class="route-info">
             <div class="route-item">
@@ -178,9 +186,8 @@
                         </c:choose>
                     </span>
             </div>
-        </div> <%--  요약정보  --%>
+        </div> <%-- 요약정보 --%>
     </c:if>
-    <!-- 휴게시설 목록 -->
     <div class="info-card slide-up">
         <div class="card-header">
             <div class="card-icon">
@@ -191,14 +198,13 @@
                 <i class="fas fa-bed button-icon"></i>
                 <span class="button-text">졸음쉼터 표시</span>
             </button>
-        </div> <!-- 카드헤더 -->
+        </div>
         <c:choose>
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
                         <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}">
                             <div class="rest-area-info-row">
-                                <!-- 휴게시설명 섹션 -->
                                 <div class="rest-area-name-section">
                                     <div class="rest-area-name" onclick="showRestAreaInfo('${restArea}', ${status.index})">
                                         <i class="fas fa-map-marker-alt"></i>
@@ -216,13 +222,10 @@
                                             <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
                                             <c:choose>
                                                 <c:when test="${not empty serviceAreaVO and not empty serviceAreaVO.star and serviceAreaVO.star != '0' and serviceAreaVO.star != '0.0'}">
-                                                    <!-- 노란별 하나만 표시 -->
                                                     <i class="fas fa-star star filled"></i>
-                                                    <!-- 소수점 2자리까지 점수 표시 -->
                                                     <span class="rating-score"><fmt:formatNumber value="${serviceAreaVO.star}" pattern="#.##" /></span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <!-- 평가 없을 때는 회색 별 -->
                                                     <i class="fas fa-star star"></i>
                                                     <span class="rating-score">평가 없음</span>
                                                 </c:otherwise>
@@ -231,7 +234,6 @@
                                     </div>
 
 
-                                    <!-- 소요시간 표시 -->
                                     <c:if test="${restArea.contains('휴게소')}">
                                         <c:set var="serviceAreaIndex" value="0"/>
                                         <c:forEach var="restAreaItem" items="${allRestAreas}" varStatus="itemStatus">
@@ -240,24 +242,17 @@
                                                     <div class="duration-info">
                                                         <i class="fas fa-clock duration-icon"></i>
                                                         <span class="duration-text">
-                                                            <c:set var="duration"
-                                                                   value="${serviceAreaOnlyDurations[serviceAreaIndex]}"/>
+                                                        <c:set var="duration" value="${serviceAreaOnlyDurations[serviceAreaIndex]}"/>
                                                             <c:set var="totalHours" value="${duration / 3600}"/>
                                                             <c:set var="hours" value="${totalHours.intValue()}"/>
-                                                            <c:set var="totalMinutes"
-                                                                   value="${(duration % 3600) / 60}"/>
-                                                            <c:set var="minutes"
-                                                                   value="${totalMinutes.intValue()}"/>
+                                                            <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                            <c:set var="minutes" value="${totalMinutes.intValue()}"/>
                                                             <c:choose>
                                                                 <c:when test="${serviceAreaIndex == 0}">
-                                                                    출발지부터 <c:if
-                                                                        test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                        test="${minutes > 0}">${minutes}분</c:if>
+                                                                    출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    이전 휴게소부터 <c:if
-                                                                        test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                        test="${minutes > 0}">${minutes}분</c:if>
+                                                                    이전 휴게소부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </span>
@@ -270,41 +265,31 @@
                                         </c:forEach>
                                     </c:if>
 
-                                    <!-- 졸음쉼터 소요시간 표시 -->
                                     <c:if test="${restArea.contains('졸음쉼터')}">
                                         <c:if test="${not empty allRestAreaDurations and status.index < allRestAreaDurations.size()}">
                                             <div class="duration-info">
                                                 <i class="fas fa-clock duration-icon"></i>
                                                 <span class="duration-text">
-                                                    <c:set var="duration"
-                                                           value="${allRestAreaDurations[status.index]}"/>
-                                                    <c:set var="totalHours" value="${duration / 3600}"/>
-                                                    <c:set var="hours" value="${totalHours.intValue()}"/>
-                                                    <c:set var="totalMinutes"
-                                                           value="${(duration % 3600) / 60}"/>
-                                                    <c:set var="minutes"
-                                                           value="${totalMinutes.intValue()}"/>
-                                                    <c:choose>
-                                                        <c:when test="${status.index == 0}">
-                                                            출발지부터 <c:if
-                                                                test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                test="${minutes > 0}">${minutes}분</c:if>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            이전 휴게시설부터 <c:if
-                                                                test="${hours > 0}">${hours}시간</c:if><c:if
-                                                                test="${minutes > 0}">${minutes}분</c:if>
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </span>
+                                                <c:set var="duration" value="${allRestAreaDurations[status.index]}"/>
+                                                <c:set var="totalHours" value="${duration / 3600}"/>
+                                                <c:set var="hours" value="${totalHours.intValue()}"/>
+                                                <c:set var="totalMinutes" value="${(duration % 3600) / 60}"/>
+                                                <c:set var="minutes" value="${totalMinutes.intValue()}"/>
+                                                <c:choose>
+                                                    <c:when test="${status.index == 0}">
+                                                        출발지부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        이전 휴게시설부터 <c:if test="${hours > 0}">${hours}시간</c:if><c:if test="${minutes > 0}">${minutes}분</c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </span>
                                             </div>
                                         </c:if>
                                     </c:if>
                                 </div>
 
-                                <!-- 정보 섹션들 -->
                                 <div class="info-sections-row">
-                                    <!-- 편의시설 섹션 -->
                                     <div class="content-section">
                                         <c:choose>
                                             <c:when test="${restArea.contains('휴게소')}">
@@ -385,12 +370,10 @@
                                         </c:choose>
                                     </div>
 
-                                    <!-- 주유비/운영시간 섹션 -->
                                     <div class="content-section">
                                         <c:choose>
                                             <c:when test="${restArea.contains('휴게소')}">
                                                 <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}" />
-
                                                 <div class="section-title-with-date">
                                                     <div class="section-title-left">
                                                         <i class="fas fa-gas-pump"></i>
@@ -424,7 +407,6 @@
                                         </c:choose>
                                     </div>
 
-                                    <!-- 대표메뉴/안전수칙 섹션 -->
                                     <div class="content-section">
                                         <c:choose>
                                             <c:when test="${restArea.contains('휴게소')}">
@@ -459,7 +441,6 @@
     </div>
 </div>
 
-<!-- 추가 정보 섹션 -->
 <c:if test="${not empty allRestAreas}">
     <div class="info-card slide-up" style="margin-top: 2rem;">
         <div class="card-header">
@@ -479,7 +460,6 @@
 </c:if>
 </div>
 
-<!-- 휴게소 상세정보 모달 -->
 <div id="restAreaModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -487,7 +467,7 @@
                 <i class="fas fa-utensils"></i>
                 <span id="modalTitle">휴게소 정보</span>
             </div>
-            <span class="close" onclick="closeModal()">&times;</span>
+            <span class="close" onclick="closeModal('restAreaModal')">&times;</span>
         </div>
         <div class="modal-body">
             <div class="info-section">
@@ -551,26 +531,20 @@
 </div>
 
 <script>
+    // 🚩 전역 변수를 추가하여 현재 Video.js 플레이어 인스턴스를 관리합니다.
+    let currentCctvVideoPlayer = null;
+
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
-        // 기존 탭 기능 구현
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
 
         tabButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const targetTab = this.getAttribute('data-tab');
-
-                // 모든 탭 버튼에서 active 클래스 제거
                 tabButtons.forEach(btn => btn.classList.remove('active'));
-
-                // 모든 탭 패널에서 active 클래스 제거
                 tabPanes.forEach(pane => pane.classList.remove('active'));
-
-                // 클릭된 버튼에 active 클래스 추가
                 this.classList.add('active');
-
-                // 해당 탭 패널에 active 클래스 추가
                 const targetPane = document.getElementById(targetTab);
                 if (targetPane) {
                     targetPane.classList.add('active');
@@ -578,13 +552,11 @@
             });
         });
 
-        // 카드 애니메이션 효과
         const cards = document.querySelectorAll('.info-card');
         cards.forEach((card, index) => {
             card.style.animationDelay = `${index * 0.1}s`;
         });
 
-        // 리스트 아이템 호버 효과
         const listItems = document.querySelectorAll('.info-item');
         listItems.forEach(item => {
             item.addEventListener('mouseenter', function () {
@@ -596,14 +568,12 @@
             });
         });
 
-        // 페이지 로드 시 졸음쉼터 카드들을 기본적으로 숨김
         const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
         restStopCards.forEach(card => {
             card.style.display = 'none';
         });
     });
 
-    // 휴게소 정보 모달 표시
     function showRestAreaInfo(name, index) {
         const modal = document.getElementById('restAreaModal');
         const title = document.getElementById('modalTitle');
@@ -616,8 +586,13 @@
 
         modal.style.display = 'block';
     }
-    // CCTV 모달 열기 및 데이터 가져오기
+
+    // 🚩 openCctvModal 함수를 수정하여 모달을 열기 전에 기존 플레이어를 제거합니다.
     function openCctvModal(lat, lng) {
+        if (currentCctvVideoPlayer) {
+            currentCctvVideoPlayer.dispose();
+            currentCctvVideoPlayer = null;
+        }
         document.getElementById('cctvModal').style.display = 'block';
         fetchCctvData(lat, lng);
     }
@@ -627,7 +602,7 @@
         const modal = document.getElementById(modalId);
         modal.style.display = 'none';
 
-        // CCTV 모달 닫을 때 영상 중지
+        // 🚩 CCTV 모달 닫을 때 영상 중지 및 초기화 로직을 추가합니다.
         if (modalId === 'cctvModal') {
             videojs.getPlayers().forEach(player => {
                 if (player) {
@@ -636,9 +611,15 @@
             });
             document.getElementById('cctv-grid').innerHTML = '';
         }
+
+        // restAreaModal을 닫을 때도 동일하게 처리합니다.
+        if (modalId === 'restAreaModal') {
+            // 다른 모달이 닫힐 때 필요한 정리 로직을 여기에 추가할 수 있습니다.
+        }
     }
 
     // 주어진 위/경도 주변의 CCTV 데이터를 서버에서 가져옵니다.
+    // 🚩 fetchCctvData 함수를 수정하여 Video.js 플레이어를 동적으로 생성합니다.
     function fetchCctvData(lat, lng) {
         const loading = document.getElementById('cctv-loading');
         const errorMsg = document.getElementById('cctv-error');
@@ -651,7 +632,6 @@
         const minY = parseFloat(lat) - 0.005;
         const maxX = parseFloat(lng) + 0.005;
         const maxY = parseFloat(lat) + 0.005;
-
         fetch('${pageContext.request.contextPath}/Controller?type=Cctv&minX=' + minX + '&minY=' + minY + '&maxX=' + maxX + '&maxY=' + maxY)
             .then(response => {
                 if (!response.ok) {
@@ -675,7 +655,6 @@
                         const videoContainer = document.createElement('div');
                         videoContainer.className = 'video-container';
                         cctvGrid.appendChild(videoContainer);
-
                         const videoId = cctv.cctvid || 'fallback-cctv-' + index;
 
                         fetch('${pageContext.request.contextPath}/Controller?type=getVideoUrl&temporaryUrl=' + encodeURIComponent(cctv.cctvurl))
@@ -695,7 +674,11 @@
                                     videoContainer.appendChild(videoElement);
                                     videoContainer.appendChild(titleSpan);
 
-                                    videojs(videoId, { autoplay: true, controls: true, muted: true }).src({ src: finalUrl, type: 'application/x-mpegURL' });
+                                    // 💡 Video.js를 사용해 동적으로 플레이어를 초기화합니다.
+                                    const player = videojs(videoId, { autoplay: true, controls: true, muted: true });
+                                    player.src({ src: finalUrl, type: 'application/x-mpegURL' });
+                                    // 💡 새롭게 생성된 플레이어 인스턴스를 전역 변수에 저장합니다.
+                                    currentCctvVideoPlayer = player;
                                 } else {
                                     videoContainer.innerHTML = `<div class="video-error">영상 로드 실패</div><span>${cctv.cctvname || '이름 없음'}</span>`;
                                 }
@@ -717,19 +700,16 @@
                 errorMsg.style.display = 'block';
             });
     }
-    // 졸음쉼터 정보 모달 표시
+
     function showRestStopInfo(name, index) {
         const modal = document.getElementById('restStopModal');
         const title = document.getElementById('modalTitle2');
         const location = document.getElementById('modalLocation2');
-
         title.textContent = name;
         location.textContent = `졸음쉼터 #${index + 1} - ${name}`;
-
         modal.style.display = 'block';
     }
 
-    // 졸음쉼터 표시 토글 기능
     function toggleRestStops(button) {
         const restStopCards = document.querySelectorAll('.rest-area-card.rest-stop');
         const serviceAreaCards = document.querySelectorAll('.rest-area-card.service-area');
@@ -819,11 +799,8 @@
         }
     }
 
-    // 휴게소끼리 소요시간으로 업데이트 (부드러운 애니메이션)
     function updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations) {
-
         if (!window.originalDurations) {
-            // 원본 소요시간 저장
             window.originalDurations = [];
             const allCards = document.querySelectorAll('.rest-area-card');
             allCards.forEach(card => {
@@ -836,7 +813,6 @@
                 }
             });
         }
-
         let serviceAreaIndex = 0;
         serviceAreaCards.forEach((card, index) => {
             const durationElement = card.querySelector('.duration-text');
@@ -844,75 +820,57 @@
                 const duration = serviceAreaOnlyDurations[serviceAreaIndex];
                 const hours = Math.floor(duration / 3600);
                 const minutes = Math.floor((duration % 3600) / 60);
-
                 let newTimeText = '';
                 if (serviceAreaIndex === 0) {
                     newTimeText = '출발지부터 ';
                 } else {
                     newTimeText = '이전 휴게소부터 ';
                 }
-
                 if (hours > 0) newTimeText += hours + '시간';
                 if (minutes > 0) newTimeText += minutes + '분';
-
-                // 부드러운 텍스트 변경 애니메이션 (더 자연스럽게)
                 setTimeout(() => {
                     durationElement.classList.add('updating');
-
                     setTimeout(() => {
                         durationElement.innerHTML = newTimeText;
-
                         setTimeout(() => {
                             durationElement.classList.remove('updating');
-                        }, 250); // 더 긴 시간
-                    }, 200); // 더 여유로운 타이밍
-                }, index * 150); // 순차적 업데이트 - 더 여유로운 간격
-
+                        }, 250);
+                    }, 200);
+                }, index * 150);
                 serviceAreaIndex++;
             }
         });
     }
 
-    // 원래 소요시간으로 복원 (부드러운 애니메이션)
     function restoreOriginalDurations(serviceAreaCards, allRestAreaDurations) {
-        // 모든 휴게시설 카드들을 가져와서 휴게소 인덱스 매핑
         const allCards = document.querySelectorAll('.rest-area-card');
         const serviceAreaIndices = [];
-
         let serviceAreaIndex = 0;
         allCards.forEach((card, index) => {
             if (card.classList.contains('service-area')) {
                 serviceAreaIndices.push(index);
             }
         });
-
         serviceAreaCards.forEach((card, cardIndex) => {
             const durationElement = card.querySelector('.duration-text');
             if (durationElement) {
-                // 해당 휴게소의 전체 휴게시설 인덱스 찾기
                 const allRestAreaIndex = serviceAreaIndices[cardIndex];
-
                 if (allRestAreaIndex !== undefined && allRestAreaIndex < allRestAreaDurations.length) {
                     const duration = allRestAreaDurations[allRestAreaIndex];
                     const hours = Math.floor(duration / 3600);
                     const minutes = Math.floor((duration % 3600) / 60);
-
                     let newTimeText = '';
                     if (allRestAreaIndex === 0) {
                         newTimeText = '출발지부터 ';
                     } else {
                         newTimeText = '이전 휴게시설부터 ';
                     }
-
                     if (hours > 0) newTimeText += hours + '시간';
                     if (minutes > 0) newTimeText += minutes + '분';
-
                     setTimeout(() => {
                         durationElement.classList.add('updating');
-
                         setTimeout(() => {
                             durationElement.innerHTML = newTimeText;
-
                             setTimeout(() => {
                                 durationElement.classList.remove('updating');
                             }, 250);
@@ -923,32 +881,19 @@
         });
     }
 
-
-    // 모달 닫기
-    function closeModal() {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            modal.style.display = 'none';
-        });
-    }
-
-    // 모달 외부 클릭 시 닫기
+    // 🚩 모달 외부 클릭 시 닫기 로직도 수정된 closeModal 함수를 사용하도록 통일합니다.
     window.onclick = function (event) {
         const modals = document.querySelectorAll('.modal');
         modals.forEach(modal => {
             if (event.target === modal) {
-                modal.style.display = 'none';
+                closeModal(modal.id);
             }
         });
     }
-
-
 </script>
 
-<!-- Footer Include -->
 <jsp:include page="footer.jsp"/>
 
-<!-- cctv 모달 -->
 <div id="cctvModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cctvModal')">&times;</span>
