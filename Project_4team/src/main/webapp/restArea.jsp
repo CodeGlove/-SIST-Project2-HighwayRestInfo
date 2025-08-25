@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 모달 창을 위한 CSS - 공통 스타일 */
+        /* 모달 창을 위한 CSS */
         .modal {
             display: none;
             position: fixed;
@@ -25,28 +25,15 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
         }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 1170px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
-
         .close:hover,
         .close:focus {
             color: black;
@@ -80,20 +67,17 @@
             box-sizing: border-box;
         }
 
-
         .cctv-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
-
         @media (min-width: 1170px) {
             .cctv-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
-
         .video-container {
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -102,13 +86,11 @@
             position: relative;
             height: 390px;
         }
-
         .video-container video, .video-container .video-error {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .video-container span {
             position: absolute;
             bottom: 0;
@@ -121,7 +103,6 @@
             font-size: 0.8em;
             word-break: break-all;
         }
-
         .video-error {
             display: flex;
             align-items: center;
@@ -130,7 +111,6 @@
             background-color: #333;
             text-align: center;
         }
-
         .no-rest-areas {
             text-align: center;
             margin-top: 50px;
@@ -175,11 +155,14 @@
             margin-right: 8px;
         }
     </style>
+
+    <!-- CSS 파일 링크 -->
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/footerStyle.css" rel="stylesheet">
 
-    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+    <!-- cctv 비디오 재생기능 -->
+    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet"/>
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script src="https://unpkg.com/@videojs/http-streaming@3.5.0/dist/videojs-http-streaming.min.js"></script>
     <!-- jQuery 추가 -->
@@ -248,7 +231,7 @@
                         </c:choose>
                     </span>
             </div>
-        </div> <%-- 요약정보 --%>
+        </div> <%--  요약정보  --%>
     </c:if>
     <!-- 휴게시설 목록 -->
     <div class="info-card slide-up">
@@ -277,7 +260,9 @@
                                         </c:if>
                                     </div>
                                     <c:if test="${restArea.contains('휴게소')}">
-                                        <div class="icon-item cctv-icon" onclick="openCctvModal('${serviceAreaVOs[restArea].lat}', '${serviceAreaVOs[restArea].lng}')" title="CCTV">
+                                        <div class="icon-item cctv-icon"
+                                             onclick="openCctvModal('${serviceAreaVOs[restArea].lat}', '${serviceAreaVOs[restArea].lng}')"
+                                             title="CCTV">
                                             <i class="fas fa-video"></i>
                                             <span>CCTV</span>
                                         </div>
@@ -599,75 +584,6 @@
 </c:if>
 </div>
 
-<div id="restAreaModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">
-                <i class="fas fa-utensils"></i>
-                <span id="modalTitle">휴게소 정보</span>
-            </div>
-            <span class="close" onclick="closeModal('restAreaModal')">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-map-marker-alt"></i>
-                    위치
-                </div>
-                <div class="info-value" id="modalLocation">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-phone"></i>
-                    연락처
-                </div>
-                <div class="info-value" id="modalPhone">
-                    정보를 불러오는 중...
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-clock"></i>
-                    운영시간
-                </div>
-                <div class="info-value" id="modalHours">
-                    24시간 운영
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-list"></i>
-                    편의시설
-                </div>
-                <div class="facilities-list" id="modalFacilities">
-                    <span class="facility-tag">주유소</span>
-                    <span class="facility-tag">충전소</span>
-                    <span class="facility-tag">음식점</span>
-                    <span class="facility-tag">화장실</span>
-                    <span class="facility-tag">편의점</span>
-                    <span class="facility-tag">휴식공간</span>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-label">
-                    <i class="fas fa-info-circle"></i>
-                    안내사항
-                </div>
-                <div class="info-value">
-                    • 안전한 운전을 위해 충분한 휴식을 취하세요<br>
-                    • 긴급상황 시 1588-2504로 연락하세요<br>
-                    • 휴게소 내에서는 안전수칙을 준수해주세요
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
     // 🚩 전역 변수를 추가하여 현재 Video.js 플레이어 인스턴스를 관리합니다.
@@ -724,21 +640,6 @@
             card.style.display = 'none';
         });
     });
-
-    // 휴게소 정보 모달 표시
-    function showRestAreaInfo(name, index) {
-        const modal = document.getElementById('restAreaModal');
-        const title = document.getElementById('modalTitle');
-        const location = document.getElementById('modalLocation');
-        const phone = document.getElementById('modalPhone');
-
-        title.textContent = name;
-        location.textContent = `휴게소 #${index + 1} - ${name}`;
-        phone.textContent = '031-XXX-XXXX';
-
-        modal.style.display = 'block';
-    }
-
     // 🚩 openCctvModal 함수를 수정하여 모달을 열기 전에 기존 플레이어를 제거합니다.
     function openCctvModal(lat, lng) {
         if (currentCctvVideoPlayer) {
@@ -754,7 +655,7 @@
         const modal = document.getElementById(modalId);
         modal.style.display = 'none';
 
-        // CCTV 모달 닫을 때 영상 중지
+        // 🚩 CCTV 모달 닫을 때 영상 중지 및 초기화 로직을 추가합니다.
         if (modalId === 'cctvModal') {
             videojs.getPlayers().forEach(player => {
                 if (player) {
@@ -853,13 +754,19 @@
             });
     }
 
+
+
+
+
     // 졸음쉼터 정보 모달 표시
     function showRestStopInfo(name, index) {
         const modal = document.getElementById('restStopModal');
         const title = document.getElementById('modalTitle2');
         const location = document.getElementById('modalLocation2');
+
         title.textContent = name;
         location.textContent = `졸음쉼터 #${index + 1} - ${name}`;
+
         modal.style.display = 'block';
     }
 
@@ -1057,12 +964,6 @@
         });
     }
 
-    // 🚩 모달 외부 클릭 시 닫기 로직도 수정된 closeModal 함수를 사용하도록 통일합니다.
-    window.onclick = function (event) {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            if (event.target === modal) {
-                closeModal(modal.id);
     // 즐겨찾기 토글 기능
     function toggleBookmark(restAreaName, heartIcon) {
         if (heartIcon.classList.contains('bookmarked')) {
@@ -1085,17 +986,17 @@
         fetch('${pageContext.request.contextPath}/Controller?type=HeartBookmark&restAreaName=' + encodeURIComponent(restAreaName), {
             method: 'POST'
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('즐겨찾기 추가 성공:', restAreaName);
-            } else {
-                console.error('즐겨찾기 추가 실패:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('즐겨찾기 추가 오류:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('즐겨찾기 추가 성공:', restAreaName);
+                } else {
+                    console.error('즐겨찾기 추가 실패:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('즐겨찾기 추가 오류:', error);
+            });
     }
 
     // 즐겨찾기 제거
@@ -1103,19 +1004,27 @@
         fetch('${pageContext.request.contextPath}/Controller?type=HeartBookmark&restAreaName=' + encodeURIComponent(restAreaName) + '&action=remove', {
             method: 'POST'
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('즐겨찾기 제거 성공:', restAreaName);
-            } else {
-                console.error('즐겨찾기 제거 실패:', data.message);
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('즐겨찾기 제거 성공:', restAreaName);
+                } else {
+                    console.error('즐겨찾기 제거 실패:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('즐겨찾기 제거 오류:', error);
+            });
+    }
+    // 🚩 모달 외부 클릭 시 닫기 로직도 수정된 closeModal 함수를 사용하도록 통일합니다.
+    window.onclick = function (event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                closeModal(modal.id);
             }
-        })
-        .catch(error => {
-            console.error('즐겨찾기 제거 오류:', error);
         });
     }
-
 </script>
 
 <!-- Footer Include -->
