@@ -124,7 +124,6 @@ public class UpdateFoodMenuAction implements Action {
                     String line;
                     while((line = in.readLine()) != null) sb.append(line);
                 }
-                System.out.println(sb.toString());
                 conn.disconnect();
                 // --- api 호출 로직 종료 ---
 
@@ -292,6 +291,7 @@ public class UpdateFoodMenuAction implements Action {
             System.out.println(">>> Starting Batch UPDATE for " + updateList.size() + " records...");
             for (int i = 0; i < updateList.size(); i += BATCH_SIZE) {
                 List<MenuVO> subList = updateList.subList(i, Math.min(i + BATCH_SIZE, updateList.size()));
+
                 MenuDAO.batchUpdate(subList);
 
                 try {
@@ -321,12 +321,12 @@ public class UpdateFoodMenuAction implements Action {
         }
 
         // 최종 JSON 결과를 클라이언트로 전송
-        /*try (PrintWriter out = response.getWriter()) {
+        try (PrintWriter out = response.getWriter()) {
             out.print(jsonResult.toString());
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
         return null; //JSON응답으로 비동기식 처리!
     }
 }
