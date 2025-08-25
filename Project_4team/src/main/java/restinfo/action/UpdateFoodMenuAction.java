@@ -124,6 +124,7 @@ public class UpdateFoodMenuAction implements Action {
                     String line;
                     while((line = in.readLine()) != null) sb.append(line);
                 }
+                System.out.println(sb.toString());
                 conn.disconnect();
                 // --- api 호출 로직 종료 ---
 
