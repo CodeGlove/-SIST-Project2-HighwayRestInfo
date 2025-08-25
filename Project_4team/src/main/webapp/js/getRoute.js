@@ -11,8 +11,8 @@ async function getCoordinates(query) {
     });
     const json = await res.json();
     if (json.addresses && json.addresses.length > 0) {
-        const {x, y} = json.addresses[0];
-        return {x, y};
+        const { x, y } = json.addresses[0];
+        return { x, y };
     } else {
         throw new Error("주소를 찾을 수 없습니다: " + query);
     }
