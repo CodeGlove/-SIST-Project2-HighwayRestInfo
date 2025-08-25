@@ -237,20 +237,6 @@
                 최신 휴게소 정보와 입점업체 정보를 데이터베이스에 반영합니다.
                 업데이트는 수 분 정도 소요될 수 있습니다.
             </div>
-
-        <%--** 음식메뉴 정보 버튼 추가 **--%>
-            <form method="post" action="Controller" style="margin-top: 1rem;">
-                <input type="hidden" name="type" value="updateFoodMenu">
-                <button type="submit" class="update-button">
-                    <i class="fas fa-sync-alt"></i>
-                    음식메뉴 정보 업데이트
-                </button>
-            </form>
-            <div class="button-description">
-                <i class="fas fa-info-circle"></i>
-                최신 음식메뉴 정보를 데이터베이스에 반영합니다.
-                업데이트는 수 분 정도 소요될 수 있습니다.
-            </div>
         </div>
     </div>
 </div>

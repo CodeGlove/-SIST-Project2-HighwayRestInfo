@@ -73,9 +73,9 @@ public class GetGasPriceAction implements Action {
             // *** DB에 저장된 휴게소 목록을 순회 ***
             for (ServiceAreaVO serviceArea : getSvarInfo) {
 
-                String saName = serviceArea.getSAName().replace("휴게소", ""); //휴게소이름 가져오기
-                String saDirection = serviceArea.getSADirection(); //SADirection 가져오기
-                String findGsstNm = saName + saDirection + "주유소";
+                String baseName = serviceArea.getSAName().replace("휴게소", ""); //휴게소이름 가져오기
+                String direction = serviceArea.getSADirection(); //SADirection 가져오기
+                String findGsstNm = baseName + direction + "주유소";
 
                 System.out.println("==> 2. [DB기반 조립 이름]: '" + findGsstNm + "'");
 
