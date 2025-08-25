@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<<<<<<< HEAD
     <style>
         /* 모달 창을 위한 CSS */
         .modal {
@@ -156,6 +157,9 @@
         }
     </style>
 
+=======
+    \
+>>>>>>> dev
     <!-- CSS 파일 링크 -->
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
@@ -256,7 +260,30 @@
                                     <div class="rest-area-name">
                                         <span class="facility-name"><c:out value="${restArea}"/></span>
                                         <c:if test="${restArea.contains('휴게소')}">
-                                            <i class="fas fa-heart bookmark-heart" onclick="toggleBookmark('${restArea}', this)" title="즐겨찾기 추가/제거"></i>
+                                            <c:choose>
+                                                <c:when test="${not empty sessionScope.loginUser}">
+                                                    <!-- 로그인된 사용자: 즐겨찾기 기능 활성화 -->
+                                                    <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
+                                                    <c:set var="isBookmarked" value="false"/>
+                                                    <c:if test="${not empty sessionScope.bookmarkedSaKeys}">
+                                                        <c:forEach var="bookmarkedSaKey" items="${sessionScope.bookmarkedSaKeys}">
+                                                            <c:if test="${bookmarkedSaKey eq currentSaKey}">
+                                                                <c:set var="isBookmarked" value="true"/>
+                                                            </c:if>
+                                                        </c:forEach>
+                                                    </c:if>
+                                                    
+                                                    <i class="fas fa-heart bookmark-heart ${isBookmarked ? 'bookmarked' : ''}"
+                                                       onclick="toggleBookmark('${currentSaKey}', this)"
+                                                       title="즐겨찾기 추가/제거"></i>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- 로그인되지 않은 사용자: 로그인 페이지로 이동 -->
+                                                    <i class="fas fa-heart bookmark-heart not-logged-in"
+                                                       onclick="redirectToLogin()"
+                                                       title="로그인이 필요합니다"></i>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </c:if>
                                     </div>
                                     <c:if test="${restArea.contains('휴게소')}">
@@ -329,7 +356,6 @@
                                             </c:if>
                                         </c:forEach>
                                     </c:if>
-
 
 
                                     <!-- 졸음쉼터 소요시간 표시 -->
@@ -584,10 +610,19 @@
 </c:if>
 </div>
 
-
 <script>
+
     // 🚩 전역 변수를 추가하여 현재 Video.js 플레이어 인스턴스를 관리합니다.
     let currentCctvVideoPlayer = null;
+
+    // JSP 변수를 JavaScript 변수로 선언
+    var allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
+    var serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
+    
+    // 전역 변수로 설정
+    window.allRestAreaDurations = allRestAreaDurations;
+    window.serviceAreaOnlyDurations = serviceAreaOnlyDurations;
+
 
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
@@ -777,13 +812,7 @@
         const buttonText = button.querySelector('.button-text');
         const buttonIcon = button.querySelector('.button-icon');
         const isActive = button.classList.contains('active');
-
-        // 서버에서 전달받은 소요시간 데이터
-        const allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
-
-        // RestAreaAction에서 계산된 휴게소 전용 소요시간 사용
-        const serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
-
+        
         if (isActive) {
             // 졸음쉼터 숨기기 - 소요시간 먼저 변경, 그 다음 리스트 변경
             buttonText.textContent = '졸음쉼터 표시';
@@ -791,7 +820,7 @@
             button.classList.remove('active');
 
             // 1단계: 소요시간 먼저 업데이트 (300ms)
-            updateServiceAreaDurations(serviceAreaCards, serviceAreaOnlyDurations);
+            updateServiceAreaDurations(serviceAreaCards, window.serviceAreaOnlyDurations);
 
             // 2단계: 소요시간 업데이트 완료 후 리스트 애니메이션 시작 (600ms 대기)
             setTimeout(() => {
@@ -826,7 +855,7 @@
             button.classList.add('active');
 
             // 1단계: 소요시간 먼저 복원
-            restoreOriginalDurations(serviceAreaCards, allRestAreaDurations);
+            restoreOriginalDurations(serviceAreaCards, window.allRestAreaDurations);
 
             // 2단계: 소요시간 복원 완료 후 리스트 나타나기 애니메이션
             setTimeout(() => {
@@ -965,65 +994,54 @@
     }
 
     // 즐겨찾기 토글 기능
-    function toggleBookmark(restAreaName, heartIcon) {
-        if (heartIcon.classList.contains('bookmarked')) {
-            // 즐겨찾기 제거
-            heartIcon.classList.remove('bookmarked');
 
-            // 서버에 즐겨찾기 제거 요청
-            removeBookmark(restAreaName);
-        } else {
-            // 즐겨찾기 추가
-            heartIcon.classList.add('bookmarked');
-
-            // 서버에 즐겨찾기 추가 요청
-            addBookmark(restAreaName);
-        }
+    // 공통: JSON 응답 헬퍼
+    function handleJson(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
     }
 
-    // 즐겨찾기 추가
-    function addBookmark(restAreaName) {
-        fetch('${pageContext.request.contextPath}/Controller?type=HeartBookmark&restAreaName=' + encodeURIComponent(restAreaName), {
-            method: 'POST'
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('즐겨찾기 추가 성공:', restAreaName);
-                } else {
-                    console.error('즐겨찾기 추가 실패:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('즐겨찾기 추가 오류:', error);
-            });
-    }
+    function toggleBookmark(idx, heartIcon) {
+        // 낙관적 UI
+        heartIcon.classList.toggle('bookmarked');
+        heartIcon.style.pointerEvents = 'none';
 
-    // 즐겨찾기 제거
-    function removeBookmark(restAreaName) {
-        fetch('${pageContext.request.contextPath}/Controller?type=HeartBookmark&restAreaName=' + encodeURIComponent(restAreaName) + '&action=remove', {
-            method: 'POST'
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('즐겨찾기 제거 성공:', restAreaName);
-                } else {
-                    console.error('즐겨찾기 제거 실패:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('즐겨찾기 제거 오류:', error);
-            });
-    }
-    // 🚩 모달 외부 클릭 시 닫기 로직도 수정된 closeModal 함수를 사용하도록 통일합니다.
-    window.onclick = function (event) {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            if (event.target === modal) {
-                closeModal(modal.id);
+        // 로직 수정: 현재 상태를 기준으로 action 결정
+        const isCurrentlyBookmarked = heartIcon.classList.contains('bookmarked');
+        const action = isCurrentlyBookmarked ? 'add' : 'delete';
+
+        fetch(
+            `${pageContext.request.contextPath}/Controller?type=Heartbookmark`,
+            {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+                body: new URLSearchParams({saKey: idx, action})
             }
-        });
+        )
+            .then(handleJson)
+            .then(data => {
+                if (!data.success) {
+                    // 실패 시 UI 되돌리기
+                    heartIcon.classList.toggle('bookmarked');
+                    alert(data.message || '즐겨찾기 처리 실패');
+                }
+            })
+            .catch(err => {
+                // 오류 시 UI 되돌리기
+                heartIcon.classList.toggle('bookmarked');
+                console.error(err);
+                alert('서버 통신 오류');
+            })
+            .finally(() => {
+                heartIcon.style.pointerEvents = 'auto';
+            });
+    }
+
+    // 로그인 페이지로 이동하는 함수
+    function redirectToLogin() {
+        alert('즐겨찾기 기능을 사용하려면 로그인이 필요합니다.');
+        window.location.href = '${pageContext.request.contextPath}/login.jsp';
+
     }
 </script>
 
