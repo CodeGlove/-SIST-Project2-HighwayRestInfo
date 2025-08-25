@@ -14,7 +14,152 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* 모달 창을 위한 CSS */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 휴게소 상세 정보 모달 스타일 */
+        #restAreaModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80% !important;
+            max-width: 500px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        /* CCTV 영상 모달 스타일 */
+        #cctvModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80% !important;
+            max-width: 1800px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        .cctv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        @media (min-width: 1170px) {
+            .cctv-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .video-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #000;
+            position: relative;
+            height: 390px;
+        }
+        .video-container video, .video-container .video-error {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-container span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 0.8em;
+            word-break: break-all;
+        }
+        .video-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background-color: #333;
+            text-align: center;
+        }
+        .no-rest-areas {
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        /* 즐겨찾기 하트 아이콘 스타일 */
+        .bookmark-heart {
+            margin-left: 2px;
+            font-size: 0.85rem;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            vertical-align: middle;
+        }
+
+        .bookmark-heart:hover {
+            color: #999;
+            transform: scale(1.1);
+        }
+
+        .bookmark-heart.bookmarked {
+            color: #e74c3c;
+            animation: heartBeat 0.5s ease-in-out;
+        }
+
+        .bookmark-heart.bookmarked:hover {
+            color: #c0392b;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.05); }
+            50% { transform: scale(0.95); }
+            75% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* 편의시설 아이콘과 글자 간격 조정 */
+        .facility-icon {
+            margin-right: 8px;
+        }
+    </style>
+
+
     \
+
     <!-- CSS 파일 링크 -->
     <link href="${pageContext.request.contextPath}/css/restareaStyle.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/indexStyle.css" rel="stylesheet">
@@ -466,6 +611,10 @@
 </div>
 
 <script>
+
+    // 🚩 전역 변수를 추가하여 현재 Video.js 플레이어 인스턴스를 관리합니다.
+    let currentCctvVideoPlayer = null;
+
     // JSP 변수를 JavaScript 변수로 선언
     var allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
     var serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
@@ -473,6 +622,7 @@
     // 전역 변수로 설정
     window.allRestAreaDurations = allRestAreaDurations;
     window.serviceAreaOnlyDurations = serviceAreaOnlyDurations;
+
 
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
@@ -525,10 +675,12 @@
             card.style.display = 'none';
         });
     });
-
-
-    // CCTV 모달 열기 및 데이터 가져오기
+    // 🚩 openCctvModal 함수를 수정하여 모달을 열기 전에 기존 플레이어를 제거합니다.
     function openCctvModal(lat, lng) {
+        if (currentCctvVideoPlayer) {
+            currentCctvVideoPlayer.dispose();
+            currentCctvVideoPlayer = null;
+        }
         document.getElementById('cctvModal').style.display = 'block';
         fetchCctvData(lat, lng);
     }
@@ -538,7 +690,7 @@
         const modal = document.getElementById(modalId);
         modal.style.display = 'none';
 
-        // CCTV 모달 닫을 때 영상 중지
+        // 🚩 CCTV 모달 닫을 때 영상 중지 및 초기화 로직을 추가합니다.
         if (modalId === 'cctvModal') {
             videojs.getPlayers().forEach(player => {
                 if (player) {
@@ -547,9 +699,15 @@
             });
             document.getElementById('cctv-grid').innerHTML = '';
         }
+
+        // restAreaModal을 닫을 때도 동일하게 처리합니다.
+        if (modalId === 'restAreaModal') {
+            // 다른 모달이 닫힐 때 필요한 정리 로직을 여기에 추가할 수 있습니다.
+        }
     }
 
     // 주어진 위/경도 주변의 CCTV 데이터를 서버에서 가져옵니다.
+    // 🚩 fetchCctvData 함수를 수정하여 Video.js 플레이어를 동적으로 생성합니다.
     function fetchCctvData(lat, lng) {
         const loading = document.getElementById('cctv-loading');
         const errorMsg = document.getElementById('cctv-error');
@@ -562,7 +720,6 @@
         const minY = parseFloat(lat) - 0.005;
         const maxX = parseFloat(lng) + 0.005;
         const maxY = parseFloat(lat) + 0.005;
-
         fetch('${pageContext.request.contextPath}/Controller?type=Cctv&minX=' + minX + '&minY=' + minY + '&maxX=' + maxX + '&maxY=' + maxY)
             .then(response => {
                 if (!response.ok) {
@@ -586,7 +743,6 @@
                         const videoContainer = document.createElement('div');
                         videoContainer.className = 'video-container';
                         cctvGrid.appendChild(videoContainer);
-
                         const videoId = cctv.cctvid || 'fallback-cctv-' + index;
 
                         fetch('${pageContext.request.contextPath}/Controller?type=getVideoUrl&temporaryUrl=' + encodeURIComponent(cctv.cctvurl))
@@ -606,10 +762,11 @@
                                     videoContainer.appendChild(videoElement);
                                     videoContainer.appendChild(titleSpan);
 
-                                    videojs(videoId, {autoplay: true, controls: true, muted: true}).src({
-                                        src: finalUrl,
-                                        type: 'application/x-mpegURL'
-                                    });
+                                    // 💡 Video.js를 사용해 동적으로 플레이어를 초기화합니다.
+                                    const player = videojs(videoId, { autoplay: true, controls: true, muted: true });
+                                    player.src({ src: finalUrl, type: 'application/x-mpegURL' });
+                                    // 💡 새롭게 생성된 플레이어 인스턴스를 전역 변수에 저장합니다.
+                                    currentCctvVideoPlayer = player;
                                 } else {
                                     videoContainer.innerHTML = `<div class="video-error">영상 로드 실패</div><span>${cctv.cctvname || '이름 없음'}</span>`;
                                 }
@@ -631,6 +788,10 @@
                 errorMsg.style.display = 'block';
             });
     }
+
+
+
+
 
     // 졸음쉼터 정보 모달 표시
     function showRestStopInfo(name, index) {
@@ -833,6 +994,7 @@
     }
 
     // 즐겨찾기 토글 기능
+
     // 공통: JSON 응답 헬퍼
     function handleJson(res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -879,8 +1041,8 @@
     function redirectToLogin() {
         alert('즐겨찾기 기능을 사용하려면 로그인이 필요합니다.');
         window.location.href = '${pageContext.request.contextPath}/login.jsp';
-    }
 
+    }
 </script>
 
 <!-- Footer Include -->
