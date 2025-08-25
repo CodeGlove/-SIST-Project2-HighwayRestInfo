@@ -17,4 +17,10 @@
         WHERE UserKey = #{userKey} AND SAKey = #{saKey}
     </delete>
 
+    <select id="getBookmarkedSaKeys" parameterType="String" resultType="String">
+        SELECT SAKey FROM BookMark
+        WHERE UserKey = #{userKey}
+        ORDER BY SAKey
+    </select>
+
 </mapper>
