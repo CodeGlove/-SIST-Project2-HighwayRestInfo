@@ -121,13 +121,14 @@
                                                     <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
                                                     <c:set var="isBookmarked" value="false"/>
                                                     <c:if test="${not empty sessionScope.bookmarkedSaKeys}">
-                                                        <c:forEach var="bookmarkedSaKey" items="${sessionScope.bookmarkedSaKeys}">
+                                                        <c:forEach var="bookmarkedSaKey"
+                                                                   items="${sessionScope.bookmarkedSaKeys}">
                                                             <c:if test="${bookmarkedSaKey eq currentSaKey}">
                                                                 <c:set var="isBookmarked" value="true"/>
                                                             </c:if>
                                                         </c:forEach>
                                                     </c:if>
-                                                    
+
                                                     <i class="fas fa-heart bookmark-heart ${isBookmarked ? 'bookmarked' : ''}"
                                                        onclick="toggleBookmark('${currentSaKey}', this)"
                                                        title="즐겨찾기 추가/제거"></i>
@@ -466,13 +467,19 @@
 </div>
 
 <script>
-    // JSP 변수를 JavaScript 변수로 선언
+        // JSP 변수를 JavaScript 변수로 선언
     var allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
     var serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
     
     // 전역 변수로 설정
     window.allRestAreaDurations = allRestAreaDurations;
     window.serviceAreaOnlyDurations = serviceAreaOnlyDurations;
+    
+    // 세션의 북마크 리스트를 JavaScript 변수로 받기
+    var sessionBookmarkedSaKeys = [];
+    <c:if test="${not empty sessionScope.bookmarkedSaKeys}">
+        sessionBookmarkedSaKeys = ${sessionScope.bookmarkedSaKeys};
+    </c:if>
 
     // DOM이 완전히 로드된 후에 스크립트 실행
     document.addEventListener('DOMContentLoaded', function () {
@@ -651,7 +658,7 @@
         const buttonText = button.querySelector('.button-text');
         const buttonIcon = button.querySelector('.button-icon');
         const isActive = button.classList.contains('active');
-        
+
         if (isActive) {
             // 졸음쉼터 숨기기 - 소요시간 먼저 변경, 그 다음 리스트 변경
             buttonText.textContent = '졸음쉼터 표시';
@@ -856,14 +863,14 @@
                 body: new URLSearchParams({saKey: idx, action})
             }
         )
-            .then(handleJson)
-            .then(data => {
-                if (!data.success) {
-                    // 실패 시 UI 되돌리기
-                    heartIcon.classList.toggle('bookmarked');
-                    alert(data.message || '즐겨찾기 처리 실패');
-                }
-            })
+                    .then(handleJson)
+        .then(data => {
+            if (!data.success) {
+                // 실패 시 UI 되돌리기
+                heartIcon.classList.toggle('bookmarked');
+                alert(data.message || '즐겨찾기 처리 실패');
+            }
+        })
             .catch(err => {
                 // 오류 시 UI 되돌리기
                 heartIcon.classList.toggle('bookmarked');
@@ -875,10 +882,14 @@
             });
     }
 
+
+
     // 로그인 페이지로 이동하는 함수
     function redirectToLogin() {
+        // 현재 페이지 URL을 세션스토리지에 저장
+        sessionStorage.setItem('returnUrl', window.location.href);
         alert('즐겨찾기 기능을 사용하려면 로그인이 필요합니다.');
-        window.location.href = '${pageContext.request.contextPath}/login.jsp';
+        window.location.href = 'Controller?type=login';
     }
 
 </script>
