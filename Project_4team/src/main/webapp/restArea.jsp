@@ -113,7 +113,8 @@
             <c:when test="${not empty allRestAreas}">
                 <div class="rest-areas-list">
                     <c:forEach var="restArea" items="${allRestAreas}" varStatus="status">
-                        <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
+                        <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
+                        <c:set var="currentSaKey" value="${serviceAreaVO.idx}"/>
                         <div class="rest-area-card clickable ${restArea.contains('휴게소') ? 'service-area' : 'rest-stop'}"
                              data-sakey="${currentSaKey}">
                             <div class="rest-area-info-row">
@@ -125,7 +126,6 @@
                                             <c:choose>
                                                 <c:when test="${not empty sessionScope.loginUser}">
                                                     <!-- 로그인된 사용자: 즐겨찾기 기능 활성화 -->
-                                                    <c:set var="currentSaKey" value="${serviceAreaVOs[restArea].idx}"/>
                                                     <c:set var="isBookmarked" value="false"/>
                                                     <c:if test="${not empty sessionScope.bookmarkedSaKeys}">
                                                         <c:forEach var="bookmarkedSaKey"
@@ -151,7 +151,7 @@
                                     </div>
                                     <c:if test="${restArea.contains('휴게소')}">
                                         <div class="icon-item cctv-icon"
-                                             onclick="openCctvModal('${serviceAreaVOs[restArea].lat}', '${serviceAreaVOs[restArea].lng}')"
+                                             onclick="openCctvModal('${serviceAreaVO.lat}', '${serviceAreaVO.lng}')"
                                              title="CCTV">
                                             <i class="fas fa-video"></i>
                                             <span>CCTV</span>
@@ -161,7 +161,6 @@
                                         <div class="rest-area-rating">
                                             <span class="rating-label">별점</span>
                                             <div class="stars">
-                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
                                                 <c:choose>
                                                     <c:when test="${not empty serviceAreaVO and not empty serviceAreaVO.star and serviceAreaVO.star != '0' and serviceAreaVO.star != '0.0'}">
                                                         <!-- 노란별 하나만 표시 -->
@@ -263,7 +262,6 @@
                                                 편의시설
                                             </div>
                                             <div class="facilities-grid">
-                                                <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
                                                 <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.convenience}">
                                                     <c:forEach var="facility"
                                                                items="${serviceAreaVO.convenience.split(',')}"
@@ -385,7 +383,6 @@
 
                                         <!-- 주유비/운영시간 섹션 -->
                                         <div class="content-section">
-                                            <c:set var="serviceAreaVO" value="${serviceAreaVOs[restArea]}"/>
 
                                             <div class="section-title-with-date">
                                                 <div class="section-title-left">
@@ -427,8 +424,112 @@
                                                 <i class="fas fa-utensils"></i>
                                                 대표메뉴
                                             </div>
-                                            <div class="menu-item">
-                                                참치김치찌개
+                                            <div class="menu-items">
+                                                <c:if test="${not empty serviceAreaVO and not empty serviceAreaVO.menulist}">
+                                                    <c:set var="menuCount" value="0"/>
+                                                    <c:set var="bestMenu" value=""/>
+                                                    <c:set var="recommendMenu" value=""/>
+                                                    <c:set var="firstMenu" value=""/>
+                                                    <c:set var="secondMenu" value=""/>
+                                                    
+                                                    <!-- 메뉴 정보 수집 -->
+                                                    <c:forEach var="menu" items="${serviceAreaVO.menulist}" varStatus="menuStatus">
+                                                        <c:choose>
+                                                            <c:when test="${menu.best eq 'Y' and empty bestMenu}">
+                                                                <c:set var="bestMenu" value="${menu}"/>
+                                                            </c:when>
+                                                            <c:when test="${menu.recommend eq 'Y' and empty recommendMenu and menu.best ne 'Y'}">
+                                                                <c:set var="recommendMenu" value="${menu}"/>
+                                                            </c:when>
+                                                            <c:when test="${menuStatus.index == 0}">
+                                                                <c:set var="firstMenu" value="${menu}"/>
+                                                            </c:when>
+                                                            <c:when test="${menuStatus.index == 1}">
+                                                                <c:set var="secondMenu" value="${menu}"/>
+                                                            </c:when>
+                                                        </c:choose>
+                                                    </c:forEach>
+                                                    
+                                                    <!-- 메뉴 표시 (우선순위: Best > Recommend > 첫번째 > 두번째) -->
+                                                    <c:choose>
+                                                        <c:when test="${not empty bestMenu}">
+                                                            <div class="menu-item best-menu">
+                                                                <i class="fas fa-star menu-icon"></i>
+                                                                <span class="menu-name">${bestMenu.foodName}</span>
+                                                                <c:if test="${not empty bestMenu.price}">
+                                                                    <span class="menu-price">${bestMenu.price}원</span>
+                                                </c:if>
+                                                            </div>
+                                                            <c:set var="menuCount" value="${menuCount + 1}"/>
+                                                        </c:when>
+                                                    </c:choose>
+                                                    
+                                                    <c:choose>
+                                                        <c:when test="${not empty recommendMenu and menuCount < 2 and bestMenu ne recommendMenu}">
+                                                            <div class="menu-item recommend-menu">
+                                                                <i class="fas fa-thumbs-up menu-icon"></i>
+                                                                <span class="menu-name">${recommendMenu.foodName}</span>
+                                                                <c:if test="${not empty recommendMenu.price}">
+                                                                    <span class="menu-price">${recommendMenu.price}원</span>
+                                                                </c:if>
+                                                            </div>
+                                                            <c:set var="menuCount" value="${menuCount + 1}"/>
+                                                        </c:when>
+                                                        <c:when test="${not empty firstMenu and menuCount < 2}">
+                                                            <div class="menu-item">
+                                                                <i class="fas fa-utensils menu-icon"></i>
+                                                                <span class="menu-name">${firstMenu.foodName}</span>
+                                                                <c:if test="${not empty firstMenu.price}">
+                                                                    <span class="menu-price">${firstMenu.price}원</span>
+                                                                </c:if>
+                                                            </div>
+                                                            <c:set var="menuCount" value="${menuCount + 1}"/>
+                                                        </c:when>
+                                                    </c:choose>
+                                                    
+                                                    <c:choose>
+                                                        <c:when test="${not empty secondMenu and menuCount < 2}">
+                                                            <div class="menu-item">
+                                                                <i class="fas fa-utensils menu-icon"></i>
+                                                                <span class="menu-name">${secondMenu.foodName}</span>
+                                                                <c:if test="${not empty secondMenu.price}">
+                                                                    <span class="menu-price">${secondMenu.price}원</span>
+                                                                </c:if>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:when test="${not empty recommendMenu and menuCount < 2 and empty bestMenu}">
+                                                            <div class="menu-item recommend-menu">
+                                                                <i class="fas fa-thumbs-up menu-icon"></i>
+                                                                <span class="menu-name">${recommendMenu.foodName}</span>
+                                                                <c:if test="${not empty recommendMenu.price}">
+                                                                    <span class="menu-price">${recommendMenu.price}원</span>
+                                                                </c:if>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:when test="${not empty firstMenu and menuCount < 2 and empty bestMenu and empty recommendMenu}">
+                                                            <div class="menu-item">
+                                                                <i class="fas fa-utensils menu-icon"></i>
+                                                                <span class="menu-name">${firstMenu.foodName}</span>
+                                                                <c:if test="${not empty firstMenu.price}">
+                                                                    <span class="menu-price">${firstMenu.price}원</span>
+                                                                </c:if>
+                                                            </div>
+                                                        </c:when>
+                                                    </c:choose>
+                                                    
+                                                    <c:if test="${menuCount == 0}">
+                                                        <div class="menu-item no-menu">
+                                                            <i class="fas fa-info-circle menu-icon"></i>
+                                                            <span class="menu-name">메뉴 정보 없음</span>
+                                                        </div>
+                                                    </c:if>
+                                                </c:if>
+                                                <c:if test="${empty serviceAreaVO or empty serviceAreaVO.menulist}">
+                                                    <div class="menu-item no-menu">
+                                                        <i class="fas fa-info-circle menu-icon"></i>
+                                                        <span class="menu-name">메뉴 정보 없음</span>
+                                                    </div>
+                                                </c:if>
                                             </div>
                                         </div>
                                     </div>
@@ -479,7 +580,7 @@
     let currentCctvVideoPlayer = null;
 
     // JSP 변수를 JavaScript 변수로 선언
-    // JSP 변수를 JavaScript 변수로 선언
+
     var allRestAreaDurations = ${allRestAreaDurations != null ? allRestAreaDurations : '[]'};
     var serviceAreaOnlyDurations = ${serviceAreaOnlyDurations != null ? serviceAreaOnlyDurations : '[]'};
 
@@ -1163,7 +1264,8 @@
         // 현재 페이지 URL을 세션스토리지에 저장
         sessionStorage.setItem('returnUrl', window.location.href);
         alert('즐겨찾기 기능을 사용하려면 로그인이 필요합니다.');
-        window.location.href = 'Controller?type=login';
+        // Login 페이지로 직접 이동 (Controller 거치지 않음)
+        window.location.href = 'login.jsp?returnUrl=' + encodeURIComponent(window.location.href);
     }
 
 </script>

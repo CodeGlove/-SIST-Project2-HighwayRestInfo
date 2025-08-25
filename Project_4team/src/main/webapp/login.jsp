@@ -388,6 +388,9 @@
 
     <!-- Login Form -->
     <form class="login-form" id="loginForm">
+        <!-- returnUrl을 서버로 전송하기 위한 hidden input 추가 -->
+        <input type="hidden" id="returnUrl" name="returnUrl">
+        
         <div class="form-group">
             <div class="input-container">
                 <i class="fas fa-user input-icon"></i>
@@ -462,10 +465,23 @@
         const appleLogin = document.getElementById('appleLogin');
         const facebookLogin = document.getElementById('facebookLogin');
         const signupLink = document.getElementById('signupLink');
+        const returnUrlInput = document.getElementById('returnUrl');
 
         //********* 한결: 뒤로가기 및 앞으로가기 시 입력필드 초기화
         usernameInput.value = '';
         passwordInput.value = '';
+
+        // 페이지 로드 시 returnUrl을 가져와서 폼에 추가 (쿼리 파라미터 우선, sessionStorage 차선)
+        let returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
+        if (!returnUrl) {
+            returnUrl = sessionStorage.getItem('returnUrl');
+            if (returnUrl) {
+                sessionStorage.removeItem('returnUrl'); // 사용 후 제거
+            }
+        }
+        if (returnUrl) {
+            returnUrlInput.value = returnUrl;
+        }
 
         //뒤로가기 / 앞으로가기로 페이지에 접근할 때 실행된다.
         window.addEventListener('pageshow', function (event) {
@@ -474,7 +490,6 @@
                 passwordInput.value = '';
             }
         });
-
 
         // Password toggle
         passwordToggle.addEventListener('click', function () {
