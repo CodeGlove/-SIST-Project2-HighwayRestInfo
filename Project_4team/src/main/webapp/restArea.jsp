@@ -136,7 +136,7 @@
                                                         </c:forEach>
                                                     </c:if>
 
-                                                    <i class="fas fa-heart bookmark-heart ${isBookmarked ? 'bookmarked' : ''}"
+                                                    <i class="fas fa-heart bookmark-heart heart-icon ${isBookmarked ? 'bookmarked' : ''}"
                                                        onclick="toggleBookmark('${currentSaKey}', this)"
                                                        title="즐겨찾기 추가/제거"></i>
                                                 </c:when>
@@ -155,6 +155,12 @@
                                              title="CCTV">
                                             <i class="fas fa-video"></i>
                                             <span>CCTV</span>
+                                        </div>
+                                        <div class="icon-item review-icon"
+                                             onclick="location.href='${pageContext.request.contextPath}/Controller?type=review&search=${serviceAreaVO.SAName}'"
+                                             title="리뷰보기">
+                                            <i class="fas fa-comments"></i>
+                                            <span>리뷰</span>
                                         </div>
                                     </c:if>
                                     <c:if test="${restArea.contains('휴게소')}">
@@ -604,8 +610,8 @@
             // 1. 휴게소 카드 클릭 이벤트
             // ======================================================================
             $('.rest-area-card.service-area').on('click', function (e) {
-                // 카드 안의 아이콘(즐겨찾기, CCTV) 클릭 시에는 모달 열지 않음
-                if ($(e.target).closest('.bookmark-heart, .cctv-icon').length > 0) {
+                // 카드 안의 아이콘(즐겨찾기, CCTV, 리뷰) 클릭 시에는 모달 열지 않음
+                if ($(e.target).closest('.bookmark-heart, .cctv-icon, .review-icon').length > 0) {
                     return;
                 }
 
