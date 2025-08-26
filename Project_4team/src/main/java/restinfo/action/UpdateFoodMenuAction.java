@@ -311,7 +311,7 @@ public class UpdateFoodMenuAction implements Action {
         }).start(); //스레드 시작!
 
         // ✨ 3. "작업이 시작되었습니다" 라는 메시지를 즉시 브라우저에 보냄
-        try {
+        /*try {
             jsonResult.put("status", "success");
             jsonResult.put("message", "메뉴 업데이트 작업이 시작되었습니다. 완료까지 몇 분 정도 소요될 수 있습니다.");
 
@@ -321,7 +321,7 @@ public class UpdateFoodMenuAction implements Action {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         return null; //JSON응답으로 비동기식 처리!
     }

@@ -239,7 +239,7 @@
             </div>
 
             <%--** 음식메뉴 정보 버튼 추가 **--%>
-            <form method="post" action="Controller" style="margin-top: 1rem;">
+            <form id= "updateFoodForm" method="post" action="Controller" style="margin-top: 1rem;">
                 <input type="hidden" name="type" value="updateFoodMenu">
                 <button type="submit" class="update-button">
                     <i class="fas fa-sync-alt"></i>
@@ -730,5 +730,30 @@
 
         drawBarChart('barChart', sortedData, barChartColors);
         createBarChartLegend(sortedData, barChartColors);
+
+        // **** 음식 메뉴 업데이트 후 페이지 이동 ****
+        document.getElementById('updateFoodForm').addEventListener('submit', async function(e) {
+            // 1. form의 기본 동작(페이지 새로고침)을 막습니다.
+            e.preventDefault();
+
+            // 간단한 확인창을 띄워 사용자에게 알림
+            //alert('메뉴 업데이트를 시작합니다. 작업이 완료되면 페이지가 새로고침됩니다.');
+
+            try {
+                // 2. 서버에 비동기 요청을 보냅니다.
+                const formData = new FormData(this);
+                await fetch('Controller', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                });
+
+                // 3. fetch 요청이 끝나면 (성공/실패 여부와 상관없이) 페이지를 이동시킵니다.
+                location.href = 'Controller?type=manage'; // Controller를 통해 manage.jsp로 이동
+
+            } catch (error) {
+                // 4. 네트워크 에러 등 요청 자체가 실패한 경우
+                alert('요청에 실패했습니다: ' + error.message);
+            }
+        }); // --- 음식 메뉴 업데이트 후 페이지 이동 처리 끝 ---
     });
 </script>
