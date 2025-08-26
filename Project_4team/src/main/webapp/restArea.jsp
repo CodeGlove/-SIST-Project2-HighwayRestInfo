@@ -31,6 +31,112 @@
     <script src="https://unpkg.com/@videojs/http-streaming@3.5.0/dist/videojs-http-streaming.min.js"></script>
     <!-- jQuery 추가 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        /* 모달 창을 위한 CSS - 공통 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 휴게소 상세 정보 모달 스타일 */
+        #restAreaModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80% !important;
+            max-width: 500px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        /* CCTV 영상 모달 스타일 */
+        #cctvModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80% !important;
+            max-width: 1800px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        .cctv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        @media (min-width: 1170px) {
+            .cctv-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .video-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #000;
+            position: relative;
+            height: 390px;
+        }
+        .video-container video, .video-container .video-error {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-container span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 0.8em;
+            word-break: break-all;
+        }
+        .video-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background-color: #333;
+            text-align: center;
+        }
+        .no-rest-areas {
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+    </style>
+
 </head>
 <body>
 <%@ include file="header.jsp" %>
