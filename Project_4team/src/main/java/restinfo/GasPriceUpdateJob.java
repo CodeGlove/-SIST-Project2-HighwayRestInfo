@@ -57,15 +57,16 @@ public class GasPriceUpdateJob implements Job {
 
             // 2. DB 휴게소 목록을 기준으로 순회하며 이름 조립 및 매칭
             for (ServiceAreaVO serviceArea : getSvarInfo) {
-                String baseName = serviceArea.getSAName().replace("휴게소", "").trim();
-                String direction = serviceArea.getSADirection().trim();
+                String saName = serviceArea.getSAName().replace("휴게소", "").trim();
+                String saDirection = serviceArea.getSADirection().trim();
 
-                if (direction.contains("(")) {
-                    direction = direction.substring(direction.indexOf('('));
+                if (saDirection.contains("(")) {
+                    saDirection = saDirection.substring(saDirection.indexOf('('));
                 }
-                String findGsstNm = baseName + direction + "주유소";
+                String findGsstNm = saName + saDirection + "주유소";
                 String gsstSvarCd = getItemMap.get(findGsstNm);
 
+                //System.out.println("휴게소이름: " + saName + " 휴게소" + saDirection + " 방향");
                 if (gsstSvarCd != null) {
                     // 3.  누락되었던 가격 조회 로직 추가
                     try {
