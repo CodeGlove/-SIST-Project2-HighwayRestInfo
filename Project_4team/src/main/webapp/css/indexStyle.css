@@ -385,6 +385,7 @@ body {
 }
 
 .modal-content {
+    margin-top: 16rem;
     background: white;
     border-radius: 16px;
     min-width: 400px;
@@ -395,7 +396,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 1.5rem;
     display: flex;
