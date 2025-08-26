@@ -8,7 +8,7 @@ import restinfo.action.Action;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
+//delete ::::::
 public class DelAction implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {

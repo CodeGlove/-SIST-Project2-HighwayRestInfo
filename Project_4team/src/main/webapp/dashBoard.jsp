@@ -238,7 +238,7 @@
                 업데이트는 수 분 정도 소요될 수 있습니다.
             </div>
 
-        <%--** 음식메뉴 정보 버튼 추가 **--%>
+            <%--** 음식메뉴 정보 버튼 추가 **--%>
             <form method="post" action="Controller" style="margin-top: 1rem;">
                 <input type="hidden" name="type" value="updateFoodMenu">
                 <button type="submit" class="update-button">
