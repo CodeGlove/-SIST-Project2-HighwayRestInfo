@@ -8,8 +8,8 @@
                 <h3>HighwayGuide</h3>
             </div>
             <div class="footer-info">
-                <p>(주)하이웨이가이드 | 서울시 서초구 사임당로 157, 3층 | 사업자등록번호 : 613-81-65278</p>
-                <p>고객센터 : 02-1588-6254 | 고객문의 : help@highwayguide.com</p>
+                <p>(주)가람이형파이팅 | 서울시 서초구 테헤란로 어딘가 | 사업자등록번호 : 111-22-33333</p>
+                <p>고객센터 : 02-1588-0000 | 고객문의 : help@highwayguide.com</p>
             </div>
             <div class="footer-copyright">
                 <p>Copyright © 2025 HighwayGuide Inc. All rights reserved.</p>
