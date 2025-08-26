@@ -4,170 +4,181 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceAreaVO {
-    private String Idx;
-    private String SAName;
-    private String SADirection;
-    private String WayNum;
-    private String CompactParking;
-    private String LargeParking;
-    private String DisabledParking;
-    private String Address;
-    private String Tel;
-    private String Lat;
-    private String Lng;
-    private String ShopCode;
-    private String Convenience ;
-    private List<ShopVO> Shoplist;
-    private String Star;
-    private GasVO gasInfo;
+	private String Idx;
+	private String SAName;
+	private String SADirection;
+	private String WayNum;
+	private String CompactParking;
+	private String LargeParking;
+	private String DisabledParking;
+	private String Address;
+	private String Tel;
+	private String Lat;
+	private String Lng;
+	private String ShopCode;
+	private String Convenience;
+	private List<ShopVO> Shoplist;
+	private String Star;
+	private GasVO gasInfo;
 	private String AiComment;
-    
-    private boolean isBookmarked;
+	private List<MenuVO> Menulist;
+	private boolean isBookmarked;
 
-    public boolean isBookmarked() { return isBookmarked; }
-    public void setBookmarked(boolean bookmarked) { isBookmarked = bookmarked; }
+	public ServiceAreaVO() {
+		Shoplist = new ArrayList<ShopVO>();
+	}
 
+	public boolean isBookmarked() {
+		return isBookmarked;
+	}
 
-    public GasVO getGasInfo() {
-        return gasInfo;
-    }
+	public void setBookmarked(boolean bookmarked) {
+		isBookmarked = bookmarked;
+	}
 
-    public void setGasInfo(GasVO gasInfo) {
-        this.gasInfo = gasInfo;
-    }
+	public GasVO getGasInfo() {
+		return gasInfo;
+	}
 
-    public String getStar() {
-        return Star;
-    }
+	public void setGasInfo(GasVO gasInfo) {
+		this.gasInfo = gasInfo;
+	}
 
-    public void setStar(String star) {
-        Star = star;
-    }
+	public String getStar() {
+		return Star;
+	}
 
-    public String getConvenience() {
-        return Convenience;
-    }
+	public void setStar(String star) {
+		Star = star;
+	}
 
-    public void setConvenience(String convenience) {
-        Convenience = convenience;
-    }
+	public String getConvenience() {
+		return Convenience;
+	}
 
+	public void setConvenience(String convenience) {
+		Convenience = convenience;
+	}
 
-    public ServiceAreaVO() {
-        Shoplist = new ArrayList<ShopVO>();
-    }
+	public List<ShopVO> getShoplist() {
+		return Shoplist;
+	}
 
-    public List<ShopVO> getShoplist() {
-        return Shoplist;
-    }
+	public void setShoplist(List<ShopVO> shoplist) {
+		Shoplist = shoplist;
+	}
 
-    public String getIdx() {
-        return Idx;
-    }
+	public String getIdx() {
+		return Idx;
+	}
 
-    public void setIdx(String idx) {
-        Idx = idx;
-    }
+	public void setIdx(String idx) {
+		Idx = idx;
+	}
 
-    public void setShoplist(List<ShopVO> shoplist) {
-        Shoplist = shoplist;
-    }
-    
-    public String getWayNum() {
-        return WayNum;
-    }
+	public String getWayNum() {
+		return WayNum;
+	}
 
-    public void setWayNum(String wayNum) {
-        WayNum = wayNum;
-    }
+	public void setWayNum(String wayNum) {
+		WayNum = wayNum;
+	}
 
-    public String getSAName() {
-        return SAName;
-    }
+	public String getSAName() {
+		return SAName;
+	}
 
-    public void setSAName(String SAName) {
-        this.SAName = SAName;
-    }
+	public void setSAName(String SAName) {
+		this.SAName = SAName;
+	}
 
-    public String getSADirection() {
-        return SADirection;
-    }
+	public String getSADirection() {
+		return SADirection;
+	}
 
-    public void setSADirection(String SADirection) {
-        this.SADirection = SADirection;
-    }
+	public void setSADirection(String SADirection) {
+		this.SADirection = SADirection;
+	}
 
+	public String getCompactParking() {
+		return CompactParking;
+	}
 
-    public String getCompactParking() {
-        return CompactParking;
-    }
+	public void setCompactParking(String compactParking) {
+		CompactParking = compactParking;
+	}
 
-    public void setCompactParking(String compactParking) {
-        CompactParking = compactParking;
-    }
+	public String getLargeParking() {
+		return LargeParking;
+	}
 
-    public String getLargeParking() {
-        return LargeParking;
-    }
+	public void setLargeParking(String largeParking) {
+		LargeParking = largeParking;
+	}
 
-    public void setLargeParking(String largeParking) {
-        LargeParking = largeParking;
-    }
+	public String getDisabledParking() {
+		return DisabledParking;
+	}
 
-    public String getDisabledParking() {
-        return DisabledParking;
-    }
+	public void setDisabledParking(String disabledParking) {
+		DisabledParking = disabledParking;
+	}
 
-    public void setDisabledParking(String disabledParking) {
-        DisabledParking = disabledParking;
-    }
+	public String getAddress() {
+		return Address;
+	}
 
-    public String getAddress() {
-        return Address;
-    }
+	public void setAddress(String address) {
+		Address = address;
+	}
 
-    public void setAddress(String address) {
-        Address = address;
-    }
+	public String getLat() {
+		return Lat;
+	}
 
-    public String getLat() {
-        return Lat;
-    }
+	public void setLat(String lat) {
+		Lat = lat;
+	}
 
-    public void setLat(String lat) {
-        Lat = lat;
-    }
+	public String getLng() {
+		return Lng;
+	}
 
-    public String getLng() {
-        return Lng;
-    }
+	public void setLng(String lng) {
+		Lng = lng;
+	}
 
-    public void setLng(String lng) {
-        Lng = lng;
-    }
+	public String getTel() {
+		return Tel;
+	}
 
-    public String getTel() {
-        return Tel;
-    }
+	public void setTel(String tel) {
+		Tel = tel;
+	}
 
-    public void setTel(String tel) {
-        Tel = tel;
-    }
+	public String getShopCode() {
+		return ShopCode;
+	}
 
-    public String getShopCode() {
-        return ShopCode;
-    }
-
-    public void setShopCode(String shopCode) {
-        ShopCode = shopCode;
-    }
+	public void setShopCode(String shopCode) {
+		ShopCode = shopCode;
+	}
 
 	// AiComment 필드 getter/setter
-    public String getAiComment() {
-        return AiComment;
-    }
+	public String getAiComment() {
+		return AiComment;
+	}
 
-    public void setAiComment(String aiComment) {
-        AiComment = aiComment;
-    }
+	public void setAiComment(String aiComment) {
+		AiComment = aiComment;
+	}
+
+	// Menulist 필드 getter/setter
+	public List<MenuVO> getMenulist() {
+		return Menulist;
+	}
+
+	public void setMenulist(List<MenuVO> menulist) {
+		Menulist = menulist;
+	}
 }

@@ -94,13 +94,15 @@
                     <p>주유소, 충전소, 음식점, 화장실 등 휴게소의 모든 정보를 한눈에 확인하세요.</p>
                 </div>
             </a>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-map-marked-alt"></i>
+            <a href="Controller?type=review" class="card-link">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>휴게소 리뷰</h3>
+                    <p>실제 이용자들의 생생한 휴게소 후기와 평가를 확인해보세요.</p>
                 </div>
-                <h3>상세 지도</h3>
-                <p>고속도로 구간별 상세 지도와 시설물 정보를 제공합니다.</p>
-            </div>
+            </a>
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-clock"></i>

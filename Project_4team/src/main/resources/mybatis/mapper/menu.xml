@@ -19,10 +19,10 @@
     <update id="updateMenu" parameterType="mybatis.vo.MenuVO">
         UPDATE Menu
         SET price = #{Price},
-            recommend = #{Recommend},
-            best = #{Best},
-            premium = #{Premium},
-            season = #{Season}
+        recommend = #{Recommend},
+        best = #{Best},
+        premium = #{Premium},
+        season = #{Season}
         WHERE saKey = #{SAKey} AND foodName = #{FoodName}
     </update>
 </mapper>
