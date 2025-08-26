@@ -600,11 +600,11 @@ body {
     margin-bottom: 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1),
-        transform 0.6s cubic-bezier(0.23, 1, 0.320, 1),
-        opacity 0.6s cubic-bezier(0.23, 1, 0.320, 1),
-        max-height 0.7s cubic-bezier(0.23, 1, 0.320, 1),
-        margin 0.7s cubic-bezier(0.23, 1, 0.320, 1),
-        padding 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+    transform 0.6s cubic-bezier(0.23, 1, 0.320, 1),
+    opacity 0.6s cubic-bezier(0.23, 1, 0.320, 1),
+    max-height 0.7s cubic-bezier(0.23, 1, 0.320, 1),
+    margin 0.7s cubic-bezier(0.23, 1, 0.320, 1),
+    padding 0.5s cubic-bezier(0.23, 1, 0.320, 1);
     border: 1px solid #e5e8eb;
     position: relative;
 }
@@ -631,11 +631,11 @@ body {
     border: none;
     box-shadow: none;
     transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1),
-        max-height 0.8s cubic-bezier(0.23, 1, 0.320, 1),
-        margin-bottom 0.8s cubic-bezier(0.23, 1, 0.320, 1),
-        padding 0.6s cubic-bezier(0.23, 1, 0.320, 1),
-        box-shadow 0.4s cubic-bezier(0.23, 1, 0.320, 1),
-        border 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+    max-height 0.8s cubic-bezier(0.23, 1, 0.320, 1),
+    margin-bottom 0.8s cubic-bezier(0.23, 1, 0.320, 1),
+    padding 0.6s cubic-bezier(0.23, 1, 0.320, 1),
+    box-shadow 0.4s cubic-bezier(0.23, 1, 0.320, 1),
+    border 0.4s cubic-bezier(0.23, 1, 0.320, 1);
     overflow: hidden;
 }
 
@@ -654,9 +654,9 @@ body {
     transform: scale(0.9) translateY(8px);
     overflow: hidden;
     transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        max-height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        margin-bottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        padding 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    margin-bottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    padding 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .rest-area-card.visible {
@@ -666,9 +666,9 @@ body {
     margin-bottom: 1rem;
     padding: 1rem;
     transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        max-height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        margin-bottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-        padding 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    margin-bottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    padding 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* 소요시간 텍스트 애니메이션 - 더 부드럽게 */
@@ -1152,13 +1152,13 @@ body {
 
 /* 로그인되지 않은 사용자의 하트 아이콘 스타일 */
 .bookmark-heart.not-logged-in {
-    color: #ffffff !important;
+    color: #999 !important;
     cursor: pointer;
     opacity: 0.7;
 }
 
 .bookmark-heart.not-logged-in:hover {
-    color: #ffffff !important;
+    color: #ff6b9d !important;
     opacity: 0.9;
 }
 
@@ -1730,27 +1730,27 @@ body {
 }
 
 /* 즐겨찾기 하트 아이콘 스타일 */
-.bookmark-heart {
+.bookmark-heart.heart-icon {
     margin-left: 2px;
     font-size: 0.85rem;
-    color: #ffffff;
+    color: #999 !important;
     cursor: pointer;
     transition: all 0.2s ease;
     vertical-align: middle;
 }
 
-.bookmark-heart:hover {
-    color: #999;
+.bookmark-heart.heart-icon:hover {
+    color: #999 !important;
     transform: scale(1.1);
 }
 
-.bookmark-heart.bookmarked {
-    color: #e74c3c;
+.bookmark-heart.heart-icon.bookmarked {
+    color: #e74c3c !important;
     animation: heartBeat 0.5s ease-in-out;
 }
 
-.bookmark-heart.bookmarked:hover {
-    color: #c0392b;
+.bookmark-heart.heart-icon.bookmarked:hover {
+    color: #c0392b !important;
 }
 
 @keyframes heartBeat {
