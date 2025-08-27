@@ -49,7 +49,7 @@ public class EmailSendAction implements Action{
 
             String htmlContent = null;
 
-            if (request.getParameter("purpose").equals("forgotPassword")) {
+            if (request.getParameter("purpose") != null && request.getParameter("purpose").equals("forgotPassword")) {
                 msg.setSubject("[HighwayGuide] 비밀번호 재설정 인증번호입니다.");
                 htmlContent = "<h2>안녕하세요, HighwayGuide 입니다.</h2>"
                         + "<p>비밀번호 재설정을 위한 인증번호는 다음과 같습니다.</p>"
